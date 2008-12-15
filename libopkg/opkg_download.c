@@ -42,7 +42,6 @@ curl_progress_func (char* url,
 		    double ultotal,
 		    double ulnow)
 {
-    int i;
     int p = (t) ? d*100/t : 0;
 
     if (opkg_cb_download_progress)
