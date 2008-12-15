@@ -1,6 +1,7 @@
 #include <opkg.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 opkg_package_t *find_pkg = NULL;
 
@@ -82,18 +83,12 @@ print_package (opkg_package_t *pkg)
       );
 }
 
-int
-main (int argc, char **argv)
+
+void
+opkg_test (opkg_t *opkg)
 {
-  opkg_t *opkg;
-  opkg_package_t *pkg;
   int err;
-  
-  opkg = opkg_new ();
-
-  opkg_set_option (opkg, "offline_root", "/tmp/");
-
-  opkg_re_read_config_files (opkg);
+  opkg_package_t *pkg;
 
   err = opkg_update_package_lists (opkg, progress_callback, "Updating...");
   printf ("\nopkg_update_package_lists returned %d (%s)\n", err, errors[err]);
@@ -131,6 +126,117 @@ main (int argc, char **argv)
 
   err = opkg_upgrade_all (opkg, progress_callback, "Upgrading all...");
   printf ("\nopkg_upgrade_all returned %d (%s)\n", err, errors[err]);
+
+}
+
+int
+main (int argc, char **argv)
+{
+  opkg_t *opkg;
+  opkg_package_t *pkg;
+  int err;
+
+  if (argc < 2)
+  {
+    printf ("Usage: %s command\n"
+            "\nCommands:\n"
+	    "\tupdate - Update package lists\n"
+	    "\tfind [package] - Print details of the specified package\n"
+	    "\tinstall [package] - Install the specified package\n"
+	    "\tupgrade [package] - Upgrade the specified package\n"
+	    "\tlist upgrades - List the available upgrades\n"
+	    "\tlist all - List all available packages\n"
+	    "\tlist installed - List all the installed packages\n"
+	    "\tremove [package] - Remove the specified package\n"
+	    "\ttest - Run test script\n"
+    , basename (argv[0]));
+    exit (0);
+  }
+  
+  opkg = opkg_new ();
+
+  opkg_set_option (opkg, "offline_root", "/tmp/");
+
+  opkg_re_read_config_files (opkg);
+
+  switch (argv[1][0])
+  {
+    case 'f':
+      pkg = opkg_find_package (opkg, argv[2], NULL, NULL, NULL);
+      if (pkg)
+      {
+	print_package (pkg);
+	opkg_package_free (pkg);
+      }
+      else
+	printf ("Package \"%s\" not found!\n", find_pkg->name);
+      opkg_package_free (pkg);
+      break;
+    case 'i':
+      err = opkg_install_package (opkg, argv[1], progress_callback, "Installing...");
+      printf ("\nopkg_install_package returned %d (%s)\n", err, errors[err]);
+      break;
+
+    case 'u':
+      if (strlen (argv[1]) < 4)
+        printf ("");
+      if (argv[1][3] == 'd')
+      {
+        err = opkg_update_package_lists (opkg, progress_callback, "Updating...");
+        printf ("\nopkg_update_package_lists returned %d (%s)\n", err, errors[err]);
+        break;
+      }
+      else
+      {
+        if (argc < 3)
+        {
+          err = opkg_upgrade_all (opkg, progress_callback, "Upgrading all...");
+          printf ("\nopkg_upgrade_all returned %d (%s)\n", err, errors[err]);
+        }
+        else
+        {
+          err = opkg_upgrade_package (opkg, argv[2], progress_callback, "Upgrading...");
+          printf ("\nopkg_upgrade_package returned %d (%s)\n", err, errors[err]);
+        }
+      }
+      break;
+
+    case 'l':
+      if (argc < 3)
+      {
+        printf ("Please specify one either all, installed or upgrades\n");
+      }
+      else
+      {
+        switch (argv[2][0])
+        {
+          case 'u':
+            printf ("Listing upgradable packages...\n");
+            opkg_list_upgradable_packages (opkg, package_list_upgradable_callback, NULL);
+            break;
+          case 'a':
+            printf ("Listing all packages...\n");
+            opkg_list_packages (opkg, package_list_callback, NULL);
+            printf ("\n");
+            break;
+          case 'i':
+            printf ("Listing installed packages...\n");
+            break;
+          default:
+            printf ("Unknown list option \"%s\"", argv[2]);
+        }
+      }
+      break;
+          
+    case 'r':
+      err = opkg_remove_package (opkg, argv[2], progress_callback, "Removing...");
+      printf ("\nopkg_remove_package returned %d (%s)\n", err, errors[err]);
+      break;
+
+    default:
+      printf ("Unknown command \"%s\"\n", argv[1]);
+  }
+
 
   opkg_free (opkg);
 
