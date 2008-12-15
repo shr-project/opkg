@@ -1737,6 +1737,7 @@ int pkg_info_preinstall_check(opkg_conf_t *conf)
 	       // opkg_message(conf, OPKG_DEBUG2, "pkg %s: file=%s\n", pkg->name, installed_file);
 	       file_hash_set_file_owner(conf, installed_file, pkg);
 	  }
+	  pkg_free_installed_files(pkg);
      }
      pkg_vec_free(installed_pkgs);
 

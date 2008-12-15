@@ -136,6 +136,8 @@ int pkg_extract_data_file_names_to_file(pkg_t *pkg, const char *file_name)
 	       } else {
 		    fputs(data_file, file);
 	       }
+	       free(line);
+	       line=NULL;
 	  }
      }
      fclose(tmp);

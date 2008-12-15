@@ -506,7 +506,9 @@ static int update_file_ownership(opkg_conf_t *conf, pkg_t *new_pkg, pkg_t *old_p
 		    hash_table_insert(&conf->obs_file_hash, old_file, old_pkg);
 	       }
 	  }
+          pkg_free_installed_files(old_pkg);
      }
+     pkg_free_installed_files(new_pkg);
      return 0;
 }
 
