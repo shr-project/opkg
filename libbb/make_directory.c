@@ -50,17 +50,25 @@ int make_directory (const char *path, long mode, int flags)
 
 		if (stat (path, &st) < 0 && errno == ENOENT) {
 			int status;
-			char *buf, *parent;
+			char *pathcopy, *parent, *parentcopy;
 			mode_t mask;
 
 			mask = umask (0);
 			umask (mask);
 
-			buf = xstrdup (path);
-			parent = dirname (buf);
-			status = make_directory (parent, (0777 & ~mask) | 0300,
-					FILEUTILS_RECUR);
-			free (buf);
+			/* dirname is unsafe, it may both modify the
+			   memory of the path argument and may return
+			   a pointer to static memory, which can then
+			   be modified by consequtive calls to dirname */
+			
+			pathcopy = xstrdup (path);
+			parent = dirname (pathcopy);
+			parentcopy = xstrdup (parent);
+			status = make_directory (parentcopy, (0777 & ~mask)
+									 | 0300, FILEUTILS_RECUR);
+			free (pathcopy);
+			free (parentcopy);
+
 
 			if (status < 0 || make_directory (path, mode, 0) < 0)
 				return -1;
