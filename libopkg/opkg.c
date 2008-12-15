@@ -25,6 +25,7 @@
 #include "opkg_install.h"
 #include "opkg_configure.h"
 #include "opkg_download.h"
+#include "opkg_remove.h"
 
 #include "sprintf_alloc.h"
 #include "file_util.h"
@@ -246,7 +247,7 @@ int
 opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
 {
   int err;
-  char *package_id;
+  char *package_id = NULL;
 
   progress_callback (opkg, 0, user_data);
 
@@ -256,6 +257,9 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
 
   /* ... */
   pkg_info_preinstall_check (opkg->conf);
+
+  if (!package_id)
+    package_id = strdup (package_name);
 
   /* unpack the package */
   if (opkg->conf->multiple_providers)
@@ -267,23 +271,85 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
     err = opkg_install_by_name (opkg->conf, package_id);
   }
 
+  if (err)
+    return err;
+
   progress_callback (opkg, 75, user_data);
 
   /* run configure scripts, etc. */
   err = opkg_configure_packages (opkg->conf, NULL);
+  if (err)
+    return err;
 
   /* write out status files and file lists */
   opkg_conf_write_status_files (opkg->conf);
   pkg_write_changed_filelists (opkg->conf);
 
   progress_callback (opkg, 100, user_data);
-  return err;
+  return 0;
 }
 
 int
 opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
 {
-  return 1;
+  pkg_t *pkg = NULL;
+  pkg_t *pkg_to_remove;
+
+  if (!opkg)
+    return 1;
+
+  if (!package_name)
+    return 1;
+
+  progress_callback (opkg, 0, user_data);
+
+  pkg_info_preinstall_check (opkg->conf);
+
+  pkg_vec_t *installed_pkgs = pkg_vec_alloc ();
+
+  pkg_hash_fetch_all_installed (&opkg->conf->pkg_hash, installed_pkgs);
+
+  progress_callback (opkg, 25, user_data);
+
+  pkg = pkg_hash_fetch_installed_by_name (&opkg->conf->pkg_hash, package_name);
+
+  if (pkg == NULL)
+  {
+    /* XXX: Error: Package not installed. */
+    return 1;
+  }
+
+  if (pkg->state_status == SS_NOT_INSTALLED)
+  {
+    /* XXX:  Error: Package seems to be not installed (STATUS = NOT_INSTALLED). */
+    return 1;
+  }
+
+  progress_callback (opkg, 75, user_data);
+
+  if (opkg->conf->restrict_to_default_dest)
+  {
+    pkg_to_remove = pkg_hash_fetch_installed_by_name_dest (&opkg->conf->pkg_hash,
+                                                           pkg->name,
+                                                           opkg->conf->default_dest);
+  }
+  else
+  {
+    pkg_to_remove = pkg_hash_fetch_installed_by_name (&opkg->conf->pkg_hash, pkg->name );
+  }
+
+
+  progress_callback (opkg, 75, user_data);
+
+  opkg_remove_pkg (opkg->conf, pkg_to_remove, 0);
+
+  /* write out status files and file lists */
+  opkg_conf_write_status_files (opkg->conf);
+  pkg_write_changed_filelists (opkg->conf);
+
+
+  progress_callback (opkg, 100, user_data);
+  return 0;
 }
 
 int

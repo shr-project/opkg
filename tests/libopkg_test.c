@@ -29,5 +29,9 @@ main (int argc, char **argv)
 
   printf ("opkg_install_package returned %d\n", err);
 
+  err = opkg_remove_package (opkg, "aspell", progress_callback, "Removing...");
+
+  printf ("opkg_remove_package returned %d\n", err);
+
   opkg_free (opkg);
 }
