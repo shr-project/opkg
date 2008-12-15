@@ -138,4 +138,4 @@ AC_OUTPUT(
     src/Makefile
     libbb/Makefile
     libopkg.pc
-    opkg.h)
+    )
