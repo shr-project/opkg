@@ -39,6 +39,12 @@ struct _opkg_t
   opkg_option_t *options;
 };
 
+#define opkg_assert(expr) if (!(expr)) { \
+   printf ("opkg: file %s: line %d (%s): Assertation '%s' failed",\
+       __FILE__, __LINE__, __PRETTY_FUNCTION__, #expr); abort(); }
+
+#define progress(percent) if (progress_callback) progress_callback (opkg, percent, user_data);
+
 /** Private Functions ***/
 
 
@@ -104,6 +110,8 @@ opkg_new ()
 void
 opkg_free (opkg_t *opkg)
 {
+  opkg_assert (opkg != NULL);
+
   opkg_conf_deinit (opkg->conf);
   args_deinit (opkg->args);
 }
@@ -111,8 +119,13 @@ opkg_free (opkg_t *opkg)
 int
 opkg_read_config_files (opkg_t *opkg)
 {
-  args_t *a = opkg->args;
-  opkg_conf_t *c = opkg->conf;
+  args_t *a;
+  opkg_conf_t *c;
+
+  opkg_assert (opkg != NULL);
+
+  a = opkg->args;
+  c = opkg->conf;
 
   /* Unfortunatly, the easiest way to re-read the config files right now is to
    * throw away opkg->conf and start again */
@@ -164,11 +177,13 @@ void
 opkg_get_option (opkg_t *opkg, char *option, void **value)
 {
   int i = 0;
-  opkg_option_t *options = opkg->options;
+  opkg_option_t *options;
 
-  /* can't store a value in a NULL pointer! */
-  if (!value)
-    return;
+  opkg_assert (opkg != NULL);
+  opkg_assert (option != NULL);
+  opkg_assert (value != NULL);
+
+  options = opkg->options;
 
   /* look up the option
    * TODO: this would be much better as a hash table
@@ -204,11 +219,13 @@ void
 opkg_set_option (opkg_t *opkg, char *option, void *value)
 {
   int i = 0;
-  opkg_option_t *options = opkg->options;
+  opkg_option_t *options;
 
-  /* NULL values are not defined */
-  if (!value)
-    return;
+  opkg_assert (opkg != NULL);
+  opkg_assert (option != NULL);
+  opkg_assert (value != NULL);
+
+  options = opkg->options;
 
   /* look up the option
    * TODO: this would be much better as a hash table
@@ -249,11 +266,15 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   int err;
   char *package_id = NULL;
 
-  progress_callback (opkg, 0, user_data);
+  opkg_assert (opkg != NULL);
+  opkg_assert (package_name != NULL);
+
+  progress (0);
 
   /* download the package */
   opkg_prepare_url_for_install (opkg->conf, package_name, &package_id);
-  progress_callback (opkg, 50, user_data);
+
+  progress (50);
 
   /* ... */
   pkg_info_preinstall_check (opkg->conf);
@@ -274,7 +295,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   if (err)
     return err;
 
-  progress_callback (opkg, 75, user_data);
+  progress (75);
 
   /* run configure scripts, etc. */
   err = opkg_configure_packages (opkg->conf, NULL);
@@ -285,7 +306,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   opkg_conf_write_status_files (opkg->conf);
   pkg_write_changed_filelists (opkg->conf);
 
-  progress_callback (opkg, 100, user_data);
+  progress (100);
   return 0;
 }
 
@@ -295,13 +316,10 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
   pkg_t *pkg = NULL;
   pkg_t *pkg_to_remove;
 
-  if (!opkg)
-    return 1;
+  opkg_assert (opkg != NULL);
+  opkg_assert (package_name != NULL);
 
-  if (!package_name)
-    return 1;
-
-  progress_callback (opkg, 0, user_data);
+  progress (0);
 
   pkg_info_preinstall_check (opkg->conf);
 
@@ -309,7 +327,7 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
 
   pkg_hash_fetch_all_installed (&opkg->conf->pkg_hash, installed_pkgs);
 
-  progress_callback (opkg, 25, user_data);
+  progress (25);
 
   pkg = pkg_hash_fetch_installed_by_name (&opkg->conf->pkg_hash, package_name);
 
@@ -325,7 +343,7 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
     return 1;
   }
 
-  progress_callback (opkg, 75, user_data);
+  progress (75);
 
   if (opkg->conf->restrict_to_default_dest)
   {
@@ -339,7 +357,7 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
   }
 
 
-  progress_callback (opkg, 75, user_data);
+  progress (75);
 
   opkg_remove_pkg (opkg->conf, pkg_to_remove, 0);
 
@@ -348,7 +366,7 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
   pkg_write_changed_filelists (opkg->conf);
 
 
-  progress_callback (opkg, 100, user_data);
+  progress (100);
   return 0;
 }
 
@@ -374,7 +392,9 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
   pkg_src_t *src;
   int sources_list_count, sources_done;
 
-  progress_callback (opkg, 0, user_data);
+  opkg_assert (opkg != NULL);
+
+  progress (0);
 
   sprintf_alloc (&lists_dir, "%s",
                  (opkg->conf->restrict_to_default_dest)
@@ -510,8 +530,9 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     free (list_file_name);
 
     sources_done++;
-    progress_callback (opkg, 100 * sources_done / sources_list_count, user_data);
+    progress (100 * sources_done / sources_list_count);
   }
+
   rmdir (tmp);
   free (tmp);
   free (lists_dir);
