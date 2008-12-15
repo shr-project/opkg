@@ -4,7 +4,7 @@
 
 opkg_package_t *find_pkg = NULL;
 
-char *errors[8] = {
+char *errors[10] = {
   "No Error",
   "Unknown Eror",
   "Download failed",
@@ -12,8 +12,13 @@ char *errors[8] = {
   "Package already installed",
   "Package not available",
   "Package not found",
-  "Package not installed"
+  "Package not installed",
+  "Signature check failed",
+  "MD5 sum failed"
 };
+
+
+#define TEST_PACKAGE "aspell"
 
 void
 progress_callback (opkg_t *opkg, const opkg_progress_data_t *progress, void *data)
@@ -112,13 +117,13 @@ main (int argc, char **argv)
   else
     printf ("No package available to test find_package.\n");
 
-  err = opkg_install_package (opkg, "aspell", progress_callback, "Installing...");
+  err = opkg_install_package (opkg, TEST_PACKAGE, progress_callback, "Installing...");
   printf ("\nopkg_install_package returned %d (%s)\n", err, errors[err]);
 
-  err = opkg_upgrade_package (opkg, "aspell", progress_callback, "Upgrading...");
+  err = opkg_upgrade_package (opkg, TEST_PACKAGE, progress_callback, "Upgrading...");
   printf ("\nopkg_upgrade_package returned %d (%s)\n", err, errors[err]);
 
-  err = opkg_remove_package (opkg, "aspell", progress_callback, "Removing...");
+  err = opkg_remove_package (opkg, TEST_PACKAGE, progress_callback, "Removing...");
   printf ("\nopkg_remove_package returned %d (%s)\n", err, errors[err]);
 
   printf ("Listing upgradable packages...\n");

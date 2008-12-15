@@ -407,7 +407,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   {
     /* XXX: Error: Could not satisfy dependencies */
     pkg_vec_free (deps);
-    return OPKG_DEPENDANCIES_FAILED;
+    return OPKG_DEPENDENCIES_FAILED;
   }
 
   /* insert the package we are installing so that we download it */
@@ -487,7 +487,17 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   if (err)
   {
     opkg_package_free (pdata.package);
-    return OPKG_UNKNOWN_ERROR;
+    switch (err)
+    {
+      case PKG_INSTALL_ERR_NOT_TRUSTED: return OPKG_GPG_ERROR;
+      case PKG_INSTALL_ERR_DOWNLOAD: return OPKG_DOWNLOAD_FAILED;
+      case PKG_INSTALL_ERR_DEPENDENCIES:
+      case PKG_INSTALL_ERR_CONFLICTS: return OPKG_DEPENDENCIES_FAILED;
+      case PKG_INSTALL_ERR_ALREADY_INSTALLED: return OPKG_PACKAGE_ALREADY_INSTALLED;
+      case PKG_INSTALL_ERR_SIGNATURE: return OPKG_GPG_ERROR;
+      case PKG_INSTALL_ERR_MD5: return OPKG_MD5_ERROR;
+      default: return OPKG_UNKNOWN_ERROR;
+    }
   }
 
   progress (pdata, 75);
@@ -675,7 +685,6 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
   pkg_src_t *src;
   int sources_list_count, sources_done;
   opkg_progress_data_t pdata;
-  char *tmp_file_name = NULL;
 
   opkg_assert (opkg != NULL);
 
@@ -716,7 +725,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     return 1;
   }
 
-  /* cout the number of sources so we can give some progress updates */
+  /* count the number of sources so we can give some progress updates */
   sources_list_count = 0;
   sources_done = 0;
   iter = opkg->conf->pkg_src_list.head;
@@ -728,7 +737,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
 
   for (iter = opkg->conf->pkg_src_list.head; iter; iter = iter->next)
   {
-    char *url, *list_file_name;
+    char *url, *list_file_name = NULL, *sig_file_name = NULL;
 
     src = iter->data;
 
@@ -743,6 +752,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     {
       FILE *in, *out;
       struct _curl_cb_data cb_data;
+      char *tmp_file_name = NULL;
 
       sprintf_alloc (&tmp_file_name, "%s/%s.gz", tmp, src->name);
 
@@ -772,10 +782,10 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
           fclose (out);
         unlink (tmp_file_name);
       }
+      free (tmp_file_name);
     }
     else
       err = opkg_download (opkg->conf, url, list_file_name, NULL, NULL);
-    free (tmp_file_name);
 
     if (err)
     {
@@ -793,10 +803,13 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     else
       sprintf_alloc (&url, "%s/%s", src->value, "Packages.sig");
 
-    /* create temporary file for it */
-    sprintf_alloc (&tmp_file_name, "%s/%s", tmp, "Packages.sig");
+    /* create filename for signature */
+    sprintf_alloc (&sig_file_name, "%s/%s.sig", lists_dir, src->name);
 
-    err = opkg_download (opkg->conf, url, tmp_file_name, NULL, NULL);
+    /* make sure there is no existing signature file */
+    unlink (sig_file_name);
+
+    err = opkg_download (opkg->conf, url, sig_file_name, NULL, NULL);
     if (err)
     {
       /* XXX: Warning: Download failed */
@@ -804,7 +817,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     else
     {
       int err;
-      err = opkg_verify_file (opkg->conf, list_file_name, tmp_file_name);
+      err = opkg_verify_file (opkg->conf, list_file_name, sig_file_name);
       if (err == 0)
       {
         /* XXX: Notice: Signature check passed */
@@ -814,15 +827,14 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
         /* XXX: Warning: Signature check failed */
       }
     }
-    unlink (tmp_file_name);
-    free (tmp_file_name);
+    free (sig_file_name);
+    free (list_file_name);
     free (url);
 #else
     /* XXX: Note: Signiture check for %s skipped because GPG support was not
      * enabled in this build
      */
 #endif
-    free (list_file_name);
 
     sources_done++;
     progress (pdata, 100 * sources_done / sources_list_count);
