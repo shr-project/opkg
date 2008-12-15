@@ -32,7 +32,7 @@ int opkg_configure(opkg_conf_t *conf, pkg_t *pkg)
 
     char *pkgid;
     sprintf_alloc (&pkgid, "%s;%s;%s;", pkg->name, pkg->version, pkg->architecture);
-    opkg_set_current_state (OPKG_STATE_CONFIGURING_PKG, pkgid);
+    opkg_set_current_state (conf, OPKG_STATE_CONFIGURING_PKG, pkgid);
     free (pkgid);
 
     err = pkg_run_script(conf, pkg, "postinst", "configure");
@@ -42,7 +42,7 @@ int opkg_configure(opkg_conf_t *conf, pkg_t *pkg)
     }
 
     opkg_state_changed++;
-    opkg_set_current_state (OPKG_STATE_NONE, NULL);
+    opkg_set_current_state (conf, OPKG_STATE_NONE, NULL);
     return 0;
 }
 

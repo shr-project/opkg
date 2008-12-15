@@ -18,6 +18,8 @@
 #ifndef OPKG_STATE_H
 #define OPKG_STATE_H
 
+#include <opkg_message.h>
+
 typedef enum _opkg_state {
   OPKG_STATE_NONE,
   OPKG_STATE_DOWNLOADING_PKG,
@@ -30,7 +32,7 @@ typedef enum _opkg_state {
 } opkg_state_t;
 
 
-void opkg_set_current_state (opkg_state_t state, const char *data);
+void opkg_set_current_state (opkg_conf_t *conf, opkg_state_t state, const char *data);
 
 
 #endif /* OPKG_STATE_H */

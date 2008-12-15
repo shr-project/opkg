@@ -213,7 +213,7 @@ int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir)
     }
 
     sprintf_alloc (&pkgid, "%s;%s;%s;", pkg->name, pkg->version, pkg->architecture);
-    opkg_set_current_state (OPKG_STATE_DOWNLOADING_PKG, pkgid);
+    opkg_set_current_state (conf, OPKG_STATE_DOWNLOADING_PKG, pkgid);
     free (pkgid);
 
     sprintf_alloc(&url, "%s/%s", pkg->src->value, pkg->filename);
@@ -227,7 +227,7 @@ int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir)
     err = opkg_download(conf, url, pkg->local_filename);
     free(url);
 
-    opkg_set_current_state (OPKG_STATE_NONE, NULL);
+    opkg_set_current_state (conf, OPKG_STATE_NONE, NULL);
     return err;
 }
 

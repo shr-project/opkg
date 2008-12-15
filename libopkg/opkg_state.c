@@ -39,7 +39,7 @@ static opkg_state_t opkg_state = 0;
 static char *opkg_state_data = NULL;
 
 void
-opkg_set_current_state (opkg_state_t state, const char *data)
+opkg_set_current_state (opkg_conf_t *conf, opkg_state_t state, const char *data)
 {
   if (opkg_state_data)
     free (opkg_state_data);
@@ -60,7 +60,10 @@ opkg_set_current_state (opkg_state_t state, const char *data)
   }
 
 
-  printf ("opkg state set to %s: %s\n", state_strings[state], data);
+  if (data == NULL)
+    opkg_message (conf, OPKG_INFO, "opkg state set to %s\n", state_strings[state]);
+  else
+    opkg_message (conf, OPKG_INFO, "opkg state set to %s: %s\n", state_strings[state], data);
 }
 
 void
