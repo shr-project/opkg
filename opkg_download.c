@@ -18,7 +18,9 @@
 */
 
 #include <curl/curl.h>
+#ifdef HAVE_GPGME
 #include <gpgme.h>
+#endif
 
 #include "opkg.h"
 #include "opkg_download.h"
