@@ -178,6 +178,7 @@ int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir)
     int err;
     char *url;
     char *pkgid;
+    char *stripped_filename;
 
     if (pkg->src == NULL) {
 	opkg_message(conf,OPKG_ERROR, "ERROR: Package %s (parent %s) is not available from any configured src.\n",
@@ -195,7 +196,12 @@ int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir)
        "../../foo.ipk". While this is correct, and exactly what we
        want to use to construct url above, here we actually need to
        use just the filename part, without any directory. */
-    sprintf_alloc(&pkg->local_filename, "%s/%s", dir, pkg->filename);
+
+    stripped_filename = strrchr(pkg->filename, '/');
+    if ( ! stripped_filename )
+        stripped_filename = pkg->filename;
+
+    sprintf_alloc(&pkg->local_filename, "%s/%s", dir, stripped_filename);
 
     err = opkg_download(conf, url, pkg->local_filename);
     free(url);
