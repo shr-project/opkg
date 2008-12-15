@@ -131,14 +131,23 @@ opkg_read_config_files (opkg_t *opkg)
   a->multiple_providers = c->multiple_providers;
   a->verbosity = c->verbosity;
 
-  if (a->offline_root) free (a->offline_root);
-  a->offline_root = strdup (c->offline_root);
+  if (c->offline_root)
+  {
+    if (a->offline_root) free (a->offline_root);
+    a->offline_root = strdup (c->offline_root);
+  }
 
-  if (a->offline_root_pre_script_cmd) free (a->offline_root_pre_script_cmd);
-  a->offline_root_pre_script_cmd = strdup (c->offline_root_pre_script_cmd);
+  if (c->offline_root_pre_script_cmd)
+  {
+    if (a->offline_root_pre_script_cmd) free (a->offline_root_pre_script_cmd);
+    a->offline_root_pre_script_cmd = strdup (c->offline_root_pre_script_cmd);
+  }
 
-  if (a->offline_root_post_script_cmd) free (a->offline_root_post_script_cmd);
-  a->offline_root_post_script_cmd = strdup (c->offline_root_post_script_cmd);
+  if (c->offline_root_post_script_cmd)
+  {
+    if (a->offline_root_post_script_cmd) free (a->offline_root_post_script_cmd);
+    a->offline_root_post_script_cmd = strdup (c->offline_root_post_script_cmd);
+  }
 
   /* throw away old opkg_conf and start again */
   opkg_conf_deinit (opkg->conf);
