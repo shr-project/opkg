@@ -23,7 +23,7 @@
 
 pkg_vec_t * pkg_vec_alloc(void)
 {
-    pkg_vec_t * vec = (pkg_vec_t *)malloc(sizeof(pkg_vec_t));
+    pkg_vec_t * vec = (pkg_vec_t *)calloc(1, sizeof(pkg_vec_t));
     if (!vec) {
       fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
       return NULL;
@@ -161,7 +161,7 @@ int pkg_vec_mark_if_matches(pkg_vec_t *vec, const char *pattern)
 abstract_pkg_vec_t * abstract_pkg_vec_alloc(void)
 {
     abstract_pkg_vec_t * vec ; 
-    vec = (abstract_pkg_vec_t *)malloc(sizeof(abstract_pkg_vec_t));
+    vec = (abstract_pkg_vec_t *)calloc(1, sizeof(abstract_pkg_vec_t));
     if (!vec) {
       fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
       return NULL;
