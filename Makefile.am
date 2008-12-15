@@ -16,7 +16,7 @@ intercept_DATA = intercept/ldconfig intercept/depmod intercept/update-modules
 install-data-hook:
 	chmod +x $(DESTDIR)$(datadir)/opkg/intercept/*
 
-EXTRA_DIST = update-alternatives $(intercept_DATA)
+EXTRA_DIST = $(intercept_DATA)
 
 MAINTAINERCLEANFILES= \
 	configure \
