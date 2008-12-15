@@ -61,7 +61,8 @@ old_pkg_to_new (pkg_t *old)
   new->name = sstrdup (old->name);
   new->version = pkg_version_str_alloc (old);
   new->architecture = sstrdup (old->architecture);
-  new->repository = sstrdup (old->src->name);
+  if (old->src)
+    new->repository = sstrdup (old->src->name);
   new->description = sstrdup (old->description);
   new->tags = sstrdup (old->tags);
   new->url = sstrdup (old->url);
