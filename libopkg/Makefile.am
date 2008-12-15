@@ -3,29 +3,7 @@ ALL_CFLAGS=-g -O -Wall -Werror -DHOST_CPU_STR=\"@host_cpu@\" -DBUILD_CPU=@build_
 
 libopkg_includedir=$(includedir)/libopkg
 
-libopkg_include_HEADERS= \
-	args.h \
-	conffile.h \
-	conffile_list.h \
-	config.h \
-	hash_table.h \
-	includes.h \
-	opkg_conf.h \
-	opkg_message.h \
-	opkg_state.h \
-	nv_pair.h \
-	nv_pair_list.h \
-	pkg_depends.h \
-	pkg_dest.h \
-	pkg_dest_list.h \
-	pkg.h \
-	pkg_hash.h \
-	pkg_src.h \
-	pkg_src_list.h \
-	pkg_vec.h \
-	str_list.h \
-	void_list.h \
-	libopkg.h 
+libopkg_include_HEADERS= opkg.h
 
 libopkg_la_LIBADD = $(top_builddir)/libbb/libbb.la $(CURL_LIBS) $(GPGME_LIBS)
 
@@ -35,7 +13,8 @@ libopkg_la_LDFLAGS = -export-symbols-regex "^opkg_.*"
 opkg_core_sources = args.c args.h \
 		    user.c user.h 
 opkg_libcore_sources = args.c args.h libopkg.c libopkg.h\
-		    user.c user.h opkg_state.c opkg_state.h
+		    user.c user.h opkg_state.c opkg_state.h \
+		    opkg.c opkg.h
 opkg_cmd_sources = opkg_cmd.c opkg_cmd.h \
 		   opkg_configure.c opkg_configure.h \
 		   opkg_download.c opkg_download.h \
