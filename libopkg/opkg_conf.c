@@ -63,6 +63,7 @@ int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
 	  { "noaction", OPKG_OPT_TYPE_INT, &conf->noaction },
 	  { "nodeps", OPKG_OPT_TYPE_BOOL, &conf->nodeps },
 	  { "offline_root", OPKG_OPT_TYPE_STRING, &conf->offline_root },
+	  { "offline_root_path", OPKG_OPT_TYPE_STRING, &conf->offline_root_path },
 	  { "offline_root_post_script_cmd", OPKG_OPT_TYPE_STRING, &conf->offline_root_post_script_cmd },
 	  { "offline_root_pre_script_cmd", OPKG_OPT_TYPE_STRING, &conf->offline_root_pre_script_cmd },
 	  { "proxy_passwd", OPKG_OPT_TYPE_STRING, &conf->proxy_passwd },
@@ -266,6 +267,8 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 
      opkg_conf_override_string(&conf->offline_root, 
 			       args->offline_root);
+     opkg_conf_override_string(&conf->offline_root_path, 
+			       args->offline_root_path);
      opkg_conf_override_string(&conf->offline_root_pre_script_cmd, 
 			       args->offline_root_pre_script_cmd);
      opkg_conf_override_string(&conf->offline_root_post_script_cmd, 
@@ -338,6 +341,7 @@ void opkg_conf_deinit(opkg_conf_t *conf)
 	            hash_table_deinit(&conf->obs_file_hash);
 
      opkg_conf_free_string(&conf->offline_root);
+     opkg_conf_free_string(&conf->offline_root_path);
      opkg_conf_free_string(&conf->offline_root_pre_script_cmd);
      opkg_conf_free_string(&conf->offline_root_post_script_cmd);
 

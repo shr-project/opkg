@@ -1,6 +1,10 @@
 # Process this file with autoconf to produce a configure script
 AC_INIT(libopkg/libopkg.c)
-AM_INIT_AUTOMAKE([opkg], [0.1.5])
+
+AC_CONFIG_AUX_DIR([conf])
+AC_CONFIG_MACRO_DIR([m4])
+
+AM_INIT_AUTOMAKE([opkg], [0.1.6])
 AM_CONFIG_HEADER(libopkg/config.h)
 
 AC_CANONICAL_HOST

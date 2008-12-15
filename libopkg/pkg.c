@@ -18,6 +18,7 @@
 #include "includes.h"
 #include <ctype.h>
 #include <string.h>
+#include <stdbool.h>
 #include <errno.h>
 
 #include "pkg.h"
@@ -1494,8 +1495,24 @@ int pkg_run_script(opkg_conf_t *conf, pkg_t *pkg,
 	scripts when running with offline_root mode and/or a dest other
 	than '/'. I've been playing around with some clever chroot
 	tricks and I might come up with something workable. */
+     /*
+      * Attempt to provide a restricted environment for offline operation
+      * Need the following set as a minimum:
+      * OPKG_OFFLINE_ROOT = absolute path to root dir
+      * D                 = absolute path to root dir (for OE generated postinst)
+      * PATH              = something safe (a restricted set of utilities)
+      */
+
+     bool AllowOfflineMode = false;
      if (conf->offline_root) {
 	  setenv("OPKG_OFFLINE_ROOT", conf->offline_root, 1);
+	  setenv("D", conf->offline_root, 1);
+          if (NULL == conf->offline_root_path || '\0' == conf->offline_root_path[0]) {
+            setenv("PATH", "/dev/null", 1);
+          } else {
+            setenv("PATH", conf->offline_root_path, 1);
+            AllowOfflineMode = true;
+          }
      }
 
      setenv("PKG_ROOT",
@@ -1506,7 +1523,7 @@ int pkg_run_script(opkg_conf_t *conf, pkg_t *pkg,
 	  return 0;
      }
 
-     if (conf->offline_root) {
+     if (conf->offline_root && !AllowOfflineMode) {
 	  fprintf(stderr, "(offline root mode: not running %s.%s)\n", pkg->name, script);
 	  free(path);
 	  return 0;

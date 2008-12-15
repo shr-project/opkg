@@ -76,6 +76,7 @@ int args_init(args_t *args)
      args->nodeps = ARGS_DEFAULT_NODEPS;
      args->verbosity = ARGS_DEFAULT_VERBOSITY;
      args->offline_root = ARGS_DEFAULT_OFFLINE_ROOT;
+     args->offline_root_path = ARGS_DEFAULT_OFFLINE_ROOT_PATH;
      args->offline_root_pre_script_cmd = ARGS_DEFAULT_OFFLINE_ROOT_PRE_SCRIPT_CMD;
      args->offline_root_post_script_cmd = ARGS_DEFAULT_OFFLINE_ROOT_POST_SCRIPT_CMD;
      args->multiple_providers = 0;
@@ -88,6 +89,7 @@ int args_init(args_t *args)
 void args_deinit(args_t *args)
 {
      free (args->offline_root);
+     free (args->offline_root_path);
      free (args->offline_root_pre_script_cmd);
      free (args->offline_root_post_script_cmd);
 
@@ -138,6 +140,8 @@ int args_parse(args_t *args, int argc, char *argv[])
 	  {"nodeps", 0, 0, ARGS_OPT_NODEPS},
 	  {"offline", 1, 0, 'o'},
 	  {"offline-root", 1, 0, 'o'},
+	  {"offline-path", 1, 0, 'p'},
+	  {"offline-root-path", 1, 0, 'p'},
 	  {"test", 0, 0, ARGS_OPT_NOACTION},
 	  {"tmp-dir", 1, 0, 't'},
 	  {"verbosity", 2, 0, 'V'},
@@ -146,7 +150,7 @@ int args_parse(args_t *args, int argc, char *argv[])
      };
 
      while (1) {
-	  c = getopt_long_only(argc, argv, "Ad:f:no:t:vV:", long_options, &option_index);
+	  c = getopt_long_only(argc, argv, "Ad:f:no:p:t:vV:", long_options, &option_index);
 	  if (c == -1)
 	       break;
 
@@ -163,6 +167,9 @@ int args_parse(args_t *args, int argc, char *argv[])
 	       break;
 	  case 'o':
 	       args->offline_root = strdup (optarg);
+	       break;
+	  case 'p':
+	       args->offline_root_path = strdup (optarg);
 	       break;
 	  case 'n':
 	       args->noaction = 1;
@@ -294,8 +301,10 @@ void args_usage(char *complaint)
      printf("				directory name in a pinch).\n");
      printf("\t-o <offline_root>	Use <offline_root> as the root directory for\n");
      printf("\t-offline <offline_root>	offline installation of packages.\n");
-    
-     printf("\tForce Options (use when opkg is too smart for its own good):\n");
+     printf("\t-p <path>		Path to utilities for runing postinst\n");
+     printf("\t-offline-path <path>	script in offline mode.\n");
+
+     printf("\nForce Options (use when opkg is too smart for its own good):\n");
      printf("\t-force-depends		Make dependency checks warnings instead of errors\n");
      printf("\t				Install/remove package in spite of failed dependences\n");
      printf("\t-force-defaults		Use default options for questions asked by opkg.\n");

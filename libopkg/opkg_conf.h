@@ -65,6 +65,7 @@ struct opkg_conf
      int force_removal_of_essential_packages;
      int nodeps; /* do not follow dependences */
      char *offline_root;
+     char *offline_root_path;
      char *offline_root_pre_script_cmd;
      char *offline_root_post_script_cmd;
      int query_all;
