@@ -748,7 +748,9 @@ static int opkg_install_check_downgrade(opkg_conf_t *conf, pkg_t *pkg, pkg_t *ol
      }
 }
 
-/* and now the meat... */
+/**
+ *  @brief Really install a pkg_t 
+ */
 int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 {
      int err = 0;

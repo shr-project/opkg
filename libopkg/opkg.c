@@ -387,6 +387,12 @@ opkg_set_option (opkg_t *opkg, char *option, void *value)
 
 }
 
+/**
+ * @brief libopkg API: Install package
+ * @param opkg Then opkg handler
+ * @param package_name The name of package in which is going to install
+ * @param progress_callback The callback function that report the status to caller. 
+ */ 
 int
 opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
 {
