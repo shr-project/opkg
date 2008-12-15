@@ -54,3 +54,9 @@ Things to do for opkg, in a partial order:
 3.b) Clean up out of date comments. That really confusing
 
 4) refactorying opkg_install_pkg into more precise functions
+4.1) refactory upgrade list first
+4.2) Finding canditate is linear search O(P*PN) and is very slow (been called very frequently)
+      P provider
+      PN pkgs in a provider
+     It's can be O(P) if there we use hash table. 
+     It should be refacotry to a faster one. 
