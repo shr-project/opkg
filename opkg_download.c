@@ -43,7 +43,7 @@ curl_progress_func (void* data,
     int i;
     int p = d*100/t;
 
-#ifdef LIBOPKG
+#ifdef OPKG_LIB
     if (opkg_cb_download_progress)
     {
 	opkg_cb_download_progress (p);
