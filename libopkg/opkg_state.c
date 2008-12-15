@@ -45,8 +45,7 @@ opkg_set_current_state (opkg_state_t state, const char *data)
     free (opkg_state_data);
   if (data)
   {
-    opkg_state_data = malloc (strlen (data));
-    strcpy (opkg_state_data, data);
+    opkg_state_data = strdup (data);
   }
   else
   {
