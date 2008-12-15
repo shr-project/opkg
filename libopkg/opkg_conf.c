@@ -138,7 +138,6 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
        return OPKG_CONF_ERR_LOCK;
      }
 
-
      if (args->tmp_dir)
 	  tmp_dir_base = args->tmp_dir;
      else 
@@ -152,27 +151,6 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 		  __FUNCTION__, conf->tmp_dir, strerror(errno));
 	  return OPKG_CONF_ERR_TMP_DIR;
      }
-
-     conf->force_depends = 0;
-     conf->force_defaults = 0;
-     conf->force_overwrite = 0;
-     conf->force_downgrade = 0;
-     conf->force_reinstall = 0;
-     conf->force_space = 0;
-     conf->force_removal_of_essential_packages = 0;
-     conf->force_removal_of_dependent_packages = 0;
-     conf->nodeps = 0;
-     conf->offline_root = NULL;
-     conf->offline_root_pre_script_cmd = NULL;
-     conf->offline_root_post_script_cmd = NULL;
-     conf->verbosity = 1;
-     conf->noaction = 0;
-
-     conf->http_proxy = NULL;
-     conf->ftp_proxy = NULL;
-     conf->no_proxy = NULL;
-     conf->proxy_user = NULL;
-     conf->proxy_passwd = NULL;
 
      pkg_hash_init("pkg-hash", &conf->pkg_hash, OPKG_CONF_DEFAULT_HASH_LEN);
      hash_table_init("file-hash", &conf->file_hash, OPKG_CONF_DEFAULT_HASH_LEN);

@@ -36,43 +36,7 @@ typedef int (*opkg_status_callback)(char *name, int istatus, char *desc,
 typedef int (*opkg_list_callback)(char *name, char *desc, char *version, 
 	pkg_state_status_t status, void *userdata);
 typedef void (*opkg_progress_callback)(int complete, int total, void *userdata);
-
 extern int opkg_op(int argc, char *argv[]); /* opkglib.c */
-extern int opkg_init (opkg_message_callback mcall, 
-                      opkg_response_callback rcall,
-					  args_t * args);
-
-extern int opkg_deinit (args_t *args);
-extern int opkg_packages_list(args_t *args, 
-                              const char *packages, 
-                              opkg_list_callback cblist,
-                              void *userdata);
-extern int opkg_packages_status(args_t *args, 
-                                const char *packages, 
-                                opkg_status_callback cbstatus,
-								void *userdata);
-extern int opkg_packages_info(args_t *args,
-                              const char *packages,
-                              opkg_status_callback cbstatus,
-                              void *userdata);
-extern int opkg_packages_install(args_t *args, const char *name);
-extern int opkg_packages_remove(args_t *args, const char *name, int purge);
-extern int opkg_lists_update(args_t *args);
-extern int opkg_packages_upgrade(args_t *args);
-extern int opkg_packages_download(args_t *args, const char *name);
-extern int opkg_package_files(args_t *args,
-                              const char *name,
-							  opkg_list_callback cblist,
-							  void *userdata);
-extern int opkg_file_search(args_t *args,
-                            const char *file,
-							opkg_list_callback cblist,
-							void *userdata);
-extern int opkg_package_whatdepends(args_t *args, const char *file);
-extern int opkg_package_whatrecommends(args_t *args, const char *file);
-extern int opkg_package_whatprovides(args_t *args, const char *file);
-extern int opkg_package_whatconflicts(args_t *args, const char *file);
-extern int opkg_package_whatreplaces(args_t *args, const char *file);
 
 extern opkg_message_callback opkg_cb_message; /* opkg_message.c */
 extern opkg_response_callback opkg_cb_response; /* user.c */
@@ -80,5 +44,4 @@ extern opkg_status_callback opkg_cb_status;
 extern opkg_list_callback opkg_cb_list;
 extern opkg_download_progress_callback opkg_cb_download_progress; /* opkg_download.c */
 extern opkg_state_changed_callback opkg_cb_state_changed; /* opkg_state.c */
-
 #endif

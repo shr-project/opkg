@@ -72,6 +72,7 @@ static int opkg_whatreplaces_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_compare_versions_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_print_architecture_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_configure_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int pkg_mark_provides(pkg_t *pkg);
 
 /* XXX: CLEANUP: The usage strings should be incorporated into this
    array for easier maintenance */
@@ -300,36 +301,6 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 }
 
 
-/* scan the args passed and cache the local filenames of the packages */
-int opkg_multiple_files_scan(opkg_conf_t *conf, int argc, char **argv)
-{
-     int i;
-     int err;
-    
-     /* 
-      * First scan through package names/urls
-      * For any urls, download the packages and install in database.
-      * For any files, install package info in database.
-      */
-     for (i = 0; i < argc; i ++) {
-	  char *filename = argv [i];
-	  //char *tmp = basename (tmp);
-	  //int tmplen = strlen (tmp);
-
-	  //if (strcmp (tmp + (tmplen - strlen (OPKG_PKG_EXTENSION)), OPKG_PKG_EXTENSION) != 0)
-	  //     continue;
-	  //if (strcmp (tmp + (tmplen - strlen (DPKG_PKG_EXTENSION)), DPKG_PKG_EXTENSION) != 0)
-	  //     continue;
-	
-          opkg_message(conf, OPKG_DEBUG2, "Debug mfs: %s  \n",filename );
-
-	  err = opkg_prepare_url_for_install(conf, filename, &argv[i]);
-	  if (err)
-	    return err;
-     }
-     return 0;
-}
-
 struct opkg_intercept
 {
     char *oldpath;
@@ -338,7 +309,7 @@ struct opkg_intercept
 
 typedef struct opkg_intercept *opkg_intercept_t;
 
-opkg_intercept_t opkg_prep_intercepts(opkg_conf_t *conf)
+static opkg_intercept_t opkg_prep_intercepts(opkg_conf_t *conf)
 {
     opkg_intercept_t ctx;
     char *newpath;
@@ -367,7 +338,7 @@ opkg_intercept_t opkg_prep_intercepts(opkg_conf_t *conf)
     return ctx;
 }
 
-int opkg_finalize_intercepts(opkg_intercept_t ctx)
+static int opkg_finalize_intercepts(opkg_intercept_t ctx)
 {
     char *cmd;
     DIR *dir;
@@ -415,7 +386,7 @@ int opkg_finalize_intercepts(opkg_intercept_t ctx)
    used to end recursion and avoid an infinite loop on graph cycles.
    pkg_vec ordered will finally contain the ordered set of packages.
 */
-int opkg_recurse_pkgs_in_order(opkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *all,
+static int opkg_recurse_pkgs_in_order(opkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *all,
                                pkg_vec_t *visited, pkg_vec_t *ordered)
 {
     int j,k,l,m;
@@ -497,7 +468,7 @@ int opkg_recurse_pkgs_in_order(opkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *all,
 
 }
 
-int opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
+static int opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
 {
     pkg_vec_t *all, *ordered, *visited;
      int i;
@@ -1329,7 +1300,7 @@ static int opkg_what_depends_conflicts_cmd(opkg_conf_t *conf, enum what_field_ty
      return 0;
 }
 
-int pkg_mark_provides(pkg_t *pkg)
+static int pkg_mark_provides(pkg_t *pkg)
 {
      int provides_count = pkg->provides_count;
      abstract_pkg_t **provides = pkg->provides;

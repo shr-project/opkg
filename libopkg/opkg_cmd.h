@@ -31,13 +31,6 @@ typedef struct opkg_cmd opkg_cmd_t;
 opkg_cmd_t *opkg_cmd_find(const char *name);
 int opkg_cmd_exec(opkg_cmd_t *cmd, opkg_conf_t *conf, int argc, 
                   const char **argv, void *userdata);
-int opkg_multiple_files_scan (opkg_conf_t *conf, int argc, char *argv[]);
-/* install any packges with state_want == SW_INSTALL */
-int opkg_install_wanted_packages(opkg_conf_t *conf);
-/* ensure that all dependences are satisfied */
-int opkg_configure_packages(opkg_conf_t *conf, char *pkg_name);
-
-int pkg_mark_provides(pkg_t *pkg);
 void opkg_print_error_list (opkg_conf_t *conf);
 
 #endif
