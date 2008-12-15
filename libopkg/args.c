@@ -149,14 +149,14 @@ int args_parse(args_t *args, int argc, char *argv[])
 	       args->query_all = 1;
 	       break;
 	  case 'd':
-	       args->dest = optarg;
+	       args->dest = strdup (optarg);
 	       break;
 	  case 'f':
 	       free(args->conf_file);
 	       args->conf_file = strdup(optarg);
 	       break;
 	  case 'o':
-	       args->offline_root = optarg;
+	       args->offline_root = strdup (optarg);
 	       break;
 	  case 'n':
 	       args->noaction = 1;
