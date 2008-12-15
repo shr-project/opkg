@@ -138,7 +138,6 @@ int parseVersion(pkg_t *pkg, char *raw)
   }
 
   pkg->revision = "";
-  pkg->familiar_revision = "";
 
   if (!pkg->version)
   {
@@ -157,14 +156,6 @@ int parseVersion(pkg_t *pkg, char *raw)
       pkg->revision = hyphen;
   }
 
-/*
-  fprintf(stderr,"Parsed version: %lu, %s, %s, %s\n",
-	  pkg->epoch,
-	  pkg->version,
-	  pkg->revision,
-	  pkg->familiar_revision);
-*/
-	  
   return 0;
 }
 

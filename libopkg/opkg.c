@@ -235,7 +235,6 @@ opkg_re_read_config_files (opkg_t *opkg)
   a->nodeps = c->nodeps;
   a->noaction = c->noaction;
   a->query_all = c->query_all;
-  a->multiple_providers = c->multiple_providers;
   a->verbosity = c->verbosity;
 
   if (c->offline_root)

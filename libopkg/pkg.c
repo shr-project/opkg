@@ -94,7 +94,6 @@ int pkg_init(pkg_t *pkg)
      pkg->epoch = 0;
      pkg->version = NULL;
      pkg->revision = NULL;
-     pkg->familiar_revision = NULL;
      pkg->dest = NULL;
      pkg->src = NULL;
      pkg->architecture = NULL;
@@ -164,10 +163,9 @@ void pkg_deinit(pkg_t *pkg)
      pkg->epoch = 0;
      free(pkg->version);
      pkg->version = NULL;
-     /* revision and familiar_revision share storage with version, so
+     /* revision shares storage with version, so
 	don't free */
      pkg->revision = NULL;
-     pkg->familiar_revision = NULL;
      /* owned by opkg_conf_t */
      pkg->dest = NULL;
      /* owned by opkg_conf_t */

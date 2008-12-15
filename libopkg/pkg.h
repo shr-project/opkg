@@ -117,7 +117,6 @@ struct pkg
      unsigned long epoch;
      char *version;
      char *revision;
-     char *familiar_revision;
      pkg_src_t *src;
      pkg_dest_t *dest;
      char *architecture;

@@ -53,7 +53,6 @@ int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
 	  { "force_space", OPKG_OPT_TYPE_BOOL, &conf->force_space },
 	  { "ftp_proxy", OPKG_OPT_TYPE_STRING, &conf->ftp_proxy },
 	  { "http_proxy", OPKG_OPT_TYPE_STRING, &conf->http_proxy },
-	  { "multiple_providers", OPKG_OPT_TYPE_BOOL, &conf->multiple_providers },
 	  { "no_proxy", OPKG_OPT_TYPE_STRING, &conf->no_proxy },
 	  { "test", OPKG_OPT_TYPE_INT, &conf->noaction },
 	  { "noaction", OPKG_OPT_TYPE_INT, &conf->noaction },
@@ -145,7 +144,6 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      conf->offline_root = NULL;
      conf->offline_root_pre_script_cmd = NULL;
      conf->offline_root_post_script_cmd = NULL;
-     conf->multiple_providers = 0;
      conf->verbosity = 1;
      conf->noaction = 0;
 
@@ -263,9 +261,6 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      }
      if (args->query_all) {
 	  conf->query_all = 1;
-     }
-     if (args->multiple_providers) {
-	  conf->multiple_providers = 1;
      }
      if (args->verbosity != conf->verbosity) {
 	  conf->verbosity = args->verbosity;
