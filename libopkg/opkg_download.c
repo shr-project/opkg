@@ -121,31 +121,6 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
 	setenv("no_proxy", conf->no_proxy, 1);
     }
 
-    /* XXX: BUG rewrite to use execvp or else busybox's internal wget -Jamey 7/23/2002 */ 
-#if 0
-    sprintf_alloc(&cmd, "wget --passive-ftp %s %s%s %s%s %s -P %s %s",
-		  (conf->http_proxy || conf->ftp_proxy) ? "--proxy=on" : "",
-		  conf->proxy_user ? "--proxy-user=" : "",
-		  conf->proxy_user ? conf->proxy_user : "",
-		  conf->proxy_passwd ? "--proxy-passwd=" : "",
-		  conf->proxy_passwd ? conf->proxy_passwd : "",
-		  conf->verbose_wget ? "" : "-q",
-		  conf->tmp_dir,
-		  src);
-    err = xsystem(cmd);
-    if (err) {
-	if (err != -1) {
-	    opkg_message(conf,OPKG_ERROR, "%s: ERROR: Command failed with return value %d: `%s'\n",
-		    __FUNCTION__, err, cmd);
-	} 
-	unlink(tmp_file_location);
-	free(tmp_file_location);
-	free(src_basec);
-	free(cmd);
-	return EINVAL;
-    }
-    free(cmd);
-#endif
     CURL *curl;
     CURLcode res;
     FILE * file = fopen (tmp_file_location, "w");

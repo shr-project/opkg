@@ -22,10 +22,6 @@
 #include "config.h"
 #endif
 
-#if 0
-#define OPKG_DEBUG_NO_TMP_CLEANUP
-#endif
-
 #include "includes.h"
 #include "opkg_conf.h"
 #include "opkg_message.h"
