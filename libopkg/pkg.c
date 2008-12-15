@@ -1808,6 +1808,8 @@ int pkg_write_filelist(opkg_conf_t *conf, pkg_t *pkg)
      fclose(data.stream);
      free(list_file_name);
 
+     pkg->state_flag &= ~SF_FILELIST_CHANGED;
+
      return err;
 }
 
