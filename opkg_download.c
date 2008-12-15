@@ -60,6 +60,12 @@ curl_progress_func (char* url,
     }
 #endif
 
+    /* skip progress bar if we haven't done started yet
+     * this prevents drawing the progress bar if we receive an error such as
+     * file not found */
+    if (t == 0)
+	return 0;
+
     printf ("\r%3d%% |", p);
     for (i = 1; i < 73; i++)
     {
@@ -166,7 +172,12 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
 	curl_easy_cleanup (curl);
 	fclose (file);
 	if (res)
+	{
+	    long error_code;
+	    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &error_code);
+	    opkg_message(conf, OPKG_ERROR, "Failed to download %s, error %d\n", src, error_code);
 	    return res;
+	}
 
     }
     else
