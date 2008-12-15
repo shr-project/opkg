@@ -750,7 +750,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
 
   for (iter = opkg->conf->pkg_src_list.head; iter; iter = iter->next)
   {
-    char *url, *list_file_name = NULL, *sig_file_name = NULL;
+    char *url, *list_file_name = NULL;
 
     src = iter->data;
 
@@ -808,6 +808,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     free (url);
 
 #ifdef HAVE_GPGME
+    char *sig_file_name;
     /* download detached signitures to verify the package lists */
     /* get the url for the sig file */
     if (src->extra_data)  /* debian style? */
