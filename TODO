@@ -50,3 +50,7 @@ Things to do for opkg, in a partial order:
 3) Cleanup the code
 
 3.a) Start with all comments marked "XXX: CLEANUP"
+
+3.b) Clean up out of date comments. That really confusing
+
+4) refactorying opkg_install_pkg into more precise functions
