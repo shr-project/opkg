@@ -359,9 +359,12 @@ int
 opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
 {
   int err;
-  char *package_id = NULL;
+  char *package_id = NULL, *stripped_filename;
   opkg_progress_data_t pdata;
-  pkg_t *new;
+  pkg_t *old, *new;
+  pkg_vec_t *deps, *all;
+  int i, ndepends;
+  char **unresolved = NULL;
 
   opkg_assert (opkg != NULL);
   opkg_assert (package_name != NULL);
@@ -369,35 +372,109 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   /* ... */
   pkg_info_preinstall_check (opkg->conf);
 
-  new = pkg_hash_fetch_best_installation_candidate_by_name (opkg->conf, package_name);
 
+  /* check to ensure package is not already installed */
+  old = pkg_hash_fetch_installed_by_name(&opkg->conf->pkg_hash, package_name);
+  if (old)
+  {
+    /* XXX: Error: Package is already installed. */
+    return 1;
+  }
+
+  new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, package_name);
   if (!new)
   {
     /* XXX: Error: Could not find package to install */
     return 1;
   }
+
+  new->state_flag |= SF_USER;
+
   pdata.action = OPKG_INSTALL;
   pdata.package = old_pkg_to_new (new);
 
   progress (pdata, 0);
 
-  /* download the package */
-  opkg_prepare_url_for_install (opkg->conf, package_name, &package_id);
+  /* find dependancies and download them */
+  deps = pkg_vec_alloc ();
+  /* this function does not return the original package, so we insert it later */
+  ndepends = pkg_hash_fetch_unsatisfied_dependencies (opkg->conf, new, deps, &unresolved);
+  if (unresolved)
+  {
+    /* XXX: Error: Could not satisfy dependencies */
+    pkg_vec_free (deps);
+    return 1;
+  }
 
-  progress (pdata, 50);
+  /* insert the package we are installing so that we download it */
+  pkg_vec_insert (deps, new);
+
+  /* download package and dependancies */
+  for (i = 0; i < deps->len; i++)
+  {
+    pkg_t *pkg;
+    struct _curl_cb_data cb_data;
+    char *url;
+
+    pkg = deps->pkgs[i];
+    if (pkg->local_filename)
+      continue;
+
+    opkg_package_free (pdata.package);
+    pdata.package = old_pkg_to_new (pkg);
+    pdata.action = OPKG_DOWNLOAD;
+
+    if (pkg->src == NULL)
+    {
+      /* XXX: Error: Package not available from any configured src */
+      return 1;
+    }
+
+    sprintf_alloc(&url, "%s/%s", pkg->src->value, pkg->filename);
+
+    /* Get the filename part, without any directory */
+    stripped_filename = strrchr(pkg->filename, '/');
+    if ( ! stripped_filename )
+        stripped_filename = pkg->filename;
+
+    sprintf_alloc(&pkg->local_filename, "%s/%s", opkg->conf->tmp_dir, stripped_filename);
+
+    cb_data.cb = progress_callback;
+    cb_data.progress_data = &pdata;
+    cb_data.opkg = opkg;
+    cb_data.user_data = user_data;
+    /* 75% of "install" progress is for downloading */
+    cb_data.start_range = 75 * i / deps->len;
+    cb_data.finish_range = 75 * (i + 1) / deps->len;
+
+    err = opkg_download(opkg->conf, url, pkg->local_filename,
+              (curl_progress_func) curl_progress_cb, &cb_data);
+    free(url);
+
+  }
+  pkg_vec_free (deps);
+
+  /* clear depenacy checked marks, left by pkg_hash_fetch_unsatisfied_dependencies */
+  all = pkg_vec_alloc ();
+  pkg_hash_fetch_available (&opkg->conf->pkg_hash, all);
+  for (i = 0; i < all->len; i++)
+  {
+    all->pkgs[i]->parent->dependencies_checked = 0;
+  }
+  pkg_vec_free (all);
+
+
+  /* 75% of "install" progress is for downloading */
+  opkg_package_free (pdata.package);
+  pdata.package = old_pkg_to_new (new);
+  pdata.action = OPKG_INSTALL;
+  progress (pdata, 75);
 
   if (!package_id)
     package_id = strdup (package_name);
 
   /* unpack the package */
-  if (opkg->conf->multiple_providers)
-  {
-    err = opkg_install_multi_by_name (opkg->conf, package_id);
-  }
-  else
-  {
-    err = opkg_install_by_name (opkg->conf, package_id);
-  }
+  err = opkg_install_pkg(opkg->conf, new, 0);
 
   if (err)
     return err;
