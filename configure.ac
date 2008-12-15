@@ -19,8 +19,55 @@ AC_PROG_LN_S
 AM_PROG_INSTALL_STRIP
 AC_PROG_LIBTOOL
 
-# Checks for libraries (hah! opkg is pretty much self-contained)
+# Checks for libraries
+
+# check for libcurl
 PKG_CHECK_MODULES(CURL, libcurl)
+
+
+
+dnl **********
+dnl GPGME
+dnl **********
+
+ok="no"
+min_gpgme_version=1.0.0
+AC_PATH_PROG(GPGME_CONFIG, gpgme-config, "failed")
+if test $GPGME_CONFIG != "failed" ; then
+      AC_MSG_CHECKING(for GPGME - version >= $min_gpgme_version)
+      req_major=`echo $min_gpgme_version | \
+		 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
+      req_minor=`echo $min_gpgme_version | \
+                 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
+      req_micro=`echo $min_gpgme_version | \
+                 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+      gpgme_config_version=`$GPGME_CONFIG --version`
+      major=`echo $gpgme_config_version | \
+                 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
+      minor=`echo $gpgme_config_version | \
+                 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
+      micro=`echo $gpgme_config_version | \
+		 sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
+
+	if test "$major" -eq "$req_major"; then
+	   if test "$minor" -ge "$req_minor"; then
+	     if test "$micro" -ge "$req_micro"; then
+	       ok="yes"
+	     fi
+	   fi
+	fi
+fi
+
+if test $ok = "yes"; then
+  GPGME_CFLAGS=`$GPGME_CONFIG --cflags`
+  GPGME_LIBS=`$GPGME_CONFIG --libs`
+  AC_MSG_RESULT(yes)
+else
+  AC_MSG_ERROR(GPGME $min_gpgme_version or later needed)
+fi
+
+
+
 
 # Checks for header files
 AC_HEADER_DIRENT
