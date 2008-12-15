@@ -79,7 +79,6 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
     char *src_basec = strdup(src);
     char *src_base = basename(src_basec);
     char *tmp_file_location;
-    char *cmd;
 
     opkg_message(conf,OPKG_NOTICE,"Downloading %s\n", src);
 	
@@ -245,7 +244,7 @@ int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **name
 	  if (err)
 	       return err;
 	  pkg->local_filename = strdup(url);
-	  opkg_message(conf, OPKG_DEBUG2, "Package %s provided by hand \(%s\).\n", pkg->name,pkg->local_filename);
+	  opkg_message(conf, OPKG_DEBUG2, "Package %s provided by hand (%s).\n", pkg->name,pkg->local_filename);
           pkg->provided_by_hand = 1;
 
      } else {

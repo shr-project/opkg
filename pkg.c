@@ -1529,7 +1529,7 @@ char *pkg_state_flag_to_str(pkg_state_flag_t sf)
      }
 }
 
-pkg_state_flag_t pkg_state_flag_from_str(char *str)
+pkg_state_flag_t pkg_state_flag_from_str(const char *str)
 {
      int i;
      int sf = SF_OK;
@@ -1569,7 +1569,7 @@ char *pkg_state_status_to_str(pkg_state_status_t ss)
      return strdup("<STATE_STATUS_UNKNOWN>");
 }
 
-pkg_state_status_t pkg_state_status_from_str(char *str)
+pkg_state_status_t pkg_state_status_from_str(const char *str)
 {
      int i;
 

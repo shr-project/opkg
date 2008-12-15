@@ -216,9 +216,9 @@ int pkg_run_script(struct opkg_conf *conf, pkg_t *pkg,
 char *pkg_state_want_to_str(pkg_state_want_t sw);
 pkg_state_want_t pkg_state_want_from_str(char *str);
 char *pkg_state_flag_to_str(pkg_state_flag_t sf);
-pkg_state_flag_t pkg_state_flag_from_str(char *str);
+pkg_state_flag_t pkg_state_flag_from_str(const char *str);
 char *pkg_state_status_to_str(pkg_state_status_t ss);
-pkg_state_status_t pkg_state_status_from_str(char *str);
+pkg_state_status_t pkg_state_status_from_str(const char *str);
 
 int pkg_version_satisfied(pkg_t *it, pkg_t *ref, const char *op);
 
