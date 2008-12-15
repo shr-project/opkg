@@ -1,0 +1,11 @@
+prefix=@prefix@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libipkg
+Description: ipkg package manager library
+Version: @VERSION@
+Libs: -L${libdir} -lipkg
+Cflags: -I${includedir}/libipkg
+

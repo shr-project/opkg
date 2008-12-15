@@ -1,0 +1,108 @@
+
+Things to do for ipkg, in a partial order:
+
+0) Play with configure to check for strdup/strndup ( to works with replace/replace.h stuffs )
+
+1) Fix incompatibilities between current C-based ipkg and original
+sh-based ipkg.
+
+1.a) Fix ipkg.conf options for http_proxy and friends. DONE:
+     http_proxy tested, (ftp_proxy, no_proxy, proxy_user, and
+     proxy_passwd have not been tested).
+
+1.b) Fix export of PKG_ROOT during pkg_run_script. DONE: tested.
+
+1.c) Fix so that a src with file:// is supported. DONE: tested.
+
+1.d) Fix paths in list files. DONE: tested.
+
+1.e) Fix offline_root mode. DONE: tested.
+
+2) Release ipkg as ipkg, (no longer as ipkg-unstable). This depends on
+   all of (1) being DONE. Although I might let this release proceed
+   without offline_root --- only Jamey will complain. ;-)
+
+3) Bug fixes
+
+3.a) fix all code marked "XXX: BUG"
+
+3.b) fix all outstanding ipkg bugzilla bugs
+
+3.c) conffiles support seems broken again. It's prompting on just
+     about every file. It might be because of file names beginning
+     with "///".
+	FIXED the "///" problem, (seemed harmless though), in 0.99.2
+	FIXED a problem with conffiles with -force-reinstall in 0.99.2.
+	This seems to be mostly working now, (I have seen strange
+	prompting on one out of the three ssh conffiles, maybe the
+	postinst script changed it? Hmmm... and something is going on
+	with pcmcia-cs too. Mysterious.)
+
+3.d) Test versioned Depends
+
+3.e) Test Provides.  DONE.
+
+3.f) Make sure Suggests, Recommends, (Enhances?), all work, (I know
+     some of these are not yet implemented)
+
+3.g) Audit all dpkg package fields for both parsing and printing support.
+
+3.h) "ipkg status" and "ipkg info" need to complain about unknown
+  packages. For that matter, these two commands should probably just
+  become aliases to the same functionality.
+
+  Jamey thinks ipkg status should be brief give one line per package, while
+  ipkg info can continue to be verbose. 7/23/2002.
+
+3.i) Currently "ipkg install foo" will upgrade foo if possible. The
+  "Package foo is already installed" check needs to be moved up to
+  avoid this.
+
+  Jamey thinkgs that "ipkg install foo" should upgrade foo.  7/23/2002.
+
+4) Implement new features
+
+4.a) start with all "XXX: FEATURE" comments
+
+4.b) implement all accepted ipkg bugzilla feature requests, (also
+     check old post "Subject: Reinventing ipkg" to see if we forgot
+     any of the good ideas we had once upon a time)
+
+4.c) ipkg remove needs to (prompt first) then remove packages for
+     which the dependencies will no longer be met. DONE. 7/19/2002.
+
+4.d) Add support for:
+	ipkg install foo from some-feed
+	ipkg install foo-0.4.3
+	ipkg install foo-latest # Only needed if we add a feed-order-priority option
+     or something like that.
+
+4.e) Orphaned dependency management (what is this -Jamey 7/23/2002)
+
+4.f) Add code for HTTP GET to eliminate wget dependence, (see
+     apps/urlget for code). We should probably still keep the wget
+     call as a backup.  
+
+     -- use busybox's internal wget -jamey 7/23/2002
+
+4.g) Experiment with making a small statically linked binary. Can we
+     eliminate some library calls, (glob, regcomp)? Can we get
+     something like uclibc to work well?
+
+4.h) Add support for a deb-src in /etc/ipkg.conf. (ARGH! Name clash
+     alert! In apt-land, deb-src means something very different than
+     what I would mean here. Hrm... Maybe src-deb would be cleaner? )
+
+     (What is this?  Jamey 7/23/2002) 
+
+4.i) Figure out a clever chroot mechanism for running maintainer scripts in
+     offline_root mode.
+
+4.j) Implement ipkg history mechanism, with undo and redo?  Keep track of
+     packages removed/installed by each call to ipkg.
+
+5) release ipkg-1.0.0
+
+6) Cleanup the code
+
+6.a) Start with all comments marked "XXX: CLEANUP"
