@@ -26,11 +26,18 @@ opkg_message (opkg_conf_t * conf, message_level_t level, char *fmt, ...)
 	va_list ap;
 	char ts[256];
 
+	va_start (ap, fmt);
+	vsnprintf (ts,256,fmt, ap);
+	va_end (ap);
+
 	if (opkg_cb_message)
 	{
-		va_start (ap, fmt);
-		vsnprintf (ts,256,fmt, ap);
-		va_end (ap);
 		opkg_cb_message(conf,level,ts);
+	}
+	else
+	{
+	  char *level_s[5] = {"ERROR", "NOTICE", "INFO", "DEBUG", "DEBUG2"};
+	  if (level <= conf->verbosity)
+	    printf ("opkg-%s: %s", level_s[level], ts);
 	}
 }
