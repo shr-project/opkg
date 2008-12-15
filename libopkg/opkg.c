@@ -29,7 +29,7 @@
 #include "sprintf_alloc.h"
 #include "file_util.h"
 
-#include "libbb.h"
+#include <libbb/libbb.h>
 
 struct _opkg_t
 {
