@@ -144,6 +144,14 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
 	curl_easy_setopt (curl, CURLOPT_WRITEDATA, file);
 	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
 	curl_easy_setopt (curl, CURLOPT_PROGRESSFUNCTION, curl_progress_func);
+	if (conf->http_proxy || conf->ftp_proxy)
+	{
+	    char *userpwd;
+	    sprintf_alloc (&userpwd, "%s:%s", conf->proxy_user,
+		    conf->proxy_passwd);
+	    curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, userpwd);
+	    free (userpwd);
+	}
 	res = curl_easy_perform (curl);
 	curl_easy_cleanup (curl);
 	fclose (file);
