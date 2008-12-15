@@ -241,87 +241,116 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 
     for (lines = *raw; *lines; lines++) {
 	/*	fprintf(stderr, "PARSING %s\n", *lines);*/
-	if(isGenericFieldType("Package:", *lines)) 
-	    pkg->name = parseGenericFieldType("Package", *lines);
-	else if(isGenericFieldType("Architecture:", *lines))
-	    pkg->architecture = parseGenericFieldType("Architecture", *lines);
-	else if(isGenericFieldType("Filename:", *lines))
-	    pkg->filename = parseGenericFieldType("Filename", *lines);
-	else if(isGenericFieldType("Section:", *lines))
-	    pkg->section = parseGenericFieldType("Section", *lines);
-	else if(isGenericFieldType("MD5sum:", *lines))
-	    pkg->md5sum = parseGenericFieldType("MD5sum", *lines);
-	/* The old opkg wrote out status files with the wrong case for MD5sum,
-	   let's parse it either way */
-	else if(isGenericFieldType("MD5Sum:", *lines))
-	    pkg->md5sum = parseGenericFieldType("MD5Sum", *lines);
-	else if(isGenericFieldType("Size:", *lines))
-	    pkg->size = parseGenericFieldType("Size", *lines);
-	else if(isGenericFieldType("Source:", *lines))
-	    pkg->source = parseGenericFieldType("Source", *lines);
-	else if(isGenericFieldType("Installed-Size:", *lines))
-	    pkg->installed_size = parseGenericFieldType("Installed-Size", *lines);
-	else if(isGenericFieldType("Installed-Time:", *lines)) {
-	     char *time_str = parseGenericFieldType("Installed-Time", *lines);
-	     pkg->installed_time = strtoul(time_str, NULL, 0);
-	} else if(isGenericFieldType("Priority:", *lines))
-	    pkg->priority = parseGenericFieldType("Priority", *lines);
-	else if(isGenericFieldType("Essential:", *lines)) {
-	    char *essential_value;
-	    essential_value = parseGenericFieldType("Essential", *lines);
-	    if (strcmp(essential_value, "yes") == 0) {
-		pkg->essential = 1;
-	    }
-	    free(essential_value);
-	}
-	else if(isGenericFieldType("Status", *lines))
-	    parseStatus(pkg, *lines);
-	else if(isGenericFieldType("Version", *lines))
-	    parseVersion(pkg, *lines);
-	else if(isGenericFieldType("Maintainer", *lines))
-	    pkg->maintainer = parseGenericFieldType("Maintainer", *lines);
-	else if(isGenericFieldType("Conffiles", *lines)){
-	    parseConffiles(pkg, *lines);
-	    reading_conffiles = 1;
-	}
-	else if(isGenericFieldType("Description", *lines)) {
-	    pkg->description = parseGenericFieldType("Description", *lines);
-	    reading_conffiles = 0;
-	    reading_description = 1;
-	}
-
-	else if(isGenericFieldType("Provides", *lines)){
+	switch (**lines) {
+	case 'P':
+	    if(isGenericFieldType("Package:", *lines)) 
+		pkg->name = parseGenericFieldType("Package", *lines);
+	    else if(isGenericFieldType("Priority:", *lines))
+		pkg->priority = parseGenericFieldType("Priority", *lines);
+	    else if(isGenericFieldType("Provides", *lines)){
 /* Here we add the internal_use to align the off by one problem between provides_str and provides */
-            provide = (char * ) malloc(strlen(*lines)+ 35 ); /* Preparing the space for the new opkg_internal_use_only */
-            if ( alterProvidesLine(*lines,provide) ){
-               return EINVAL;
-            }
-	    pkg->provides_str = parseDependsString( provide, &pkg->provides_count);
+        	provide = (char * ) malloc(strlen(*lines)+ 35 ); /* Preparing the space for the new opkg_internal_use_only */
+        	if ( alterProvidesLine(*lines,provide) ){
+        	    return EINVAL;
+        	}
+		pkg->provides_str = parseDependsString( provide, &pkg->provides_count);
 /* Let's try to hack a bit here.
    The idea is that if a package has no Provides, we would add one generic, to permit the check of dependencies
    in alot of other places. We will remove it before writing down the status database */
-            pkg_false_provides=0;
-            free(provide);
-        } 
-
-	else if(isGenericFieldType("Depends", *lines))
-	    pkg->depends_str = parseDependsString(*lines, &pkg->depends_count);
-	else if(isGenericFieldType("Pre-Depends", *lines))
-	    pkg->pre_depends_str = parseDependsString(*lines, &pkg->pre_depends_count);
-	else if(isGenericFieldType("Recommends", *lines))
-	    pkg->recommends_str = parseDependsString(*lines, &pkg->recommends_count);
-	else if(isGenericFieldType("Suggests", *lines))
-	    pkg->suggests_str = parseDependsString(*lines, &pkg->suggests_count);
-	/* Abhaya: support for conflicts */
-	else if(isGenericFieldType("Conflicts", *lines))
-	    pkg->conflicts_str = parseDependsString(*lines, &pkg->conflicts_count);
-	else if(isGenericFieldType("Replaces", *lines))
-	    pkg->replaces_str = parseDependsString(*lines, &pkg->replaces_count);
-	else if(line_is_blank(*lines)) {
-	    lines++;
+        	pkg_false_provides=0;
+        	free(provide);
+    	    } 
+	    else if(isGenericFieldType("Pre-Depends", *lines))
+		pkg->pre_depends_str = parseDependsString(*lines, &pkg->pre_depends_count);
 	    break;
-	}
-	else if(**lines == ' '){
+
+	case 'A':
+	    if(isGenericFieldType("Architecture:", *lines))
+		pkg->architecture = parseGenericFieldType("Architecture", *lines);
+	    break;
+
+	case 'F':
+	    if(isGenericFieldType("Filename:", *lines))
+		pkg->filename = parseGenericFieldType("Filename", *lines);
+	    break;
+
+	case 'S':
+	    if(isGenericFieldType("Section:", *lines))
+		pkg->section = parseGenericFieldType("Section", *lines);
+	    else if(isGenericFieldType("Size:", *lines))
+		pkg->size = parseGenericFieldType("Size", *lines);
+	    else if(isGenericFieldType("Source:", *lines))
+		pkg->source = parseGenericFieldType("Source", *lines);
+	    else if(isGenericFieldType("Status", *lines))
+		parseStatus(pkg, *lines);
+	    else if(isGenericFieldType("Suggests", *lines))
+		pkg->suggests_str = parseDependsString(*lines, &pkg->suggests_count);
+	    break;
+
+	case 'M':
+	    if(isGenericFieldType("MD5sum:", *lines))
+		pkg->md5sum = parseGenericFieldType("MD5sum", *lines);
+	    /* The old opkg wrote out status files with the wrong case for MD5sum,
+		let's parse it either way */
+	    else if(isGenericFieldType("MD5Sum:", *lines))
+		pkg->md5sum = parseGenericFieldType("MD5Sum", *lines);
+	    else if(isGenericFieldType("Maintainer", *lines))
+		pkg->maintainer = parseGenericFieldType("Maintainer", *lines);
+	    break;
+
+	case 'I':
+	    if(isGenericFieldType("Installed-Size:", *lines))
+		pkg->installed_size = parseGenericFieldType("Installed-Size", *lines);
+	    else if(isGenericFieldType("Installed-Time:", *lines)) {
+		char *time_str = parseGenericFieldType("Installed-Time", *lines);
+		pkg->installed_time = strtoul(time_str, NULL, 0);
+	    }	    
+	    break;
+
+	case 'E':
+	    if(isGenericFieldType("Essential:", *lines)) {
+		char *essential_value;
+		essential_value = parseGenericFieldType("Essential", *lines);
+		if (strcmp(essential_value, "yes") == 0) {
+		    pkg->essential = 1;
+		}
+		free(essential_value);
+	    }
+	    break;
+
+	case 'V':
+	    if(isGenericFieldType("Version", *lines))
+		parseVersion(pkg, *lines);
+	    break;
+
+	case 'C':
+	    if(isGenericFieldType("Conffiles", *lines)){
+		parseConffiles(pkg, *lines);
+		reading_conffiles = 1;
+	    }
+	    else if(isGenericFieldType("Conflicts", *lines))
+		pkg->conflicts_str = parseDependsString(*lines, &pkg->conflicts_count);
+	    break;
+
+	case 'D':
+	    if(isGenericFieldType("Description", *lines)) {
+		pkg->description = parseGenericFieldType("Description", *lines);
+		reading_conffiles = 0;
+		reading_description = 1;
+	    }
+	    else if(isGenericFieldType("Depends", *lines))
+		pkg->depends_str = parseDependsString(*lines, &pkg->depends_count);
+	    break;
+
+	case 'R':
+	    if(isGenericFieldType("Recommends", *lines))
+	        pkg->recommends_str = parseDependsString(*lines, &pkg->recommends_count);
+	    else if(isGenericFieldType("Replaces", *lines))
+		pkg->replaces_str = parseDependsString(*lines, &pkg->replaces_count);
+	    
+	    break;
+
+	case ' ':
 	    if(reading_description) {
 		/* we already know it's not blank, so the rest of description */      
 		pkg->description = realloc(pkg->description,
@@ -332,8 +361,18 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 	    }
 	    else if(reading_conffiles)
 		parseConffiles(pkg, *lines);
+		
+	    break;
+
+	default:
+	    if(line_is_blank(*lines)) {
+		lines++;
+		goto out;
+	    }
 	}
     }
+out:;
+    
     *raw = lines;
 /* If the ipk has not a Provides line, we insert our false line */ 
     if ( pkg_false_provides==1)
