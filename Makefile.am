@@ -1,4 +1,4 @@
-SUBDIRS =  etc familiar libbb libopkg tests src
+SUBDIRS = familiar libbb libopkg tests src
 
 HOST_CPU=@host_cpu@
 BUILD_CPU=@build_cpu@

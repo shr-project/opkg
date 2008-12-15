@@ -131,7 +131,6 @@ AC_OUTPUT(
     libopkg/Makefile
     tests/Makefile
     src/Makefile
-    etc/Makefile
     familiar/Makefile
     familiar/control
     familiar/control-unstripped
