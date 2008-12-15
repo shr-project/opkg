@@ -257,6 +257,7 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 	  }
 	  free(url);
 
+#ifdef HAVE_GPGME
 	  /* download detached signitures to verify the package lists */
 	  /* get the url for the sig file */
 	  if (src->extra_data)	/* debian style? */
@@ -284,8 +285,11 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 	  }
 	  unlink (tmp_file_name);
 	  free (tmp_file_name);
-
 	  free (url);
+#else
+	  opkg_message (conf, OPKG_NOTICE, "Signiture check for %s skipped "
+              "because GPG support was not enabled in this build\n", src->name);
+#endif
 	  free(list_file_name);
      }
      rmdir (tmp);
