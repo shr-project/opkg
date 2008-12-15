@@ -20,6 +20,7 @@ AM_PROG_INSTALL_STRIP
 AC_PROG_LIBTOOL
 
 # Checks for libraries (hah! ipkg is pretty much self-contained)
+PKG_CHECK_MODULES(CURL, libcurl)
 
 # Checks for header files
 AC_HEADER_DIRENT

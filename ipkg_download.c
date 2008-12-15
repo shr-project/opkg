@@ -1,3 +1,4 @@
+/* vi: set noexpandtab sw=4 sts=4: */
 /* ipkg_download.c - the itsy package management system
 
    Carl D. Worth
@@ -14,6 +15,8 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
 */
+
+#include <curl/curl.h>
 
 #include "ipkg.h"
 #include "ipkg_download.h"
@@ -69,6 +72,7 @@ int ipkg_download(ipkg_conf_t *conf, const char *src, const char *dest_file_name
     }
 
     /* XXX: BUG rewrite to use execvp or else busybox's internal wget -Jamey 7/23/2002 */ 
+#if 0
     sprintf_alloc(&cmd, "wget --passive-ftp %s %s%s %s%s %s -P %s %s",
 		  (conf->http_proxy || conf->ftp_proxy) ? "--proxy=on" : "",
 		  conf->proxy_user ? "--proxy-user=" : "",
@@ -91,6 +95,23 @@ int ipkg_download(ipkg_conf_t *conf, const char *src, const char *dest_file_name
 	return EINVAL;
     }
     free(cmd);
+#endif
+    CURL *curl;
+    CURLcode res;
+    FILE * file = fopen (tmp_file_location, "w");
+    
+    curl = curl_easy_init ();
+    if (curl)
+    {
+	curl_easy_setopt (curl, CURLOPT_URL, src);
+	curl_easy_setopt (curl, CURLOPT_WRITEDATA, file);
+	res = curl_easy_perform (curl);
+	curl_easy_cleanup (curl);
+	fclose (file);
+
+    }
+    else
+	return -1;
 
     err = file_move(tmp_file_location, dest_file_name);
 

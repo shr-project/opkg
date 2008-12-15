@@ -52,7 +52,7 @@ libipkg_include_HEADERS= \
 #\ replace/replace.h
 
 #libipkg_la_LIBADD = libbb/libbb.la replace/libreplace.a
-libipkg_la_LIBADD = libbb/libbb.la 
+libipkg_la_LIBADD = libbb/libbb.la $(CURL_LIBS)
 
 ipkg_core_sources = args.c args.h ipkg.c \
 		    user.c user.h 
@@ -97,9 +97,9 @@ libipkg_la_SOURCES = $(ipkg_libcore_sources) $(ipkg_cmd_sources) $(ipkg_db_sourc
 
 ipkg_cl_SOURCES = ipkg-frontend.c
 
-libipkg_la_CFLAGS = -DIPKG_LIB $(ALL_CFLAGS)
+libipkg_la_CFLAGS = -DIPKG_LIB $(ALL_CFLAGS)  $(CURL_CFLAGS)
 
-ipkg_CFLAGS = $(ALL_CFLAGS)
+ipkg_CFLAGS = $(ALL_CFLAGS) $(CURL_CFLAGS)
 
 ipkg_cl_CFLAGS = -DIPKG_LIB $(ALL_CFLAGS)
 
