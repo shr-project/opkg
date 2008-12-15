@@ -402,9 +402,99 @@ int opkg_finalize_intercepts(opkg_intercept_t ctx)
     return err;
 }
 
+/* For package pkg do the following: If it is already visited, return. If not,
+   add it in visited list and recurse to its deps. Finally, add it to ordered 
+   list.
+   pkg_vec all contains all available packages in repos.
+   pkg_vec visited contains packages already visited by this function, and is 
+   used to end recursion and avoid an infinite loop on graph cycles.
+   pkg_vec ordered will finally contain the ordered set of packages.
+*/
+int opkg_recurse_pkgs_in_order(opkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *all,
+                               pkg_vec_t *visited, pkg_vec_t *ordered)
+{
+    int j,k,l,m;
+    int count;
+    pkg_t *dep;
+    compound_depend_t * compound_depend;
+    depend_t ** possible_satisfiers;
+    abstract_pkg_t *abpkg;
+    abstract_pkg_t **dependents;
+
+    /* If it's just an available package, that is, not installed and not even
+       unpacked, skip it */
+    /* XXX: This is probably an overkill, since a state_status != SS_UNPACKED 
+       would do here. However, if there is an intermediate node (pkg) that is 
+       configured and installed between two unpacked packages, the latter 
+       won't be properly reordered, unless all installed/unpacked pkgs are
+       checked */
+    if (pkg->state_status == SS_NOT_INSTALLED) 
+        return 0;
+
+    /* If the  package has already been visited (by this function), skip it */
+    for(j = 0; j < visited->len; j++) 
+        if ( ! strcmp(visited->pkgs[j]->name, pkg->name)) {
+            opkg_message(conf, OPKG_INFO,
+                         "  pkg: %s already visited\n", pkg->name);
+            return 0;
+        }
+    
+    pkg_vec_insert(visited, pkg);
+
+    count = pkg->pre_depends_count + pkg->depends_count + \
+        pkg->recommends_count + pkg->suggests_count;
+
+    opkg_message(conf, OPKG_INFO,
+                 "  pkg: %s\n", pkg->name);
+
+    /* Iterate over all the dependencies of pkg. For each one, find a package 
+       that is either installed or unpacked and satisfies this dependency.
+       (there should only be one such package per dependency installed or 
+       unpacked). Then recurse to the dependency package */
+    for (j=0; j < count ; j++) {
+        compound_depend = &pkg->depends[j];
+        possible_satisfiers = compound_depend->possibilities;
+        for (k=0; k < compound_depend->possibility_count ; k++) {
+            abpkg = possible_satisfiers[k]->pkg;
+            dependents = abpkg->provided_by->pkgs;
+            l = 0;
+            if (dependents != NULL)
+                while (dependents [l] != NULL && l < abpkg->provided_by->len) {
+                    opkg_message(conf, OPKG_INFO,
+                                 "  Descending on pkg: %s\n", 
+                                 dependents [l]->name);
+    
+                    /* find whether dependent l is installed or unpacked,
+                     * and then find which package in the list satisfies it */
+                    for(m = 0; m < all->len; m++) {
+                        dep = all->pkgs[m];
+                        if ( dep->state_status != SS_NOT_INSTALLED)
+                            if ( ! strcmp(dep->name, dependents[l]->name)) {
+                                opkg_recurse_pkgs_in_order(conf, dep, all, 
+                                                           visited, ordered);
+                                /* Stop the outer loop */
+                                l = abpkg->provided_by->len;
+                                /* break from the inner loop */
+                                break;
+                            }
+                    }
+                    l++;
+                }
+        }
+    }
+
+    /* When all recursions from this node down, are over, and all 
+       dependencies have been added in proper order in the ordered array, add
+       also the package pkg to ordered array */
+    pkg_vec_insert(ordered, pkg);
+
+    return 0;
+
+}
+
 int opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
 {
-     pkg_vec_t *all;
+    pkg_vec_t *all, *ordered, *visited;
      int i;
      pkg_t *pkg;
      opkg_intercept_t ic;
@@ -415,7 +505,20 @@ int opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
      fflush( stdout );
 
      all = pkg_vec_alloc();
+
      pkg_hash_fetch_available(&conf->pkg_hash, all);
+
+     /* Reorder pkgs in order to be configured according to the Depends: tag
+        order */
+     opkg_message(conf, OPKG_INFO,
+                  "Reordering packages before configuring them...\n");
+     ordered = pkg_vec_alloc();
+     visited = pkg_vec_alloc();
+     for(i = 0; i < all->len; i++) {
+         pkg = all->pkgs[i];
+         opkg_recurse_pkgs_in_order(conf, pkg, all, visited, ordered);
+     }
+
 
      ic = opkg_prep_intercepts (conf);
     
@@ -446,6 +549,9 @@ int opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
 	 err = r;
 
      pkg_vec_free(all);
+     pkg_vec_free(ordered);
+     pkg_vec_free(visited);
+
      return err;
 }
 
