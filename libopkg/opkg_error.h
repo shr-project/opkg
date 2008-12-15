@@ -1,8 +1,6 @@
-/* opkg.h - the itsy package management system
+/* opkg_error.h - the opkg package management system
 
-   Carl D. Worth
-
-   Copyright (C) 2001 University of Southern California
+   Copyright (C) 2008 OpenMoko Inc
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -15,19 +13,24 @@
    General Public License for more details.
 */
 
-#ifndef OPKG_H
-#define OPKG_H
+#ifndef OPKG_ERROR_H
+#define OPKG_ERROR_H
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+enum opkg_error {
+    OPKG_SUCCESS = 0,
+    OPKG_PKG_DEPS_UNSATISFIED,
+    OPKG_PKG_IS_ESSENTIAL,
+    OPKG_PKG_HAS_DEPENDENTS,
+    OPKG_PKG_HAS_NO_CANDIDATE
+};
+typedef enum opkg_error opkg_error_t;
 
-#include "includes.h"
-#include "opkg_conf.h"
-#include "opkg_message.h"
 
-#include "opkg_error.h"
-#include "opkg_defines.h"
-#include "opkg_state.h"
+struct errlist {
+    char * errmsg;
+    struct errlist * next;
+} ;
 
-#endif
+struct errlist* error_list;
+
+#endif /* OPKG_ERROR_H */

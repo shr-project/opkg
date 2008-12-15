@@ -20,6 +20,8 @@
 
 #include <opkg_message.h>
 
+extern int opkg_state_changed;
+
 typedef enum _opkg_state {
   OPKG_STATE_NONE,
   OPKG_STATE_DOWNLOADING_PKG,
