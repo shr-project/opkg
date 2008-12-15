@@ -4,6 +4,17 @@
 
 opkg_package_t *find_pkg = NULL;
 
+char *errors[8] = {
+  "No Error",
+  "Unknown Eror",
+  "Download failed",
+  "Dependancies failed",
+  "Package already installed",
+  "Package not available",
+  "Package not found",
+  "Package not installed"
+};
+
 void
 progress_callback (opkg_t *opkg, const opkg_progress_data_t *progress, void *data)
 {
@@ -80,7 +91,7 @@ main (int argc, char **argv)
   opkg_re_read_config_files (opkg);
 
   err = opkg_update_package_lists (opkg, progress_callback, "Updating...");
-  printf ("\nopkg_update_package_lists returned %d\n", err);
+  printf ("\nopkg_update_package_lists returned %d (%s)\n", err, errors[err]);
 
   opkg_list_packages (opkg, package_list_callback, NULL);
   printf ("\n");
@@ -102,19 +113,19 @@ main (int argc, char **argv)
     printf ("No package available to test find_package.\n");
 
   err = opkg_install_package (opkg, "aspell", progress_callback, "Installing...");
-  printf ("\nopkg_install_package returned %d\n", err);
+  printf ("\nopkg_install_package returned %d (%s)\n", err, errors[err]);
 
   err = opkg_upgrade_package (opkg, "aspell", progress_callback, "Upgrading...");
-  printf ("\nopkg_upgrade_package returned %d\n", err);
+  printf ("\nopkg_upgrade_package returned %d (%s)\n", err, errors[err]);
 
   err = opkg_remove_package (opkg, "aspell", progress_callback, "Removing...");
-  printf ("\nopkg_remove_package returned %d\n", err);
+  printf ("\nopkg_remove_package returned %d (%s)\n", err, errors[err]);
 
   printf ("Listing upgradable packages...\n");
   opkg_list_upgradable_packages (opkg, package_list_upgradable_callback, NULL);
 
   err = opkg_upgrade_all (opkg, progress_callback, "Upgrading all...");
-  printf ("\nopkg_upgrade_all returned %d\n", err);
+  printf ("\nopkg_upgrade_all returned %d (%s)\n", err, errors[err]);
 
   opkg_free (opkg);
 
