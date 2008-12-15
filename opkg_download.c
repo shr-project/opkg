@@ -201,12 +201,17 @@ int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir)
 {
     int err;
     char *url;
+    char *pkgid;
 
     if (pkg->src == NULL) {
 	opkg_message(conf,OPKG_ERROR, "ERROR: Package %s (parent %s) is not available from any configured src.\n",
 		pkg->name, pkg->parent->name);
 	return -1;
     }
+
+    sprintf_alloc (&pkgid, "%s;%s;%s;", pkg->name, pkg->version, pkg->architecture);
+    opkg_set_current_state (OPKG_STATE_DOWNLOADING_PKG, pkgid);
+    free (pkgid);
 
     sprintf_alloc(&url, "%s/%s", pkg->src->value, pkg->filename);
 
@@ -219,6 +224,7 @@ int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir)
     err = opkg_download(conf, url, pkg->local_filename);
     free(url);
 
+    opkg_set_current_state (OPKG_STATE_NONE, NULL);
     return err;
 }
 

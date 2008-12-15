@@ -15,7 +15,8 @@
    General Public License for more details.
 */
 
-
+#ifndef OPKG_STATE_H
+#define OPKG_STATE_H
 
 typedef enum _opkg_state {
   OPKG_STATE_NONE,
@@ -25,6 +26,7 @@ typedef enum _opkg_state {
   OPKG_STATE_UPGRADING_PKG,
   OPKG_STATE_REMOVING_PKG,
   OPKG_STATE_DOWNLOADING_REPOSITORY,
-  OPKG_STATE_VERIFYING_REPOSITORY_SIGNITURE
+  OPKG_STATE_VERIFYING_REPOSITORY_SIGNATURE
 } opkg_state_t;
 
+#endif /* OPKG_STATE_H */

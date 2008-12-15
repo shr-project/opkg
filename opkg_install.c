@@ -34,6 +34,7 @@ typedef void (*sighandler_t)(int);
 
 #include "opkg_utils.h"
 #include "opkg_message.h"
+#include "opkg_state.h"
 
 #include "sprintf_alloc.h"
 #include "file_util.h"
@@ -751,6 +752,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      abstract_pkg_t *ab_pkg = NULL;
      int old_state_flag;
      char* file_md5;
+     char *pkgid;
 
     
      if ( from_upgrade ) 
@@ -850,6 +852,10 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 
      replacees = pkg_vec_alloc();
      pkg_get_installed_replacees(conf, pkg, replacees);
+
+     sprintf_alloc (&pkgid, "%s;%s;%s;", pkg->name, pkg->version, pkg->architecture);
+     opkg_set_current_state (OPKG_STATE_INSTALLING_PKG, pkgid);
+     free (pkgid);
 
      /* this next section we do with SIGINT blocked to prevent inconsistency between opkg database and filesystem */
      {
@@ -991,6 +997,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 
 	  return err;
      }
+     opkg_set_current_state (OPKG_STATE_NONE, NULL);
 }
 
 static int prerm_upgrade_old_pkg(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)

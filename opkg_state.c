@@ -16,6 +16,22 @@
 */
 
 #include "libopkg.h"
+#include "opkg_state.h"
+
+
+static char *state_strings[] =
+{
+  "None",
+  "Downloading Package",
+  "Installing Package",
+  "Configuring Package",
+  "Upgrading Package",
+  "Removing Package",
+  "Downloading Repository",
+  "Verifying Repository Signature"
+};
+
+
 
 opkg_state_changed_callback opkg_cb_state;
 
@@ -27,10 +43,19 @@ opkg_set_current_state (opkg_state_t state, const char *data)
 {
   if (opkg_state_data)
     free (opkg_state_data);
-  opkg_state_data = malloc (strlen (data));
-  strcpy (opkg_state_data, data);
+  if (data)
+  {
+    opkg_state_data = malloc (strlen (data));
+    strcpy (opkg_state_data, data);
+  }
+  else
+  {
+    opkg_state_data = NULL;
+  }
 
   opkg_state = state;
+
+  printf ("opkg state set to %s: %s\n", state_strings[state], data);
 }
 
 void
