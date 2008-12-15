@@ -812,7 +812,7 @@ static int opkg_info_status_cmd(opkg_conf_t *conf, int argc, char **argv, int in
      char *pkg_name = NULL;
      char **pkg_fields = NULL;
      int n_fields = 0;
-     char *buff ; // = (char *)malloc(1);
+     char *buff ; 
 
      if (argc > 0) {
 	  pkg_name = argv[0];

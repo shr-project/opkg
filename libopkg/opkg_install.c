@@ -45,7 +45,6 @@ typedef void (*sighandler_t)(int);
 #include "xsystem.h"
 #include "user.h"
 
-int satisfy_dependencies_for(opkg_conf_t *conf, pkg_t *pkg);
 static int verify_pkg_installable(opkg_conf_t *conf, pkg_t *pkg);
 static int unpack_pkg_control_files(opkg_conf_t *conf, pkg_t *pkg);
 
@@ -399,7 +398,6 @@ int opkg_satisfy_all_dependences(opkg_conf_t *conf)
      return 0;
 }
 
-
 
 static int check_conflicts_for(opkg_conf_t *conf, pkg_t *pkg)
 {
