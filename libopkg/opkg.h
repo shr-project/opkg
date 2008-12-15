@@ -50,7 +50,6 @@ struct _opkg_progress_data_t
 };
 
 opkg_package_t* opkg_package_new ();
-opkg_package_t* opkg_package_new_with_values (const char *name, const char *version, const char *arch, const char *desc, const char *tags, const char *url, int size, int installed);
 void opkg_package_free (opkg_package_t *package);
 
 opkg_t* opkg_new ();
@@ -67,3 +66,4 @@ int opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t callback, 
 
 int opkg_list_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_data);
 int opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_data);
+opkg_package_t* opkg_find_package (opkg_t *opkg, const char *name, const char *version, const char *architecture, const char *repository);

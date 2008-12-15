@@ -45,10 +45,32 @@ struct _opkg_t
             __FILE__, __LINE__, __PRETTY_FUNCTION__, # expr); abort (); }
 
 #define progress(d, p) d.percentage = p; if (progress_callback) progress_callback (opkg, &d, user_data);
-#define OLD_PKG_TO_NEW(pkg) opkg_package_new_with_values (pkg->name, pkg->version, pkg->architecture, pkg->description, pkg->tags, pkg->url, (pkg->size ? atoi (pkg->size) : 0), (pkg->state_status == SS_INSTALLED));
+#define SSTRCMP(x,y) (x && y) ? strcmp (x, y) : 0
 
 /** Private Functions ***/
 
+static opkg_package_t*
+old_pkg_to_new (pkg_t *old)
+{
+  opkg_package_t *new;
+
+  new = opkg_package_new ();
+
+#define sstrdup(x) (x) ? strdup (x) : NULL;
+
+  new->name = sstrdup (old->name);
+  new->version = pkg_version_str_alloc (old);
+  new->architecture = sstrdup (old->architecture);
+  new->repository = sstrdup (old->src->name);
+  new->description = sstrdup (old->description);
+  new->tags = sstrdup (old->tags);
+  new->url = sstrdup (old->url);
+
+  new->size = (old->size) ? atoi (old->size) : 0;
+  new->installed = (old->state_status == SS_INSTALLED);
+
+  return new;
+}
 
 static int
 opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
@@ -141,28 +163,6 @@ opkg_package_new ()
   memset (p, 0, sizeof (opkg_package_t));
 
   return p;
-}
-
-opkg_package_t *
-opkg_package_new_with_values (const char *name, const char *version,
-    const char *arch, const char *desc, const char *tags, const char *url, int size, int installed)
-{
-  opkg_package_t *package;
-  package = opkg_package_new ();
-
-#define sstrdup(x) (x) ? strdup (x) : NULL;
-
-  package->name = sstrdup (name);
-  package->version = sstrdup (version);
-  package->architecture = sstrdup (arch);
-  package->description = sstrdup (desc);
-  package->tags = sstrdup (tags);
-  package->url = sstrdup (url);
-
-  package->size = size;
-  package->installed = (installed != 0);
-
-  return package;
 }
 
 void
@@ -376,7 +376,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
     return 1;
   }
   pdata.action = OPKG_INSTALL;
-  pdata.package = OLD_PKG_TO_NEW (new);
+  pdata.package = old_pkg_to_new (new);
 
   progress (pdata, 0);
 
@@ -441,7 +441,7 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
   }
 
   pdata.action = OPKG_REMOVE;
-  pdata.package = OLD_PKG_TO_NEW (pkg);
+  pdata.package = old_pkg_to_new (pkg);
   progress (pdata, 0);
 
 
@@ -515,7 +515,7 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   }
 
   pdata.action = OPKG_INSTALL;
-  pdata.package = OLD_PKG_TO_NEW (pkg);
+  pdata.package = old_pkg_to_new (pkg);
   progress (pdata, 0);
 
   opkg_upgrade_pkg (opkg->conf, pkg);
@@ -550,7 +550,7 @@ opkg_upgrade_all (opkg_t *opkg, opkg_progress_callback_t progress_callback, void
   {
     pkg = installed->pkgs[i];
 
-    pdata.package = OLD_PKG_TO_NEW (pkg);
+    pdata.package = old_pkg_to_new (pkg);
     progress (pdata, 99 * i / installed->len);
     opkg_package_free (pdata.package);
 
@@ -759,7 +759,7 @@ opkg_list_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_d
 
     pkg = all->pkgs[i];
 
-    package = OLD_PKG_TO_NEW (pkg);
+    package = old_pkg_to_new (pkg);
     callback (opkg, package, user_data);
   }
 
@@ -800,7 +800,7 @@ opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, v
 
     if (cmp < 0)
     {
-      package = OLD_PKG_TO_NEW (new);
+      package = old_pkg_to_new (new);
       callback (opkg, package, user_data);
     }
   }
@@ -810,3 +810,58 @@ opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, v
   return 0;
 }
 
+opkg_package_t*
+opkg_find_package (opkg_t *opkg, const char *name, const char *ver, const char *arch, const char *repo)
+{
+  pkg_vec_t *all;
+  opkg_package_t *package = NULL;
+  int i;
+#define sstrcmp(x,y) (x && y) ? strcmp (x, y) : 0
+
+  opkg_assert (opkg);
+
+  all = pkg_vec_alloc ();
+  pkg_hash_fetch_available (&opkg->conf->pkg_hash, all);
+  for (i = 0; i < all->len; i++)
+  {
+    pkg_t *pkg;
+    char *pkgv;
+
+    pkg = all->pkgs[i];
+
+    /* check name */
+    if (sstrcmp (pkg->name, name))
+      continue;
+    
+    /* check version */
+    pkgv = pkg_version_str_alloc (pkg);
+    if (sstrcmp (pkgv, ver))
+    {
+      free (pkgv);
+      continue;
+    }
+    free (pkgv);
+
+    /* check architecture */
+    if (arch)
+    {
+      if (sstrcmp (pkg->architecture, arch))
+        continue;
+    }
+
+    /* check repository */
+    if (repo)
+    {
+      if (sstrcmp (pkg->src->name, repo))
+          continue;
+    }
+
+    /* match found */
+    package = old_pkg_to_new (pkg);
+    break;
+  }
+
+  pkg_vec_free (all);
+
+  return package;
+}
