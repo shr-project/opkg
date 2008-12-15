@@ -233,27 +233,48 @@ opkg_verify_file (opkg_conf_t *conf, char *text_file, char *sig_file)
 #ifdef HAVE_GPGME
     int status = -1;
     gpgme_ctx_t ctx;
-    gpgme_data_t sig, text;
+    gpgme_data_t sig, text, key;
     gpgme_error_t err = -1;
     gpgme_verify_result_t result;
     gpgme_signature_t s;
+    char *trusted_path = NULL;
     
     err = gpgme_new (&ctx);
 
     if (err)
 	return -1;
 
+    sprintf_alloc(&trusted_path, "%s/%s", conf->offline_root, "/etc/opkg/trusted.gpg");
+    err = gpgme_data_new_from_file (&key, trusted_path, 1); 
+    free (trusted_path);
+    if (err)
+    {
+      return -1;
+    }
+    err = gpgme_op_import (ctx, key);
+    if (err)
+    {
+      gpgme_data_release (key);
+      return -1;
+    }
+    gpgme_data_release (key);
+
     err = gpgme_data_new_from_file (&sig, sig_file, 1); 
     if (err)
+    {
+	gpgme_release (ctx);
 	return -1;
+    }
 
     err = gpgme_data_new_from_file (&text, text_file, 1); 
     if (err)
+    {
+        gpgme_data_release (sig);
+	gpgme_release (ctx);
 	return -1;
+    }
 
     err = gpgme_op_verify (ctx, sig, text, NULL);
-    if (err)
-	return -1;
 
     result = gpgme_op_verify_result (ctx);
     if (!result)
@@ -268,6 +289,7 @@ opkg_verify_file (opkg_conf_t *conf, char *text_file, char *sig_file)
 	    break;
 	s = s->next;
     }
+
 
     gpgme_data_release (sig);
     gpgme_data_release (text);

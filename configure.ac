@@ -137,5 +137,6 @@ AC_OUTPUT(
     tests/Makefile
     src/Makefile
     libbb/Makefile
+    utils/Makefile
     libopkg.pc
     )

@@ -1,4 +1,4 @@
-SUBDIRS = libbb libopkg src tests
+SUBDIRS = libbb libopkg src tests utils
 
 HOST_CPU=@host_cpu@
 BUILD_CPU=@build_cpu@
@@ -9,7 +9,6 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libopkg.pc
 
 
-bin_SCRIPTS = update-alternatives
 
 interceptdir = $(datadir)/opkg/intercept
 intercept_DATA = intercept/ldconfig intercept/depmod intercept/update-modules
