@@ -160,6 +160,15 @@ void *void_list_remove_elt(void_list_t *list, const void *target_data, void_list
      void_list_elt_t *old_elt = NULL;
      void *old_data = NULL;
 
+     if (!list) {
+          fprintf(stderr, "Error: void_list_remove_elt list is NULL\n");
+          return NULL;
+     }
+     if (!target_data) {
+          fprintf(stderr, "Error: void_list_remove_elt target_data is NULL\n");
+	  return NULL;
+     }
+
      /* first element */
      if (list->head && list->head->data && (cmp(list->head->data, target_data) == 0)) {
 	  old_elt = list->head;
