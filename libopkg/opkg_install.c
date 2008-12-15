@@ -312,60 +312,6 @@ int pkg_mark_dependencies_for_installation(opkg_conf_t *conf, pkg_t *pkg, pkg_ve
 
      return 0;
 }
-#if 0
-int name_mark_dependencies_for_installation(opkg_conf_t *conf, const char *pkg_name, pkg_vec_t *pkgs_needed)
-{
-     int cmp;
-     pkg_t *old, *new;
-     char *old_version, *new_version;
-
-     old = pkg_hash_fetch_installed_by_name(&conf->pkg_hash, pkg_name);
-    
-     new = pkg_hash_fetch_best_installation_candidate_by_name(conf, pkg_name);
-     if (new == NULL) {
-	  return OPKG_PKG_HAS_NO_CANDIDATE;
-     }
-     if (old) {
-	  old_version = pkg_version_str_alloc(old);
-	  new_version = pkg_version_str_alloc(new);
-
-	  cmp = pkg_compare_versions(old, new);
-          if ( (conf->force_downgrade==1) && (cmp > 0) ){     /* We've been asked to allow downgrade  and version is precedent */
-	    opkg_message(conf, OPKG_DEBUG, " Forcing downgrade ");
-             cmp = -1 ;                                       /* then we force opkg to downgrade */ 
-                                                              /* We need to use a value < 0 because in the 0 case we are asking to */
-                                                              /* reinstall, and some check could fail asking the "force-reinstall" option */
-          } 
-	  opkg_message(conf, OPKG_DEBUG, 
-		       "comparing visible versions of pkg %s:"
-		       "\n\t%s is installed "
-		       "\n\t%s is available "
-		       "\n\t%d was comparison result\n",
-		       pkg_name, old_version, new_version, cmp);
-	  if (cmp == 0 && !conf->force_reinstall) {
-	       opkg_message(conf, OPKG_NOTICE,
-			    "Package %s (%s) installed in %s is up to date.\n",
-			    old->name, old_version, old->dest->name);
-	       free(old_version);
-	       free(new_version);
-	       return 0;
-	  } else if (cmp > 0) {
-	       opkg_message(conf, OPKG_NOTICE,
-			    "Not downgrading package %s on %s from %s to %s.\n",
-			    old->name, old->dest->name, old_version, new_version);
-	       free(old_version);
-	       free(new_version);
-	       return 0;
-	  } else if (cmp < 0) {
-	       new->dest = old->dest;
-	       old->state_want = SW_DEINSTALL;
-	       old->state_flag |= SF_OBSOLETE;
-	  }
-     }
-     return pkg_mark_dependencies_for_installation(conf, new, pkgs_needed);
-}
-
-#endif
 
 int satisfy_dependencies_for(opkg_conf_t *conf, pkg_t *pkg)
 {

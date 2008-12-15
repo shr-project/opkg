@@ -1313,7 +1313,7 @@ str_list_t *pkg_get_installed_files(pkg_t *pkg)
 	  return NULL;
      }
 
-     /* For uninstalled packages, get the file list firectly from the package.
+     /* For uninstalled packages, get the file list directly from the package.
 	For installed packages, look at the package.list file in the database.
      */
      if (pkg->state_status == SS_NOT_INSTALLED || pkg->dest == NULL) {

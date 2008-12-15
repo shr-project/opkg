@@ -45,18 +45,6 @@ static int pkg_installed_and_constraint_satisfied(pkg_t *pkg, void *cdata)
 static int pkg_constraint_satisfied(pkg_t *pkg, void *cdata)
 {
      depend_t *depend = (depend_t *)cdata;
-#if 0
-     pkg_t * temp = pkg_new();
-     int comparison;
-     parseVersion(temp, depend->version);
-     comparison = pkg_compare_versions(pkg, temp);
-     free(temp);
-
-     fprintf(stderr, "%s: pkg=%s pkg->version=%s constraint=%p type=%d version=%s comparison=%d satisfied=%d\n", 
-	     __FUNCTION__, pkg->name, pkg->version, 
-	     depend, depend->constraint, depend->version,
-	     comparison, version_constraints_satisfied(depend, pkg));
-#endif
      if (version_constraints_satisfied(depend, pkg))
 	  return 1;
      else
@@ -705,13 +693,6 @@ int buildConflicts(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 	 conflicts->type = CONFLICTS;
 	 parseDepends(conflicts, hash,
 		      pkg->conflicts_str[i]);
-#if 0
-	 for (j = 0; j < conflicts->possibility_count; j++) {
-	      depend_t *possibility = conflicts->possibilities[j];
-	      abstract_pkg_t *conflicting_apkg = possibility->pkg;
-	      pkg_add_conflict_pair(ab_pkg, conflicting_apkg);
-	 }
-#endif
 	 conflicts++;
     }
     return 0;
@@ -729,9 +710,6 @@ int buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
         fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
         return  -1;
      }
-
-     // if (strcmp(ab_pkg->name, pkg->name))
-     //     fprintf(stderr, __FUNCTION__ ": ab_pkg=%s pkg=%s\n", ab_pkg->name, pkg->name);
 
      for(i = 0; i < pkg->replaces_count; i++){
 	  abstract_pkg_t *old_abpkg = ensure_abstract_pkg_by_name(hash, pkg->replaces_str[i]);
