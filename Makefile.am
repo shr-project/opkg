@@ -35,6 +35,7 @@ libopkg_include_HEADERS= \
 	opkg_conf.h \
 	opkg.h \
 	opkg_message.h \
+	opkg_state.h \
 	nv_pair.h \
 	nv_pair_list.h \
 	pkg_depends.h \
