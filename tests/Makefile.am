@@ -1,3 +1,4 @@
+AM_CFLAGS = $(ALL_CFLAGS) -I${top_srcdir}/libopkg
 
 #noinst_PROGRAMS = opkg_hash_test opkg_extract_test
 noinst_PROGRAMS = libopkg_test
@@ -12,6 +13,5 @@ noinst_PROGRAMS = libopkg_test
 
 libopkg_test_LDADD = $(top_builddir)/libopkg/libopkg.la
 libopkg_test_SOURCE = libopkg_test.c
-libopkg_test_CFLAGS = $(ALL_CFLAGS)
 
 
