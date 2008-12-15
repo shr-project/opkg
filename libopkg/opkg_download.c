@@ -33,7 +33,7 @@
 #include "str_util.h"
 #include "opkg_defines.h"
 
-static int do_download(opkg_conf_t *conf, const char *src,
+int opkg_download(opkg_conf_t *conf, const char *src,
   const char *dest_file_name, curl_progress_func cb, void *data)
 {
     int err = 0;
@@ -136,7 +136,7 @@ static int do_download(opkg_conf_t *conf, const char *src,
     return 0;
 }
 
-int opkg_download(opkg_conf_t *conf, const char *src,
+static int opkg_download_cache(opkg_conf_t *conf, const char *src,
   const char *dest_file_name, curl_progress_func cb, void *data)
 {
     char *cache_name = strdup(src);
@@ -144,7 +144,7 @@ int opkg_download(opkg_conf_t *conf, const char *src,
     int err = 0;
 
     if (!conf->cache || str_starts_with(src, "file:")) {
-	err = do_download(conf, src, dest_file_name, cb, data);
+	err = opkg_download(conf, src, dest_file_name, cb, data);
 	goto out1;
     }
 
@@ -156,7 +156,7 @@ int opkg_download(opkg_conf_t *conf, const char *src,
     if (file_exists(cache_location))
 	opkg_message(conf, OPKG_NOTICE, "Copying %s\n", cache_location);
     else {
-	err = do_download(conf, src, cache_location, cb, data);
+	err = opkg_download(conf, src, cache_location, cb, data);
 	if (err) {
 	    (void) unlink(cache_location);
 	    goto out2;
@@ -203,7 +203,7 @@ int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir)
 
     sprintf_alloc(&pkg->local_filename, "%s/%s", dir, stripped_filename);
 
-    err = opkg_download(conf, url, pkg->local_filename, NULL, NULL);
+    err = opkg_download_cache(conf, url, pkg->local_filename, NULL, NULL);
     free(url);
 
     opkg_set_current_state (conf, OPKG_STATE_NONE, NULL);
