@@ -40,8 +40,8 @@ struct _opkg_t
 };
 
 #define opkg_assert(expr) if (!(expr)) { \
-   printf ("opkg: file %s: line %d (%s): Assertation '%s' failed",\
-       __FILE__, __LINE__, __PRETTY_FUNCTION__, #expr); abort(); }
+    printf ("opkg: file %s: line %d (%s): Assertation '%s' failed",\
+            __FILE__, __LINE__, __PRETTY_FUNCTION__, # expr); abort (); }
 
 #define progress(percent) if (progress_callback) progress_callback (opkg, percent, user_data);
 
@@ -98,12 +98,12 @@ struct _curl_cb_data
 
 int
 curl_progress_cb (struct _curl_cb_data *cb_data,
-		    double t, /* dltotal */
-		    double d, /* dlnow */
-		    double ultotal,
-		    double ulnow)
+                  double t,   /* dltotal */
+                  double d,   /* dlnow */
+                  double ultotal,
+                  double ulnow)
 {
-  int p = (t) ? d*100/t : 0;
+  int p = (t) ? d * 100 / t : 0;
   static int prev = -1;
 
   /* prevent the same value being sent twice (can occur due to rounding) */
@@ -114,9 +114,9 @@ curl_progress_cb (struct _curl_cb_data *cb_data,
   if (t < 1)
     return 0;
 
-  (cb_data->cb) (cb_data->opkg,
-      cb_data->start_range + (d/t * ((cb_data->finish_range - cb_data->start_range))),
-      cb_data->user_data);
+  (cb_data->cb)(cb_data->opkg,
+                cb_data->start_range + (d / t * ((cb_data->finish_range - cb_data->start_range))),
+                cb_data->user_data);
 
   return 0;
 }
