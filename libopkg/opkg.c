@@ -406,13 +406,80 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
 int
 opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
 {
-  return 1;
+  pkg_t *pkg;
+
+  opkg_assert (opkg != NULL);
+  opkg_assert (package_name != NULL);
+
+  progress (0);
+
+  pkg_info_preinstall_check (opkg->conf);
+
+  if (opkg->conf->restrict_to_default_dest)
+  {
+    pkg = pkg_hash_fetch_installed_by_name_dest (&opkg->conf->pkg_hash,
+                                                 package_name,
+                                                 opkg->conf->default_dest);
+    if (pkg == NULL)
+    {
+      /* XXX: Error: Package not installed in default_dest */
+      return 1;
+    }
+  }
+  else
+  {
+    pkg = pkg_hash_fetch_installed_by_name (&opkg->conf->pkg_hash,
+                                            package_name);
+  }
+
+  if (!pkg)
+  {
+    /* XXX: Error: Package not installed */
+    return 1;
+  }
+
+  progress (25);
+
+  opkg_upgrade_pkg (opkg->conf, pkg);
+  progress (75);
+
+  opkg_configure_packages (opkg->conf, NULL);
+  progress (100);
+  return 0;
 }
 
 int
 opkg_upgrade_all (opkg_t *opkg, opkg_progress_callback_t progress_callback, void *user_data)
 {
-  return 1;
+  pkg_vec_t *installed;
+  int err = 0;
+  int i;
+  pkg_t *pkg;
+
+  opkg_assert (opkg != NULL);
+  progress (0);
+
+  installed = pkg_vec_alloc ();
+  pkg_info_preinstall_check (opkg->conf);
+
+  pkg_hash_fetch_all_installed (&opkg->conf->pkg_hash, installed);
+  for (i = 0; i < installed->len; i++)
+  {
+    pkg = installed->pkgs[i];
+    err += opkg_upgrade_pkg (opkg->conf, pkg);
+    progress (100 * i / installed->len);
+  }
+  pkg_vec_free (installed);
+
+  if (err)
+    return 1;
+
+  err = opkg_configure_packages (opkg->conf, NULL);
+  if (err)
+    return 1;
+
+  progress (100);
+  return 0;
 }
 
 int
