@@ -36,7 +36,7 @@ typedef int (*opkg_list_callback)(char *name, char *desc, char *version,
 typedef int (*opkg_status_callback)(char *name, int istatus, char *desc,
 	void *userdata);
 typedef char* (*opkg_response_callback)(char *question);
-typedef void (*opkg_download_progress_callback)(int percent);
+typedef void (*opkg_download_progress_callback)(int percent, char *url);
 
 extern int opkg_op(int argc, char *argv[]); /* opkglib.c */
 extern int opkg_init (opkg_message_callback mcall, 

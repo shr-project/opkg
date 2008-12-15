@@ -34,11 +34,11 @@ opkg_download_progress_callback opkg_cb_download_progress = NULL;
 #endif
 
 int
-curl_progress_func (void* data,
-                         double t, /* dltotal */
-                         double d, /* dlnow */
-                         double ultotal,
-                         double ulnow)
+curl_progress_func (char* url,
+		    double t, /* dltotal */
+		    double d, /* dlnow */
+		    double ultotal,
+		    double ulnow)
 {
     int i;
     int p = d*100/t;
@@ -46,7 +46,7 @@ curl_progress_func (void* data,
 #ifdef OPKG_LIB
     if (opkg_cb_download_progress)
     {
-	opkg_cb_download_progress (p);
+	opkg_cb_download_progress (p, url);
 	return 0;
     }
 #endif
@@ -142,7 +142,8 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
     {
 	curl_easy_setopt (curl, CURLOPT_URL, src);
 	curl_easy_setopt (curl, CURLOPT_WRITEDATA, file);
-	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
+	curl_easy_setopt (curl, CURLOPT_NOPROGRESS, 0);
+	curl_easy_setopt (curl, CURLOPT_PROGRESSDATA, src);
 	curl_easy_setopt (curl, CURLOPT_PROGRESSFUNCTION, curl_progress_func);
 	if (conf->http_proxy || conf->ftp_proxy)
 	{
