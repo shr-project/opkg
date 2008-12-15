@@ -99,19 +99,26 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
 	    free (userpwd);
 	}
 	res = curl_easy_perform (curl);
-	curl_easy_cleanup (curl);
 	fclose (file);
 	if (res)
 	{
 	    long error_code;
 	    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &error_code);
 	    opkg_message(conf, OPKG_ERROR, "Failed to download %s, error %d\n", src, error_code);
+	    free(tmp_file_location);
+            free(src_basec);
+	    curl_easy_cleanup (curl);
 	    return res;
 	}
+	curl_easy_cleanup (curl);
 
     }
     else
+    {
+	free(tmp_file_location);
+        free(src_basec);
 	return -1;
+    }
 
     err = file_move(tmp_file_location, dest_file_name);
 

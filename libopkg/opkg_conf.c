@@ -330,6 +330,7 @@ void opkg_conf_deinit(opkg_conf_t *conf)
 
      free(conf->tmp_dir); /*XXX*/
      free(conf->lists_dir);
+     free(conf->pending_dir);
 
      pkg_src_list_deinit(&conf->pkg_src_list);
      pkg_dest_list_deinit(&conf->pkg_dest_list);
@@ -578,7 +579,7 @@ static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 		    opkg_message(conf, OPKG_NOTICE, "defaulting architecture %s priority to 10\n", name);
 		    value = strdup("10");
 	       }
-	       nv_pair_list_append(&conf->arch_list, strdup(name), strdup(value));
+	       nv_pair_list_append(&conf->arch_list, name, value);
 	  } else {
 	       fprintf(stderr, "WARNING: Ignoring unknown configuration "
 		       "parameter: %s %s %s\n", type, name, value);

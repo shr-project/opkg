@@ -185,6 +185,8 @@ abstract_pkg_vec_t * abstract_pkg_vec_alloc(void)
 
 void abstract_pkg_vec_free(abstract_pkg_vec_t *vec)
 {
+    if (!vec)
+      return;
     free(vec->pkgs);
     free(vec);
 }

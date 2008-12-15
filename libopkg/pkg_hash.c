@@ -73,7 +73,9 @@ void free_pkgs (const char *key, void *entry, void *data)
   }
 
   abstract_pkg_vec_free (ab_pkg->provided_by);
+  abstract_pkg_vec_free (ab_pkg->replaced_by);
   pkg_vec_free (ab_pkg->pkgs);
+  free (ab_pkg->depended_upon_by);
   free (ab_pkg->name);
   free (ab_pkg);
 }

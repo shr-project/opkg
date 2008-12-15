@@ -85,6 +85,7 @@ void hash_table_deinit(hash_table_t *hash)
     /* free the reminaing entries */
     for (i = 0; i < hash->n_entries; i++) {
 	hash_entry_t *hash_entry = (hash->entries + i);
+	free (hash_entry->key);
 	/* skip the first entry as this is part of the array */
 	hash_entry = hash_entry->next;
         while (hash_entry)

@@ -83,6 +83,12 @@ int args_init(args_t *args)
 
 void args_deinit(args_t *args)
 {
+     free (args->offline_root);
+     free (args->offline_root_pre_script_cmd);
+     free (args->offline_root_post_script_cmd);
+
+     free (args->dest);
+     free (args->tmp_dir);
      free(args->conf_file);
      args->conf_file = NULL;
 }

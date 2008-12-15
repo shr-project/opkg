@@ -175,6 +175,7 @@ opkg_package_free (opkg_package_t *p)
   free (p->description);
   free (p->tags);
   free (p->url);
+  free (p->repository);
 
   free (p);
 }
@@ -202,6 +203,10 @@ opkg_free (opkg_t *opkg)
 
   opkg_conf_deinit (opkg->conf);
   args_deinit (opkg->args);
+  free (opkg->options);
+  free (opkg->args);
+  free (opkg->conf);
+  free (opkg);
 }
 
 int
@@ -359,7 +364,7 @@ int
 opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
 {
   int err;
-  char *package_id = NULL, *stripped_filename;
+  char *stripped_filename;
   opkg_progress_data_t pdata;
   pkg_t *old, *new;
   pkg_vec_t *deps, *all;
@@ -469,9 +474,6 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   pdata.package = old_pkg_to_new (new);
   pdata.action = OPKG_INSTALL;
   progress (pdata, 75);
-
-  if (!package_id)
-    package_id = strdup (package_name);
 
   /* unpack the package */
   err = opkg_install_pkg(opkg->conf, new, 0);
@@ -658,6 +660,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
   pkg_src_t *src;
   int sources_list_count, sources_done;
   opkg_progress_data_t pdata;
+  char *tmp_file_name = NULL;
 
   opkg_assert (opkg != NULL);
 
@@ -723,7 +726,6 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     sprintf_alloc (&list_file_name, "%s/%s", lists_dir, src->name);
     if (src->gzip)
     {
-      char *tmp_file_name;
       FILE *in, *out;
       struct _curl_cb_data cb_data;
 
@@ -758,6 +760,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     }
     else
       err = opkg_download (opkg->conf, url, list_file_name, NULL, NULL);
+    free (tmp_file_name);
 
     if (err)
     {
@@ -776,8 +779,6 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
       sprintf_alloc (&url, "%s/%s", src->value, "Packages.sig");
 
     /* create temporary file for it */
-    char *tmp_file_name;
-
     sprintf_alloc (&tmp_file_name, "%s/%s", tmp, "Packages.sig");
 
     err = opkg_download (opkg->conf, url, tmp_file_name, NULL, NULL);

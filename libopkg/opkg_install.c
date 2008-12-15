@@ -394,6 +394,7 @@ int satisfy_dependencies_for(opkg_conf_t *conf, pkg_t *pkg)
      }
 
      if (ndepends <= 0) {
+	  pkg_vec_free(depends);
 	  return 0;
      }
 
@@ -966,7 +967,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 	       signal(SIGINT, old_handler);
 	  else
 	       sigprocmask(SIG_UNBLOCK, &newset, &oldset);
-
+          pkg_vec_free (replacees);
 	  return 0;
      
 
@@ -996,6 +997,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 	  else
 	       sigprocmask(SIG_UNBLOCK, &newset, &oldset);
 
+          pkg_vec_free (replacees);
 	  return err;
      }
      opkg_set_current_state (conf, OPKG_STATE_NONE, NULL);

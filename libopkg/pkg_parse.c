@@ -140,12 +140,15 @@ int parseVersion(pkg_t *pkg, char *raw)
   pkg->revision = "";
   pkg->familiar_revision = "";
 
+  if (!pkg->version)
+  {
   pkg->version= malloc(strlen(raw)+1);
   if ( pkg->version == NULL ) {
      fprintf(stderr, "%s: out of memory \n", __FUNCTION__);
      return ENOMEM;
   }
   strcpy(pkg->version, raw);
+  }
 
   hyphen= strrchr(pkg->version,'-');
 
@@ -304,6 +307,7 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 	    else if(isGenericFieldType("Installed-Time:", *lines)) {
 		char *time_str = parseGenericFieldType("Installed-Time", *lines);
 		pkg->installed_time = strtoul(time_str, NULL, 0);
+		free (time_str);
 	    }	    
 	    break;
 
@@ -376,7 +380,11 @@ out:;
     *raw = lines;
 /* If the ipk has not a Provides line, we insert our false line */ 
     if ( pkg_false_provides==1)
-       pkg->provides_str = parseDependsString ((char *)"Provides: opkg_internal_use_only ", &pkg->provides_count);
+    {
+       pkg->provides_count = 1;
+       pkg->provides_str = malloc (sizeof (char*));
+       pkg->provides_str[0] = strdup ("opkg_internal_use_only");
+    }
 
     if (pkg->name) {
 	return 0;

@@ -38,6 +38,7 @@ void
 package_list_upgradable_callback (opkg_t *opkg, opkg_package_t *pkg, void *data)
 {
   printf ("%s - %s\n", pkg->name, pkg->version);
+  opkg_package_free (pkg);
 }
 
 void
@@ -91,11 +92,11 @@ main (int argc, char **argv)
     if (pkg)
     {
       print_package (pkg);
-      opkg_package_free (find_pkg);
       opkg_package_free (pkg);
     }
     else
       printf ("Package \"%s\" not found!\n", find_pkg->name);
+    opkg_package_free (find_pkg);
   }
   else
     printf ("No package available to test find_package.\n");

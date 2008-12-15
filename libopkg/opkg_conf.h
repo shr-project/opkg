@@ -50,7 +50,7 @@ struct opkg_conf
 
      char *tmp_dir;
      char *lists_dir;
-     const char *pending_dir;
+     char *pending_dir;
 
      /* options */
      int autoremove;

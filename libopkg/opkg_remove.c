@@ -271,6 +271,8 @@ int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)
 	       free(dependents);
 	       if (err) return err;
 	  }
+          if (dependents)
+              free(dependents);
      }
 
      if ( message==0 ){
