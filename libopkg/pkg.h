@@ -124,6 +124,7 @@ struct pkg
      char *section;
      char *maintainer;
      char *description;
+     char *tags;
      pkg_state_want_t state_want;
      pkg_state_flag_t state_flag;
      pkg_state_status_t state_status;

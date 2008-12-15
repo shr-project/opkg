@@ -206,6 +206,8 @@ void pkg_deinit(pkg_t *pkg)
      pkg->installed_files_ref_cnt = 1;
      pkg_free_installed_files(pkg);
      pkg->essential = 0;
+     free (pkg->tags);
+     pkg->tags = NULL;
 }
 
 int pkg_init_from_file(pkg_t *pkg, const char *filename)
@@ -519,6 +521,10 @@ char * pkg_formatted_info(pkg_t *pkg )
      free(line);
 
      line = pkg_formatted_field(pkg, "Installed-Time");
+     strncat(buff ,line, strlen(line));
+     free(line);
+
+     line = pkg_formatted_field(pkg, "Tags");
      strncat(buff ,line, strlen(line));
      free(line);
 
@@ -936,6 +942,21 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
 	       goto UNKNOWN_FMT_FIELD;
 	  }
      }
+	  break;
+     case 't':
+     case 'T':
+	  if (strcasecmp(field, "Tags") == 0) {
+	       /* Tags */
+	       if (pkg->tags) {
+                   temp = (char *)realloc(temp,strlen(pkg->tags)+8);
+                   if ( temp == NULL ){
+	              fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
+	              return NULL;
+                   }
+                   temp[0]='\0';
+                   snprintf(temp, (strlen(pkg->tags)+8), "Tags: %s\n", pkg->tags);
+	       }
+	  }
 	  break;
      case 'v':
      case 'V': {

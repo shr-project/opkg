@@ -282,6 +282,11 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 		pkg->suggests_str = parseDependsString(*lines, &pkg->suggests_count);
 	    break;
 
+	case 'T':
+	    if(isGenericFieldType("Tags:", *lines))
+		pkg->tags = parseGenericFieldType("Tags", *lines);
+	    break;
+
 	case 'M':
 	    if(isGenericFieldType("MD5sum:", *lines))
 		pkg->md5sum = parseGenericFieldType("MD5sum", *lines);
