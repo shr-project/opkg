@@ -42,7 +42,8 @@ enum long_args_opt
      ARGS_OPT_NODEPS,
      ARGS_OPT_VERBOSITY,
      ARGS_OPT_MULTIPLE_PROVIDERS,
-     ARGS_OPT_AUTOREMOVE
+     ARGS_OPT_AUTOREMOVE,
+     ARGS_OPT_CACHE,
 };
 
 int args_init(args_t *args)
@@ -92,6 +93,7 @@ void args_deinit(args_t *args)
 
      free (args->dest);
      free (args->tmp_dir);
+     free (args->cache);
      free(args->conf_file);
      args->conf_file = NULL;
 }
@@ -104,6 +106,7 @@ int args_parse(args_t *args, int argc, char *argv[])
      static struct option long_options[] = {
 	  {"query-all", 0, 0, 'A'},
 	  {"autoremove", 0, 0, ARGS_OPT_AUTOREMOVE},
+	  {"cache", 1, 0, ARGS_OPT_CACHE},
 	  {"conf-file", 1, 0, 'f'},
 	  {"conf", 1, 0, 'f'},
 	  {"dest", 1, 0, 'd'},
@@ -179,6 +182,10 @@ int args_parse(args_t *args, int argc, char *argv[])
 	       break;
 	  case ARGS_OPT_AUTOREMOVE:
 	       args->autoremove = 1;
+	       break;
+	  case ARGS_OPT_CACHE:
+	       free(args->cache);
+	       args->cache = strdup(optarg);
 	       break;
 	  case ARGS_OPT_FORCE_DEFAULTS:
 	       args->force_defaults = 1;
@@ -277,6 +284,7 @@ void args_usage(char *complaint)
      printf("\t                         2 informative messages\n");
      printf("\t                         3 debug output\n");
      printf("\t-f <conf_file>		Use <conf_file> as the opkg configuration file\n");
+     printf("\t--cache <directory>	Use a package cache\n");
      printf("\t-conf <conf_file>	Default configuration file location\n");
      printf("				is %s/%s\n", ARGS_DEFAULT_CONF_FILE_DIR, ARGS_DEFAULT_CONF_FILE_NAME);
      printf("\t-d <dest_name>		Use <dest_name> as the the root directory for\n");

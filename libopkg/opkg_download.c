@@ -33,7 +33,8 @@
 #include "str_util.h"
 #include "opkg_defines.h"
 
-int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name, curl_progress_func cb, void *data)
+static int do_download(opkg_conf_t *conf, const char *src,
+  const char *dest_file_name, curl_progress_func cb, void *data)
 {
     int err = 0;
 
@@ -133,6 +134,43 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
     }
 
     return 0;
+}
+
+int opkg_download(opkg_conf_t *conf, const char *src,
+  const char *dest_file_name, curl_progress_func cb, void *data)
+{
+    char *cache_name = strdup(src);
+    char *cache_location, *p;
+    int err = 0;
+
+    if (!conf->cache || str_starts_with(src, "file:")) {
+	err = do_download(conf, src, dest_file_name, cb, data);
+	goto out1;
+    }
+
+    for (p = cache_name; *p; p++)
+	if (*p == '/')
+	    *p = ',';	/* looks nicer than | or # */
+
+    sprintf_alloc(&cache_location, "%s/%s", conf->cache, cache_name);
+    if (file_exists(cache_location))
+	opkg_message(conf, OPKG_NOTICE, "Copying %s\n", cache_location);
+    else {
+	err = do_download(conf, src, cache_location, cb, data);
+	if (err) {
+	    (void) unlink(cache_location);
+	    goto out2;
+	}
+    }
+
+    err = file_copy(cache_location, dest_file_name);
+
+
+out2:
+    free(cache_location);
+out1:
+    free(cache_name);
+    return err;
 }
 
 int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir)

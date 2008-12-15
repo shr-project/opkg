@@ -49,6 +49,7 @@ static int set_and_load_pkg_dest_list(opkg_conf_t *conf,
 int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
 {
      opkg_option_t tmp[] = {
+	  { "cache", OPKG_OPT_TYPE_STRING, &conf->cache},
 	  { "force_defaults", OPKG_OPT_TYPE_BOOL, &conf->force_defaults },
 	  { "force_depends", OPKG_OPT_TYPE_BOOL, &conf->force_depends },
 	  { "force_overwrite", OPKG_OPT_TYPE_BOOL, &conf->force_overwrite },
@@ -270,6 +271,8 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      opkg_conf_override_string(&conf->offline_root_post_script_cmd, 
 			       args->offline_root_post_script_cmd);
 
+     opkg_conf_override_string(&conf->cache, args->cache);
+
 /* Pigi: added a flag to disable the checking of structures if the command does not need to 
          read anything from there.
 */
@@ -337,6 +340,8 @@ void opkg_conf_deinit(opkg_conf_t *conf)
      opkg_conf_free_string(&conf->offline_root);
      opkg_conf_free_string(&conf->offline_root_pre_script_cmd);
      opkg_conf_free_string(&conf->offline_root_post_script_cmd);
+
+     opkg_conf_free_string(&conf->cache);
 
      if (conf->verbosity > 1) { 
 	  int i;

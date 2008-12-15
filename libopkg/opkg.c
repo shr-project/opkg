@@ -273,6 +273,12 @@ opkg_re_read_config_files (opkg_t *opkg)
     a->offline_root_post_script_cmd = strdup (c->offline_root_post_script_cmd);
   }
 
+  if (c->cache) {
+    if (a->cache)
+	free (a->cache);
+    a->cache = strdup(c->cache);
+  }
+
   /* throw away old opkg_conf and start again */
   opkg_conf_deinit (opkg->conf);
   opkg_conf_init (opkg->conf, opkg->args);

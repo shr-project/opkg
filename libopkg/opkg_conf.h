@@ -70,6 +70,7 @@ struct opkg_conf
      int query_all;
      int verbosity;
      int noaction;
+     char *cache;
 
      /* proxy options */
      char *http_proxy;
