@@ -28,6 +28,10 @@
 #include "file_util.h"
 #include "str_util.h"
 
+#ifdef OPKG_LIB
+#include "libopkg.h"
+opkg_download_progress_callback opkg_cb_download_progress = NULL;
+#endif
 
 int
 curl_progress_func (void* data,
@@ -38,6 +42,15 @@ curl_progress_func (void* data,
 {
     int i;
     int p = d*100/t;
+
+#ifdef LIBOPKG
+    if (opkg_cb_download_progress)
+    {
+	opkg_cb_download_progress (p);
+	return 0;
+    }
+#endif
+
     printf ("\r%3d%% |", p);
     for (i = 1; i < 73; i++)
     {

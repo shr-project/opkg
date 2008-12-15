@@ -36,6 +36,7 @@ typedef int (*opkg_list_callback)(char *name, char *desc, char *version,
 typedef int (*opkg_status_callback)(char *name, int istatus, char *desc,
 	void *userdata);
 typedef char* (*opkg_response_callback)(char *question);
+typedef void (*opkg_download_progress_callback)(int percent);
 
 extern int opkg_op(int argc, char *argv[]); /* opkglib.c */
 extern int opkg_init (opkg_message_callback mcall, 
@@ -78,6 +79,8 @@ extern opkg_message_callback opkg_cb_message; /* opkglib.c */
 extern opkg_response_callback opkg_cb_response;
 extern opkg_status_callback opkg_cb_status;
 extern opkg_list_callback opkg_cb_list;
+extern opkg_download_progress_callback opkg_cb_download_progress; /* ipkg_download.c */
+
 extern void push_error_list(struct errlist **errors,char * msg);
 extern void reverse_error_list(struct errlist **errors);
 extern void free_error_list();
