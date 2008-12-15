@@ -1,5 +1,7 @@
-opkg actually is maintained by Pierluigi Frullani <pigi@frumar.it>
-
-opkg is being written by Carl Worth <cworth@handhelds.org> and Steve
-Ayer <steven.ayer@compaq.com>
-
+Opkg:
+	* Thomas Wood <thomas@openedhand.com>
+	* Tick Chen <tick@openmoko.com>
+Ipkg:
+	* Pierluigi Frullani <pigi@frumar.it>
+	* Carl Worth <cworth@handhelds.org>
+	* Steve Ayer <steven.ayer@compaq.com>
