@@ -21,7 +21,9 @@
 #include <glob.h>
 #include <time.h>
 #include <signal.h>
+#ifndef __USE_GNU
 typedef void (*sighandler_t)(int);
+#endif
 
 #include "pkg.h"
 #include "pkg_hash.h"

@@ -51,6 +51,6 @@ struct errlist {
     struct errlist * next;
 } ;
 
-struct errlist* error_list;
+extern struct errlist* error_list;
 
 #endif /* OPKG_ERROR_H */
