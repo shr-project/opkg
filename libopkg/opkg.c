@@ -873,7 +873,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     free (list_file_name);
     free (url);
 #else
-    /* XXX: Note: Signiture check for %s skipped because GPG support was not
+    /* XXX: Note: Signature check for %s skipped because GPG support was not
      * enabled in this build
      */
 #endif

@@ -288,7 +288,7 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 	  free (tmp_file_name);
 	  free (url);
 #else
-	  opkg_message (conf, OPKG_NOTICE, "Signiture check for %s skipped "
+	  opkg_message (conf, OPKG_NOTICE, "Signature check for %s skipped "
               "because GPG support was not enabled in this build\n", src->name);
 #endif
 	  free(list_file_name);
@@ -380,7 +380,7 @@ static int opkg_finalize_intercepts(opkg_intercept_t ctx)
 	perror (ctx->statedir);
 	
     sprintf_alloc (&cmd, "rm -rf %s", ctx->statedir);
-    system (cmd);
+    err = system (cmd);
     free (cmd);
 
     free (ctx->statedir);

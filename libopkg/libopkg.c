@@ -38,7 +38,7 @@ int default_opkg_message_callback(opkg_conf_t *conf, message_level_t level,
           if ( level == OPKG_ERROR ){
              push_error_list(&error_list, msg); 
           } else
-	     printf(msg);
+	    printf("%s",msg);
      }
      return 0;
 }
@@ -71,7 +71,7 @@ int default_opkg_status_callback(char *name, int istatus, char *desc,
 char* default_opkg_response_callback(char *question)
 {
      char *response = NULL;
-     printf(question);
+     printf("%s",question);
      fflush(stdout);
      do {
 	  response = (char *)file_read_line_alloc(stdin);

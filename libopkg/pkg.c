@@ -1052,6 +1052,7 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
 
 void pkg_print_info(pkg_t *pkg, FILE *file)
 {
+  int t=0;
      char * buff;
      if (pkg == NULL) {
 	return;
@@ -1061,7 +1062,7 @@ void pkg_print_info(pkg_t *pkg, FILE *file)
      if ( buff == NULL ) 
          return;
      if (strlen(buff)>2){
-         fwrite(buff, 1, strlen(buff), file);
+       t = fwrite(buff, 1, strlen(buff), file); //#~rzr:TODO
      } 
      free(buff);
 }
