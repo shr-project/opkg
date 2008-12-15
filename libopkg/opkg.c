@@ -455,6 +455,13 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
               (curl_progress_func) curl_progress_cb, &cb_data);
     free(url);
 
+    if (err)
+    {
+      pkg_vec_free (deps);
+      opkg_package_free (pdata.package);
+      return OPKG_DOWNLOAD_FAILED;
+    }
+
   }
   pkg_vec_free (deps);
 
@@ -478,14 +485,20 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   err = opkg_install_pkg(opkg->conf, new, 0);
 
   if (err)
-    return err;
+  {
+    opkg_package_free (pdata.package);
+    return OPKG_UNKNOWN_ERROR;
+  }
 
   progress (pdata, 75);
 
   /* run configure scripts, etc. */
   err = opkg_configure_packages (opkg->conf, NULL);
   if (err)
-    return err;
+  {
+    opkg_package_free (pdata.package);
+    return OPKG_UNKOWN_ERROR;
+  }
 
   /* write out status files and file lists */
   opkg_conf_write_status_files (opkg->conf);
@@ -597,10 +610,14 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   pdata.package = old_pkg_to_new (pkg);
   progress (pdata, 0);
 
-  opkg_upgrade_pkg (opkg->conf, pkg);
+  err = opkg_upgrade_pkg (opkg->conf, pkg);
+  if (err)
+    return OPKG_UNKNOWN_ERROR;
   progress (pdata, 75);
 
-  opkg_configure_packages (opkg->conf, NULL);
+  err = opkg_configure_packages (opkg->conf, NULL);
+  if (err)
+    OPKG_UNKNOWN_ERROR;
   progress (pdata, 100);
   opkg_package_free (pdata.package);
   return 0;
