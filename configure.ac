@@ -93,6 +93,10 @@ AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_CHECK_MEMBERS([struct stat.st_rdev])
 
+# Checks endianness
+AC_C_BIGENDIAN(ENDIAN_CFLAGS="-DWORDS_BIGENDIAN=1",)
+AC_SUBST(BIGENDIAN_CFLAGS)
+
 # Don't do annoying tests that don't work when cross-compiling, just trust them.
 # The AC_FUNC_MEMCMP test doesn't work during a cross-compile, disable.
 # AC_FUNC_MEMCMP
