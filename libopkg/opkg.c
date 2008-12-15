@@ -29,6 +29,7 @@ struct _opkg_t
 {
   args_t *args;
   opkg_conf_t *conf;
+  opkg_option_t *options[];
 };
 
 /** Private Functions ***/
@@ -84,6 +85,7 @@ opkg_new ()
   opkg = malloc (sizeof (opkg_t));
   args_init (opkg->args);
   opkg_conf_init (opkg->conf, opkg->args);
+  opkg_init_options_array (opkg->conf, opkg->options);
   return opkg;
 }
 
@@ -97,11 +99,84 @@ opkg_free (opkg_t *opkg)
 void
 opkg_get_option (opkg_t *opkg, char *option, void **value)
 {
+  int i = 0;
+  opkg_option_t **options = opkg->options;
+
+  /* can't store a value in a NULL pointer! */
+  if (!value)
+    return;
+
+  /* look up the option
+   * TODO: this would be much better as a hash table
+   */
+  while (options[i]->name)
+  {
+    if (strcmp(options[i]->name, option) != 0)
+    {
+      i++;
+      continue;
+    }
+  }
+
+  /* get the option */
+  switch (options[i]->type)
+  {
+    case OPKG_OPT_TYPE_BOOL:
+      *((int *) value) = *((int *) options[i]->value);
+      return;
+
+    case OPKG_OPT_TYPE_INT:
+      *((int *) value) = *((int *) options[i]->value);
+      return;
+
+    case OPKG_OPT_TYPE_STRING:
+      *((char **)value) = strdup (options[i]->value);
+      return;
+   }
+
 }
 
 void
 opkg_set_option (opkg_t *opkg, char *option, void *value)
 {
+  int i = 0;
+  opkg_option_t **options = opkg->options;
+
+  /* NULL values are not defined */
+  if (!value)
+    return;
+
+  /* look up the option
+   * TODO: this would be much better as a hash table
+   */
+  while (options[i]->name)
+  {
+    if (strcmp(options[i]->name, option) != 0)
+    {
+      i++;
+      continue;
+    }
+  }
+
+  /* set the option */
+  switch (options[i]->type)
+  {
+    case OPKG_OPT_TYPE_BOOL:
+      if (*((int *) value) == 0)
+        *((int *)options[i]->value) = 0;
+      else
+        *((int *)options[i]->value) = 1;
+      return;
+
+    case OPKG_OPT_TYPE_INT:
+      *((int *) options[i]->value) = *((int *) value);
+      return;
+
+    case OPKG_OPT_TYPE_STRING:
+      *((char **)options[i]->value) = strdup(value);
+      return;
+   }
+
 }
 
 int

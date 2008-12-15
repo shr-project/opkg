@@ -33,7 +33,6 @@ static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 				pkg_src_list_t *pkg_src_list,
 				nv_pair_list_t *tmp_dest_nv_pair_list,
 				char **tmp_lists_dir);
-static int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options);
 static int opkg_conf_set_option(const opkg_option_t *options,
 				const char *name, const char *value);
 static int opkg_conf_set_default_dest(opkg_conf_t *conf,
