@@ -23,6 +23,7 @@
 #include "opkg.h"
 #include "opkg_download.h"
 #include "opkg_message.h"
+#include "opkg_state.h"
 
 #include "sprintf_alloc.h"
 #include "xsystem.h"
@@ -296,6 +297,7 @@ int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **name
 int
 opkg_verify_file (char *text_file, char *sig_file)
 {
+#ifdef HAVE_GPGME
     int status = -1;
     gpgme_ctx_t ctx;
     gpgme_data_t sig, text;
@@ -335,4 +337,8 @@ opkg_verify_file (char *text_file, char *sig_file)
     gpgme_release (ctx);
 
     return status;
+#else
+    printf ("Signature check skipped because GPG support was not enabled in this build\n");
+    return 0;
+#endif
 }
