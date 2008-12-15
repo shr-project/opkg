@@ -71,7 +71,7 @@ static FILE *in_file, *out_file;
 
 /* these are freed by gz_close */
 static unsigned char *window;
-static unsigned long *crc_table;
+static unsigned long *crc_table = NULL;
 
 static unsigned long crc; /* shift register contents */
 
@@ -1019,6 +1019,9 @@ extern int unzip(FILE *l_in_file, FILE *l_out_file)
 
 	free(window);
 	free(crc_table);
+
+	window = NULL;
+	crc_table = NULL;
 
 	return exit_code;
 }

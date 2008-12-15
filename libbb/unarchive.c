@@ -715,7 +715,7 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 	char *output_buffer = NULL;
 	char *ared_file = NULL;
 	char ar_magic[8];
-	int gunzip_pid;
+	int gunzip_pid = 0;
 
 	if (filename != NULL) {
 		file_list = xmalloc(sizeof(char *) * 2);
