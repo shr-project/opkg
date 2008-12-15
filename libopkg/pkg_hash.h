@@ -1,4 +1,4 @@
-/* pkg_hash.h - the itsy package management system
+/* pkg_hash.h - the opkg package management system
 
    Steven M. Ayer
    

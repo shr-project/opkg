@@ -1,4 +1,4 @@
-/* nv_pair_list.c - the itsy package management system
+/* nv_pair_list.c - the opkg package management system
 
    Carl D. Worth
 

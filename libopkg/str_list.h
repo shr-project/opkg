@@ -1,4 +1,4 @@
-/* str_list.h - the itsy package management system
+/* str_list.h - the opkg package management system
 
    Carl D. Worth
 

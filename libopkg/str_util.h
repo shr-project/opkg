@@ -1,4 +1,4 @@
-/* str_utils.h - the itsy package management system
+/* str_utils.h - the opkg package management system
 
    Carl D. Worth
 

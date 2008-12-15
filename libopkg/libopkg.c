@@ -1,4 +1,4 @@
-/* opkglib.c - the itsy package management system
+/* opkglib.c - the opkg package management system
 
    Florina Boor
 

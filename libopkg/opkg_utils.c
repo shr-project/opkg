@@ -1,4 +1,4 @@
-/* opkg_utils.c - the itsy package management system
+/* opkg_utils.c - the opkg package management system
 
    Steven M. Ayer
    

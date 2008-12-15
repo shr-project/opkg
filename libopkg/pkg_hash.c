@@ -1,4 +1,4 @@
-/* opkg_hash.c - the itsy package management system
+/* opkg_hash.c - the opkg package management system
 
    Steven M. Ayer
    

@@ -1,4 +1,4 @@
-/* pkg_parse.c - the itsy package management system
+/* pkg_parse.c - the opkg package management system
 
    Steven M. Ayer
    

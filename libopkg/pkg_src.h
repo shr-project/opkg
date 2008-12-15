@@ -1,4 +1,4 @@
-/* pkg_src.h - the itsy package management system
+/* pkg_src.h - the opkg package management system
 
    Carl D. Worth
 

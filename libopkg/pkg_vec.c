@@ -1,4 +1,4 @@
-/* pkg_vec.c - the itsy package management system
+/* pkg_vec.c - the opkg package management system
 
    Steven M. Ayer
    

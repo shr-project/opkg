@@ -1,4 +1,4 @@
-/* pkg_dest_list.c - the itsy package management system
+/* pkg_dest_list.c - the opkg package management system
 
    Carl D. Worth
 

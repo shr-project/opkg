@@ -1,4 +1,4 @@
-/* opkg_remove.h - the itsy package management system
+/* opkg_remove.h - the opkg package management system
 
    Carl D. Worth
 

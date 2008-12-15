@@ -1,4 +1,4 @@
-/* pkg_depends.c - the itsy package management system
+/* pkg_depends.c - the opkg package management system
 
    Steven M. Ayer
    

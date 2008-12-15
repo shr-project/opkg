@@ -1,4 +1,4 @@
-/* opkg_upgrade.c - the itsy package management system
+/* opkg_upgrade.c - the opkg package management system
 
    Carl D. Worth
    Copyright (C) 2001 University of Southern California

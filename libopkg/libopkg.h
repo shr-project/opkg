@@ -1,4 +1,4 @@
-/* opkglib.h - the itsy package management system
+/* opkglib.h - the opkg package management system
 
    Florian Boor <florian.boor@kernelconcepts.de>
 

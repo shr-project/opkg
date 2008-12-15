@@ -1,4 +1,4 @@
-/* conffile.c - the itsy package management system
+/* conffile.c - the opkg package management system
 
    Carl D. Worth
 

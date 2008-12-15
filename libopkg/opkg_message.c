@@ -1,4 +1,4 @@
-/* opkg_message.c - the itsy package management system
+/* opkg_message.c - the opkg package management system
 
    Copyright (C) 2003 Daniele Nicolodi <daniele@grinta.net>
 

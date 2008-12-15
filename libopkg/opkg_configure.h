@@ -1,4 +1,4 @@
-/* opkg_configure.h - the itsy package management system
+/* opkg_configure.h - the opkg package management system
 
    Carl D. Worth
 

@@ -1,4 +1,4 @@
-/* user.c - the itsy package management system
+/* user.c - the opkg package management system
 
    Jamey Hicks
 

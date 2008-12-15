@@ -1,4 +1,4 @@
-/* opkg_download.h - the itsy package management system
+/* opkg_download.h - the opkg package management system
 
    Carl D. Worth
 
