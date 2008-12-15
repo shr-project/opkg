@@ -204,11 +204,13 @@ static int remove_autoinstalled (opkg_conf_t *conf, pkg_t *pkg)
       deps = pkg_has_installed_dependents(conf, NULL, p, &dependents);
       if (deps == 0)
       {
-	printf ("%s was autoinstalled but is now orphaned\n", buffer);
+	 opkg_message (conf, OPKG_INFO,
+	               "%s was autoinstalled but is now orphaned\n", buffer);
          opkg_remove_pkg(conf, p,0);
       }
 	else
-	   printf ("%s was autoinstalled and is still required by %d installed packages\n", buffer, deps);
+	   opkg_message (conf, OPKG_INFO, "%s was autoinstalled and is still required by "
+	                 "%d installed packages\n", buffer, deps);
     }
     free (buffer);
   }
@@ -272,7 +274,8 @@ int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)
      }
 
      if ( message==0 ){
-         printf("Removing package %s from %s...\n", pkg->name, pkg->dest->name);
+         opkg_message (conf, OPKG_NOTICE,
+	               "Removing package %s from %s...\n", pkg->name, pkg->dest->name);
          fflush(stdout);
      }
      pkg->state_flag |= SF_FILELIST_CHANGED;
@@ -349,7 +352,8 @@ int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
 		  this seems like a better thing to do to conserve
 		  space. */
 	       if (conffile_has_been_modified(conf, conffile)) {
-		    printf("  not deleting modified conffile %s\n", file_name);
+		    opkg_message (conf, OPKG_NOTICE,
+		                  "  not deleting modified conffile %s\n", file_name);
 		    fflush(stdout);
 		    continue;
 	       }

@@ -182,7 +182,9 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
     else
 	return -1;
 
-    printf ("\n");
+    /* if no custom progress handler was set, we need to clear the default progress bar */
+    if (!opkg_cb_download_progress)
+        printf ("\n");
 
     err = file_move(tmp_file_location, dest_file_name);
 
