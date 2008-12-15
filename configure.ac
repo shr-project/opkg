@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script
-AC_INIT(opkg.c)
+AC_INIT(libopkg/opkg.c)
 AM_INIT_AUTOMAKE([opkg], [0.99.163])
-AM_CONFIG_HEADER(config.h)
+AM_CONFIG_HEADER(libopkg/config.h)
 
 AC_CANONICAL_HOST
 
@@ -126,4 +126,16 @@ fi
 
 AC_SUBST(opkglibdir)
 
-AC_OUTPUT(Makefile etc/Makefile familiar/Makefile familiar/control familiar/control-unstripped familiar/libopkg-control  familiar/libopkg-dev-control libbb/Makefile libopkg.pc opkg.h)
+AC_OUTPUT(
+    Makefile
+    libopkg/Makefile
+    src/Makefile
+    etc/Makefile
+    familiar/Makefile
+    familiar/control
+    familiar/control-unstripped
+    familiar/libopkg-control
+    familiar/libopkg-dev-control
+    libbb/Makefile
+    libopkg.pc
+    opkg.h)
