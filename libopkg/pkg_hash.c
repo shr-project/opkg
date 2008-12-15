@@ -140,6 +140,7 @@ int pkg_hash_add_from_file(opkg_conf_t *conf, const char *file_name,
 	       }
 	       hash_insert_pkg(hash, pkg, is_status_file,conf);
 	  } else {
+	       pkg_deinit (pkg);
 	       free(pkg);
 	  }
      }

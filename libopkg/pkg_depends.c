@@ -372,6 +372,7 @@ int version_constraints_satisfied(depend_t * depends, pkg_t * pkg)
 
     comparison = pkg_compare_versions(pkg, temp);
 
+    free (temp->version);
     free(temp);
 
     if((depends->constraint == EARLIER) && 
@@ -660,6 +661,8 @@ int buildProvides(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
     abstract_pkg_vec_insert(ab_pkg->provided_by, ab_pkg);
 
     if (!pkg->provides_count)
+      return 0;
+    if (pkg->provides)
       return 0;
 
     pkg->provides = (abstract_pkg_t **)malloc(sizeof(abstract_pkg_t *) * (pkg->provides_count + 1));
