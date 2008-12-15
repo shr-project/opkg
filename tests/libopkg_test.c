@@ -9,6 +9,22 @@ progress_callback (opkg_t *opkg, int percent, void *data)
   fflush (stdout);
 }
 
+void
+package_list_callback (opkg_t *opkg, opkg_package_t *pkg, void *data)
+{
+  static install_count = 0;
+  static total_count = 0;
+
+  if (pkg->installed)
+    install_count++;
+
+  total_count++;
+
+  printf ("\rPackage count: %d Installed, %d Total Available", install_count, total_count);
+  fflush (stdout);
+
+  opkg_package_free (pkg);
+}
 
 int
 main (int argc, char **argv)
@@ -36,6 +52,9 @@ main (int argc, char **argv)
 
   err = opkg_remove_package (opkg, "aspell", progress_callback, "Removing...");
   printf ("\nopkg_remove_package returned %d\n", err);
+
+  opkg_list_packages (opkg, package_list_callback, NULL);
+  printf ("\n");
 
   opkg_free (opkg);
 }

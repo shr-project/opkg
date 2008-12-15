@@ -26,6 +26,7 @@
 #include "opkg_configure.h"
 #include "opkg_download.h"
 #include "opkg_remove.h"
+#include "opkg_upgrade.h"
 
 #include "sprintf_alloc.h"
 #include "file_util.h"
@@ -123,6 +124,49 @@ curl_progress_cb (struct _curl_cb_data *cb_data,
 
 
 /*** Public API ***/
+
+opkg_package_t *
+opkg_package_new ()
+{
+
+  opkg_package_t *p;
+
+  p = malloc (sizeof (opkg_package_t));
+  memset (p, 0, sizeof (opkg_package_t));
+
+  return p;
+}
+
+opkg_package_t *
+opkg_package_new_with_values (const char *name, const char *version,
+    const char *arch, const char *desc, const char *tags, int installed)
+{
+  opkg_package_t *package;
+  package = opkg_package_new ();
+
+#define sstrdup(x) (x) ? strdup (x) : NULL;
+
+  package->name = sstrdup (name);
+  package->version = sstrdup (version);
+  package->architecture = sstrdup (arch);
+  package->description = sstrdup (desc);
+  package->tags = sstrdup (tags);
+  package->installed = (installed != 0);
+
+  return package;
+}
+
+void
+opkg_package_free (opkg_package_t *p)
+{
+  free (p->name);
+  free (p->version);
+  free (p->architecture);
+  free (p->description);
+  free (p->tags);
+
+  free (p);
+}
 
 opkg_t *
 opkg_new ()
@@ -647,3 +691,39 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
 
   return 0;
 }
+
+
+int
+opkg_list_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_data)
+{
+  pkg_vec_t *all;
+  int i;
+
+  opkg_assert (opkg);
+  opkg_assert (callback);
+
+  all = pkg_vec_alloc ();
+  pkg_hash_fetch_available (&opkg->conf->pkg_hash, all);
+  for (i = 0; i < all->len; i++)
+  {
+    pkg_t *pkg;
+    opkg_package_t *package;
+
+    pkg = all->pkgs[i];
+
+    package = opkg_package_new_with_values (
+        pkg->name,
+        pkg->version,
+        pkg->architecture,
+        pkg->description,
+        pkg->tags,
+        (pkg->state_status == SS_INSTALLED));
+
+    callback (opkg, package, user_data);
+  }
+
+  pkg_vec_free (all);
+
+  return 0;
+}
+
