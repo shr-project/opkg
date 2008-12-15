@@ -900,6 +900,9 @@ opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, v
   opkg_assert (opkg);
   opkg_assert (callback);
 
+  /* ensure all data is valid */
+  pkg_info_preinstall_check (opkg->conf);
+
   all = pkg_vec_alloc ();
   pkg_hash_fetch_available (&opkg->conf->pkg_hash, all);
   for (i = 0; i < all->len; i++)
