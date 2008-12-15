@@ -1,23 +1,30 @@
+/* opkg_active_list.c - the opkg package management system
 
-/*
-．--A---B----C----D-----E----F
-    |             |__k---L
-    |                    |_ N
-    |__ G ---H ---I---J
-             |_M      |_O
+   Tick Chen <tick@openmoko.com>
 
-Then the sequence will be 
-G M H I O J A B K N L C D E F
+   Copyright (C) 2008 Openmoko
+
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation; either version 2, or (at
+   your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
 */
+
 
 #include <stdlib.h>
 #include <libopkg/active_list.h>
+#include <active_list.h>
 #include <stdio.h>
 
 struct active_test {
     char *str;
     struct active_list list;
-} __attribute__((packed));
+};
 
 struct active_test *active_test_new(char *str) {
     struct active_test *ans = (struct active_test *)calloc(1, sizeof(struct active_test));
@@ -33,6 +40,16 @@ void active_test_add_depend(struct active_test *A, struct active_test *B) {
     active_list_add_depend(&A->list, &B->list);
 }
 
+/*
+．--A---B----C----D-----E----F
+    |             |__k---L
+    |                    |_ N
+    |__ G ---H ---I---J
+             |_M      |_O
+
+Then the sequence will be 
+G M H I O J A B K N L C D E F
+*/
 void make_list(struct active_list *head) {
     struct active_test *A = active_test_new("A");
     struct active_test *B = active_test_new("B");

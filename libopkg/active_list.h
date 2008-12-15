@@ -25,7 +25,7 @@ struct active_list {
     struct list_head depend;
     char walked;
     struct active_list *depended;
-}  __attribute__((packed));
+};
 
 struct active_list * active_list_next(struct active_list *head, struct active_list *ptr);
 void active_list_init(struct active_list *ptr);
