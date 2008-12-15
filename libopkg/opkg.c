@@ -497,7 +497,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   if (err)
   {
     opkg_package_free (pdata.package);
-    return OPKG_UNKOWN_ERROR;
+    return OPKG_UNKNOWN_ERROR;
   }
 
   /* write out status files and file lists */
@@ -573,6 +573,7 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
 int
 opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
 {
+  int err;
   pkg_t *pkg;
   opkg_progress_data_t pdata;
 
@@ -617,7 +618,7 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
 
   err = opkg_configure_packages (opkg->conf, NULL);
   if (err)
-    OPKG_UNKNOWN_ERROR;
+    return OPKG_UNKNOWN_ERROR;
   progress (pdata, 100);
   opkg_package_free (pdata.package);
   return 0;
