@@ -512,6 +512,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
 int
 opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
 {
+  int err;
   pkg_t *pkg = NULL;
   pkg_t *pkg_to_remove;
   opkg_progress_data_t pdata;
@@ -519,10 +520,7 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
   opkg_assert (opkg != NULL);
   opkg_assert (package_name != NULL);
 
-
-
   pkg_info_preinstall_check (opkg->conf);
-
 
   pkg = pkg_hash_fetch_installed_by_name (&opkg->conf->pkg_hash, package_name);
 
@@ -558,7 +556,7 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
 
   progress (pdata, 75);
 
-  opkg_remove_pkg (opkg->conf, pkg_to_remove, 0);
+  err = opkg_remove_pkg (opkg->conf, pkg_to_remove, 0);
 
   /* write out status files and file lists */
   opkg_conf_write_status_files (opkg->conf);
@@ -567,7 +565,7 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
 
   progress (pdata, 100);
   opkg_package_free (pdata.package);
-  return 0;
+  return (err) ? OPKG_UNKNOWN_ERROR : OPKG_NO_ERROR;
 }
 
 int
