@@ -297,7 +297,7 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pk
 	       latest_installed_parent = matching;
 	  if (matching->state_flag & (SF_HOLD|SF_PREFER)) {
 	       if (held_pkg)
-		    opkg_message(conf, OPKG_ERROR, "Multiple packages (%s and %s) providing same name marked HOLD or PREFER.  Using latest.\n",
+		    opkg_message(conf, OPKG_NOTICE, "Multiple packages (%s and %s) providing same name marked HOLD or PREFER.  Using latest.\n",
 				 held_pkg->name, matching->name);
 	       held_pkg = matching;
 	  }
