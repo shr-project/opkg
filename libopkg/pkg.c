@@ -90,7 +90,6 @@ pkg_t *pkg_new(void)
 
 int pkg_init(pkg_t *pkg)
 {
-     memset(pkg, 0, sizeof(pkg_t));
      pkg->name = NULL;
      pkg->epoch = 0;
      pkg->version = NULL;
@@ -112,6 +111,8 @@ int pkg_init(pkg_t *pkg)
      pkg->recommends_str = NULL;
      pkg->suggests_count = 0;
      pkg->recommends_count = 0;
+     
+     active_list_init(&pkg->list);
 
      /* Abhaya: added init for conflicts fields */
      pkg->conflicts = NULL;
@@ -183,7 +184,8 @@ void pkg_deinit(pkg_t *pkg)
      pkg->state_flag = SF_OK;
      pkg->state_status = SS_NOT_INSTALLED;
 
-     //for (i = 0; i < pkg->replaces_count; i++)
+     active_list_clear(&pkg->list);
+
      free (pkg->replaces);
      pkg->replaces = NULL;
 

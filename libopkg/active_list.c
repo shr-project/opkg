@@ -86,6 +86,10 @@ static void list_head_clear (struct list_head *head) {
 }
 void active_list_clear(struct active_list *head) {
     list_head_clear(&head->node);
+    if (head->depend.next != &head->depend) {
+        list_head_clear(&head->depend);
+    }
+    active_list_init(head);
 }
 
 void active_list_add_depend(struct active_list *node, struct active_list *depend) {
