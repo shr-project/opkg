@@ -48,7 +48,8 @@ void active_test_add_depend(struct active_test *A, struct active_test *B) {
              |_M      |_O
 
 Then the sequence will be 
-G M H I O J A B K N L C D E F
++: G M H I O J A B K N L C D E F
+-: F E D C L N K B A J O I H M G
 */
 void make_list(struct active_list *head) {
     struct active_test *A = active_test_new("A");
@@ -100,16 +101,17 @@ int main (void) {
     active_list_init(&head);
     make_list(&head);
 
+    printf("pos order: ");
     for(ptr = active_list_next(&head, &head); ptr ;ptr = active_list_next(&head, ptr)) {
         test = list_entry(ptr, struct active_test, list);
         printf ("%s ",test->str);
     }
-    printf("\n");
-    for(ptr = active_list_next(&head, &head); ptr ;ptr = active_list_next(&head, ptr)) {
+    printf("\nneg order: ");
+    for(ptr = active_list_prev(&head, &head); ptr ;ptr = active_list_prev(&head, ptr)) {
         test = list_entry(ptr, struct active_test, list);
         printf ("%s ",test->str);
     }
-    printf("\n");
+    printf("\npos order: ");
     for(ptr = active_list_next(&head, NULL); ptr ;ptr = active_list_next(&head, ptr)) {
         test = list_entry(ptr, struct active_test, list);
         printf ("%s ",test->str);

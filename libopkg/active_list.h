@@ -26,10 +26,13 @@ struct active_list {
     struct active_list *depended;
 };
 
-struct active_list * active_list_next(struct active_list *head, struct active_list *ptr);
 void active_list_init(struct active_list *ptr);
 void active_list_clear(struct active_list *head);
 void active_list_add_depend(struct active_list *node, struct active_list *depend);
 void active_list_add(struct active_list *head, struct active_list *node);
+
+struct active_list * active_list_next(struct active_list *head, struct active_list *ptr);
+
+struct active_list * active_list_prev(struct active_list *head, struct active_list *ptr);
 
 #endif

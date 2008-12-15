@@ -30,25 +30,46 @@ void active_list_init(struct active_list *ptr) {
  */ 
 struct active_list * active_list_next(struct active_list *head, struct active_list *ptr) {
     struct active_list *next=NULL;
-    if (!head) {
-        fprintf(stderr, "active_list_prev head = %p, ptr = %p invalid value!!\n", head, ptr);
+    if ( !head ) {
+        fprintf(stderr, "active_list_next head = %p, ptr = %p invalid value!!\n", head, ptr);
         return NULL;
     }
-    if (!ptr)
+    if ( !ptr )
         ptr = head;
     next = list_entry(ptr->node.next, struct active_list, node);
-    if (next == head ) {
+    if ( next == head ) {
         return NULL;
     }
-    if (ptr->depended && &ptr->depended->depend == ptr->node.next ) {
+    if ( ptr->depended && &ptr->depended->depend == ptr->node.next ) {
         return ptr->depended;
     }
-    while (next->depend.next != &next->depend) {
+    while ( next->depend.next != &next->depend ) {
         next = list_entry(next->depend.next, struct active_list, node); 
     }
     return next;
 }
 
+
+struct active_list * active_list_prev(struct active_list *head, struct active_list *ptr) {
+    struct active_list *prev=NULL;
+    if ( !head ) {
+        fprintf(stderr, "active_list_prev head = %p, ptr = %p invalid value!!\n", head, ptr);
+        return NULL;
+    }
+    if ( !ptr )
+        ptr = head;
+    if ( ptr->depend.prev != &ptr->depend ) {
+        prev = list_entry(ptr->depend.prev, struct active_list, node);
+        return prev;
+    } 
+    if ( ptr->depended  && ptr->depended != head && &ptr->depended->depend == ptr->node.prev ) {
+        prev = list_entry(ptr->depended->node.prev, struct active_list, node);
+    } else 
+        prev = list_entry(ptr->node.prev, struct active_list, node);
+    if ( prev == head )
+        return NULL;
+    return prev;
+}
 
 void active_list_clear(struct active_list *head) {
 }
