@@ -940,8 +940,11 @@ opkg_list_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_d
 int
 opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_data)
 {
-    pkg_vec_t *all;
-    int i;
+    struct active_list *head;
+    struct active_list *node;
+    pkg_t *old=NULL, *new = NULL;
+    static opkg_package_t* package=NULL;
+
 
     opkg_assert (opkg);
     opkg_assert (callback);
@@ -949,23 +952,15 @@ opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, v
     /* ensure all data is valid */
     pkg_info_preinstall_check (opkg->conf);
 
-    all = opkg_upgrade_all_list_get (opkg->conf);
-    for (i = 0; i < all->len; i++)
-    {
-        pkg_t *old, *new;
-        opkg_package_t *package;
-
-        old = all->pkgs[i];
-
+    head  =  prepare_upgrade_list(opkg->conf);
+    for (node=active_list_next(head, head); node; active_list_next(head,node)) {
+        old = list_entry(node, pkg_t, list);
         new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, old->name, NULL);
-
         package = pkg_clone (new);
         callback (opkg, package, user_data);
         opkg_package_free (package);
     }
-
-    pkg_vec_free (all);
-
+    active_list_head_delete(head);
     return 0;
 }
 

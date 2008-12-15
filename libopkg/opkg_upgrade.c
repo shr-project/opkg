@@ -78,17 +78,15 @@ int opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old)
     return opkg_install_pkg(conf, new,1);
 }
 
-
-
-pkg_vec_t *opkg_upgrade_all_list_get(opkg_conf_t *conf) {
-    pkg_vec_t *all, *ans;
+struct active_list * prepare_upgrade_list (opkg_conf_t *conf) {
+    pkg_vec_t *all;
+    struct active_list * head = active_list_head_new();
     int i;
 
     /* ensure all data is valid */
     pkg_info_preinstall_check (conf);
 
     all = pkg_vec_alloc ();
-    ans = pkg_vec_alloc ();
     pkg_hash_fetch_all_installed (&conf->pkg_hash, all);
     for (i = 0; i < all->len; i++)
     {
@@ -103,9 +101,10 @@ pkg_vec_t *opkg_upgrade_all_list_get(opkg_conf_t *conf) {
 
         cmp = pkg_compare_versions(old, new);
 
-        if ( cmp < 0 )
-            pkg_vec_insert(ans, old);
+        if ( cmp < 0 ) {
+           active_list_add(head, &old->list); 
+        }
     }
     pkg_vec_free (all);
-    return ans;
+    return head;
 }

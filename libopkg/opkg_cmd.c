@@ -786,12 +786,12 @@ static int opkg_list_installed_cmd(opkg_conf_t *conf, int argc, char **argv)
 
 static int opkg_list_upgradable_cmd(opkg_conf_t *conf, int argc, char **argv) 
 {
-    pkg_vec_t *all = opkg_upgrade_all_list_get(conf);
+    struct active_list *head = prepare_upgrade_list(conf);
+    struct active_list *node=NULL;
     pkg_t *_old_pkg, *_new_pkg;
     char *old_v, *new_v;
-    int i;
-    for (i=0;i<all->len;i++) {
-        _old_pkg = all->pkgs[i];
+    for (node = active_list_next(head, head); node;node = active_list_next(head,node)) {
+        _old_pkg = list_entry(node, pkg_t, list);
         _new_pkg = pkg_hash_fetch_best_installation_candidate_by_name(conf, _old_pkg->name, NULL);
         old_v = pkg_version_str_alloc(_old_pkg);
         new_v = pkg_version_str_alloc(_new_pkg);
@@ -800,7 +800,7 @@ static int opkg_list_upgradable_cmd(opkg_conf_t *conf, int argc, char **argv)
         free(old_v);
         free(new_v);
     }
-    pkg_vec_free(all);
+    active_list_head_delete(head);
     return 0;
 }
 

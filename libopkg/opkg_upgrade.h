@@ -12,6 +12,11 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
 */
+#ifndef OPKG_UPGRADE_H
+#define OPKG_UPGRADE_H
 
+#include "active_list.h"
 int opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old);
-pkg_vec_t *opkg_upgrade_all_list_get(opkg_conf_t *conf);
+struct active_list * prepare_upgrade_list (opkg_conf_t *conf);
+
+#endif

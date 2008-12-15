@@ -18,6 +18,8 @@
 
 #include "active_list.h"
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 
 void active_list_init(struct active_list *ptr) {
@@ -103,3 +105,15 @@ void active_list_add(struct active_list *head, struct active_list *node) {
     list_add_tail(&node->node, &head->node);
     node->depended  = head;
 }
+
+struct active_list * active_list_head_new() {
+    struct active_list * head = calloc(1, sizeof(struct active_list));
+    active_list_init(head);
+    return head;
+}
+
+void active_list_head_delete(struct active_list *head) {
+    active_list_clear(head);
+    free(head);
+}
+
