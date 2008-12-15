@@ -620,8 +620,21 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   progress (pdata, 0);
 
   err = opkg_upgrade_pkg (opkg->conf, pkg);
+  /* opkg_upgrade_pkg returns the error codes of opkg_install_pkg */
   if (err)
-    return OPKG_UNKNOWN_ERROR;
+  {
+    switch (err)
+    {
+      case PKG_INSTALL_ERR_NOT_TRUSTED: return OPKG_GPG_ERROR;
+      case PKG_INSTALL_ERR_DOWNLOAD: return OPKG_DOWNLOAD_FAILED;
+      case PKG_INSTALL_ERR_DEPENDENCIES:
+      case PKG_INSTALL_ERR_CONFLICTS: return OPKG_DEPENDENCIES_FAILED;
+      case PKG_INSTALL_ERR_ALREADY_INSTALLED: return OPKG_PACKAGE_ALREADY_INSTALLED;
+      case PKG_INSTALL_ERR_SIGNATURE: return OPKG_GPG_ERROR;
+      case PKG_INSTALL_ERR_MD5: return OPKG_MD5_ERROR;
+      default: return OPKG_UNKNOWN_ERROR;
+    }
+  }
   progress (pdata, 75);
 
   err = opkg_configure_packages (opkg->conf, NULL);
