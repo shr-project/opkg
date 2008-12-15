@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script
-AC_INIT(libopkg/opkg.c)
+AC_INIT(libopkg/libopkg.c)
 AM_INIT_AUTOMAKE([opkg], [0.99.163])
 AM_CONFIG_HEADER(libopkg/config.h)
 

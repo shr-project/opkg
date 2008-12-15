@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "libbb/libbb.h"
+#include <libbb/libbb.h>
 
 /*
  * build thus: 

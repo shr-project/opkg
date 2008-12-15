@@ -18,7 +18,7 @@
    
 */
 
-#include "libopkg.h"
+#include <libopkg/libopkg.h>
 
 /* This is really small, eh? ;-) */
 

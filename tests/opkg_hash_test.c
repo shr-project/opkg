@@ -15,11 +15,11 @@
    General Public License for more details.
 */
 
-#include "opkg.h"
+#include <libopkg/opkg.h>
 
-#include "hash_table.h"
-#include "opkg_utils.h"
-#include "pkg_hash.h"
+#include <libopkg/hash_table.h>
+#include <libopkg/opkg_utils.h>
+#include <libopkg/pkg_hash.h>
 
 int main(int argc, char *argv[])
 {
