@@ -94,7 +94,7 @@ AC_TYPE_SIZE_T
 AC_CHECK_MEMBERS([struct stat.st_rdev])
 
 # Checks endianness
-AC_C_BIGENDIAN(ENDIAN_CFLAGS="-DWORDS_BIGENDIAN=1",)
+AC_C_BIGENDIAN(BIGENDIAN_CFLAGS="-DWORDS_BIGENDIAN=1",)
 AC_SUBST(BIGENDIAN_CFLAGS)
 
 # Don't do annoying tests that don't work when cross-compiling, just trust them.
