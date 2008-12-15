@@ -58,23 +58,6 @@ curl_progress_func (char* url,
 	opkg_cb_download_progress (p, url);
 	return 0;
     }
-
-    /* skip progress bar if we haven't done started yet
-     * this prevents drawing the progress bar if we receive an error such as
-     * file not found */
-    if (t == 0)
-	return 0;
-
-    printf ("\r%3d%% |", p);
-    for (i = 1; i < 73; i++)
-    {
-	if (i <= p * 0.73)
-	    printf ("=");
-	else
-	    printf ("-");
-    }
-    printf ("|");
-    fflush(stdout);
     return 0;
 }
 
@@ -88,8 +71,6 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
 
     opkg_message(conf,OPKG_NOTICE,"Downloading %s\n", src);
 	
-    fflush(stdout);
-    
     if (str_starts_with(src, "file:")) {
 	int ret;
 	const char *file_src = src + 5;
@@ -156,10 +137,6 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
     }
     else
 	return -1;
-
-    /* if no custom progress handler was set, we need to clear the default progress bar */
-    if (!opkg_cb_download_progress)
-        printf ("\n");
 
     err = file_move(tmp_file_location, dest_file_name);
 
