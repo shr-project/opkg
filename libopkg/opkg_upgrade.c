@@ -78,22 +78,36 @@ int opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old)
     return opkg_install_pkg(conf, new,1);
 }
 
+
+static void pkg_hash_check_installed_pkg_helper(const char *pkg_name, void *entry, void *data) {
+    struct active_list * head = (struct active_list *) data;
+    abstract_pkg_t *ab_pkg = (abstract_pkg_t *)entry;
+    pkg_vec_t *pkg_vec = ab_pkg->pkgs;
+    int j;
+    if (pkg_vec) {
+        for (j = 0; j < pkg_vec->len; j++) {
+            pkg_t *pkg = pkg_vec->pkgs[j];
+            if (pkg->state_status == SS_INSTALLED || pkg->state_status == SS_UNPACKED) {
+                active_list_add(head, &pkg->list);
+            }
+        }
+    }
+}
+
 struct active_list * prepare_upgrade_list (opkg_conf_t *conf) {
-    pkg_vec_t *all;
     struct active_list * head = active_list_head_new();
-    int i;
+    struct active_list * all = active_list_head_new();
+    struct active_list *node=NULL;
 
     /* ensure all data is valid */
     pkg_info_preinstall_check (conf);
 
-    all = pkg_vec_alloc ();
-    pkg_hash_fetch_all_installed (&conf->pkg_hash, all);
-    for (i = 0; i < all->len; i++)
-    {
+    hash_table_foreach(&conf->pkg_hash, pkg_hash_check_installed_pkg_helper, all);
+    for (node=active_list_next(all,all); node; node = active_list_next(all, node)) {
         pkg_t *old, *new;
         int cmp;
 
-        old = all->pkgs[i];
+        old = list_entry(node, pkg_t, list);
         new = pkg_hash_fetch_best_installation_candidate_by_name(conf, old->name, NULL);
 
         if (new == NULL)
@@ -102,9 +116,9 @@ struct active_list * prepare_upgrade_list (opkg_conf_t *conf) {
         cmp = pkg_compare_versions(old, new);
 
         if ( cmp < 0 ) {
-           active_list_add(head, &old->list); 
+           node = active_list_move_node(all, head, &old->list); 
         }
     }
-    pkg_vec_free (all);
+    active_list_head_delete(all);
     return head;
 }

@@ -73,6 +73,18 @@ struct active_list * active_list_prev(struct active_list *head, struct active_li
     return prev;
 }
 
+
+struct active_list *active_list_move_node(struct active_list *old_head, struct active_list *new_head, struct active_list *node) {
+    struct active_list *prev;
+    if (!old_head || !new_head || !node)
+        return NULL;
+    if (old_head == new_head)
+        return node;
+    prev = active_list_prev(old_head, node);
+    active_list_add(new_head, node);
+    return prev;
+}
+
 static void list_head_clear (struct list_head *head) {
     struct active_list *next;
     struct list_head *n, *ptr;
