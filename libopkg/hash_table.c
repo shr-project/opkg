@@ -78,7 +78,26 @@ int hash_table_init(const char *name, hash_table_t *hash, int len)
 
 void hash_table_deinit(hash_table_t *hash)
 {
-    free(hash->entries);
+    int i;
+    if (!hash)
+        return;
+
+    /* free the reminaing entries */
+    for (i = 0; i < hash->n_entries; i++) {
+	hash_entry_t *hash_entry = (hash->entries + i);
+	/* skip the first entry as this is part of the array */
+	hash_entry = hash_entry->next;
+        while (hash_entry)
+	{
+	  hash_entry_t *old = hash_entry;
+	  hash_entry = hash_entry->next;
+	  free (old->key);
+	  free (old);
+	}
+    }
+
+    free (hash->entries);
+
     hash->entries = NULL;
     hash->n_entries = 0;
 }

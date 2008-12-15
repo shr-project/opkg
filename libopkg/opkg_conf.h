@@ -49,7 +49,7 @@ struct opkg_conf
      pkg_dest_t *default_dest;
 
      char *tmp_dir;
-     const char *lists_dir;
+     char *lists_dir;
      const char *pending_dir;
 
      /* options */

@@ -179,7 +179,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      }
 
      if (args->offline_root) {
-            char *tmp = malloc(strlen(lists_dir) + strlen(args->offline_root) + 1);
+            char *tmp;// = malloc(strlen(lists_dir) + strlen(args->offline_root) + 1);
             sprintf_alloc(&tmp, "%s/%s",args->offline_root,lists_dir);
             free(lists_dir);
             lists_dir = tmp;
@@ -195,6 +195,8 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 	  sprintf_alloc(&etc_opkg_conf_pattern, "%s/etc/opkg/*.conf", args->offline_root);
      memset(&globbuf, 0, sizeof(globbuf));
      err = glob(etc_opkg_conf_pattern, 0, NULL, &globbuf);
+     if (args->offline_root)
+          free (etc_opkg_conf_pattern);
      if (!err) {
 	  int i;
 	  for (i = 0; i < globbuf.gl_pathc; i++) {
@@ -327,6 +329,7 @@ void opkg_conf_deinit(opkg_conf_t *conf)
 #endif /* OPKG_DEBUG_NO_TMP_CLEANUP */
 
      free(conf->tmp_dir); /*XXX*/
+     free(conf->lists_dir);
 
      pkg_src_list_deinit(&conf->pkg_src_list);
      pkg_dest_list_deinit(&conf->pkg_dest_list);

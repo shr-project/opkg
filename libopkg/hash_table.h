@@ -22,7 +22,7 @@ typedef struct hash_entry hash_entry_t;
 typedef struct hash_table hash_table_t;
 
 struct hash_entry {
-  const char * key;
+  char * key;
   void * data;
   struct hash_entry * next;
 };

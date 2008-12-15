@@ -144,6 +144,8 @@ int pkg_init(pkg_t *pkg)
 
 void pkg_deinit(pkg_t *pkg)
 {
+     int i;
+
      free(pkg->name);
      pkg->name = NULL;
      pkg->epoch = 0;
@@ -168,18 +170,65 @@ void pkg_deinit(pkg_t *pkg)
      pkg->state_want = SW_UNKNOWN;
      pkg->state_flag = SF_OK;
      pkg->state_status = SS_NOT_INSTALLED;
+
+     for (i = 0; i < pkg->depends_count; i++)
+       free (pkg->depends_str[i]);
      free(pkg->depends_str);
      pkg->depends_str = NULL;
+     pkg->depends_count = 0;
+
+     for (i = 0; i < pkg->provides_count; i++)
+       free (pkg->provides_str[i]);
      free(pkg->provides_str);
      pkg->provides_str = NULL;
-     pkg->depends_count = 0;
-     /* XXX: CLEANUP: MEMORY_LEAK: how to free up pkg->depends ? */
+     pkg->provides_count = 0;
+
+     for (i = 0; i < pkg->conflicts_count; i++)
+       free (pkg->conflicts_str[i]);
+     free(pkg->conflicts_str);
+     pkg->conflicts_str = NULL;
+     pkg->conflicts_count = 0;
+
+     for (i = 0; i < pkg->replaces_count; i++)
+       free (pkg->replaces_str[i]);
+     free(pkg->replaces_str);
+     pkg->replaces_str = NULL;
+     pkg->replaces_count = 0;
+
+     for (i = 0; i < pkg->recommends_count; i++)
+       free (pkg->recommends_str[i]);
+     free(pkg->recommends_str);
+     pkg->recommends_str = NULL;
+     pkg->recommends_count = 0;
+
+     if (pkg->depends)
+     {
+       int count = pkg->pre_depends_count + pkg->depends_count + pkg->recommends_count + pkg->suggests_count;
+       int x;
+
+       for (x = 0; x < count; x++)
+       {
+         compound_depend_t *depends;
+	 depends = &pkg->depends[x];
+
+         for (i = 0; i < depends->possibility_count; i++)
+         {
+           depend_t *d;
+           d = depends->possibilities[i];
+           free (d->version);
+           free (d);
+	 }
+	 free (depends->possibilities);
+       }
+       free (pkg->depends);
+     }
+     free (pkg->provides);
+     free (pkg->conflicts);
+
      pkg->pre_depends_count = 0;
      free(pkg->pre_depends_str);
      pkg->pre_depends_str = NULL;
      pkg->provides_count = 0;
-     /* XXX: CLEANUP: MEMORY_LEAK: how to free up pkg->provides ? */
-     /* XXX: CLEANUP: MEMORY_LEAK: how to free up pkg->suggests ? */
      free(pkg->filename);
      pkg->filename = NULL;
      free(pkg->local_filename);

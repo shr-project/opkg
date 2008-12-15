@@ -53,8 +53,34 @@ int pkg_hash_init(const char *name, hash_table_t *hash, int len)
   return hash_table_init(name, hash, len);
 }
 
+void free_pkgs (const char *key, void *entry, void *data)
+{
+  int i;
+  abstract_pkg_t *ab_pkg;
+
+  /* each entry in the hash table is an abstract package, which contains a list
+   * of packages that provide the abstract package */
+  
+  ab_pkg = (abstract_pkg_t*) entry;
+
+  if (ab_pkg->pkgs)
+  {
+    for (i = 0; i < ab_pkg->pkgs->len; i++)
+    {
+      pkg_deinit (ab_pkg->pkgs->pkgs[i]);
+      free (ab_pkg->pkgs->pkgs[i]);
+    }
+  }
+
+  abstract_pkg_vec_free (ab_pkg->provided_by);
+  pkg_vec_free (ab_pkg->pkgs);
+  free (ab_pkg->name);
+  free (ab_pkg);
+}
+
 void pkg_hash_deinit(hash_table_t *hash)
 {
+  hash_table_foreach (hash, free_pkgs, NULL);
   hash_table_deinit(hash);
 }
 

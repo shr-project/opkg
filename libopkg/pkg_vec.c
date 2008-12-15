@@ -36,7 +36,12 @@ pkg_vec_t * pkg_vec_alloc(void)
 
 void pkg_vec_free(pkg_vec_t *vec)
 {
-    free(vec->pkgs);
+    if (!vec)
+      return;
+
+    if (vec->pkgs)
+      free(vec->pkgs);
+
     free(vec);
 }
 
