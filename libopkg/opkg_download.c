@@ -252,8 +252,12 @@ opkg_verify_file (opkg_conf_t *conf, char *text_file, char *sig_file)
 	return -1;
 
     err = gpgme_op_verify (ctx, sig, text, NULL);
+    if (err)
+	return -1;
 
     result = gpgme_op_verify_result (ctx);
+    if (!result)
+	return -1;
 
     /* see if any of the signitures matched */
     s = result->signatures;
