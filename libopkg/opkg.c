@@ -656,6 +656,11 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   err = opkg_configure_packages (opkg->conf, NULL);
   if (err)
     return OPKG_UNKNOWN_ERROR;
+
+  /* write out status files and file lists */
+  opkg_conf_write_status_files (opkg->conf);
+  pkg_write_changed_filelists (opkg->conf);
+
   progress (pdata, 100);
   opkg_package_free (pdata.package);
   return 0;
