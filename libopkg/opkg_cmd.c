@@ -184,6 +184,7 @@ int opkg_cmd_exec(opkg_cmd_t *cmd, opkg_conf_t *conf, int argc, const char **arg
 
 static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
+     char *tmp;
      int err;
      int failures;
      char *lists_dir;
@@ -212,6 +213,16 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
      } 
 
      failures = 0;
+
+
+     tmp = strdup ("/tmp/opkg.XXXXXX");
+
+     if (mkdtemp (tmp) == NULL) {
+	 perror ("mkdtemp");
+	 failures++;
+     }
+
+
      for (iter = conf->pkg_src_list.head; iter; iter = iter->next) {
 	  char *url, *list_file_name;
 
@@ -225,17 +236,8 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 
 	  sprintf_alloc(&list_file_name, "%s/%s", lists_dir, src->name);
 	  if (src->gzip) {
-	      char *tmp;
 	      char *tmp_file_name;
 	      FILE *in, *out;
-
-	      tmp = strdup ("/tmp/opkg.XXXXXX");
-
-	      if (mkdtemp (tmp) == NULL) {
-		  perror ("mkdtemp");
-		  failures++;
-		  continue;
-	      }
 	      
 	      sprintf_alloc (&tmp_file_name, "%s/%s.gz", tmp, src->name);
 	      err = opkg_download(conf, url, tmp_file_name);
@@ -252,8 +254,6 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 		   if (out)
 			fclose (out);
 		   unlink (tmp_file_name);
-		   rmdir (tmp);
-		   free (tmp);
 	      }
 	  } else
 	      err = opkg_download(conf, url, list_file_name);
@@ -274,14 +274,9 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 	  else
 	      sprintf_alloc(&url, "%s/%s", src->value, "Packages.sig");
 
-	  /* create temporary dir for it */
-	  char *tmp, *tmp_file_name;
-	  tmp = strdup ("/tmp/opkg.XXXXXX");
-	  if (mkdtemp (tmp) == NULL) {
-	 	perror ("mkdtemp");
-		failures++;
-		continue;
-	  }
+	  /* create temporary file for it */
+	  char *tmp_file_name;
+
 	  sprintf_alloc (&tmp_file_name, "%s/%s", tmp, "Packages.sig");
 
 	  err = opkg_download(conf, url, tmp_file_name);
@@ -297,12 +292,13 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 		opkg_message (conf, OPKG_NOTICE, "Signature check failed\n");
 	  }
 	  unlink (tmp_file_name);
-	  unlink (tmp);
 	  free (tmp_file_name);
 
 	  free (url);
 	  free(list_file_name);
      }
+     rmdir (tmp);
+     free (tmp);
      free(lists_dir);
 
 #ifdef CONFIG_CLEAR_SW_INSTALL_FLAG
