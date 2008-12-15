@@ -111,7 +111,8 @@ int main (void) {
         test = list_entry(ptr, struct active_test, list);
         printf ("%s ",test->str);
     }
-    printf("\npos order: ");
+    printf("\nafter clear: ");
+    active_list_clear(&head);
     for(ptr = active_list_next(&head, NULL); ptr ;ptr = active_list_next(&head, ptr)) {
         test = list_entry(ptr, struct active_test, list);
         printf ("%s ",test->str);

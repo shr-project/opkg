@@ -71,7 +71,22 @@ struct active_list * active_list_prev(struct active_list *head, struct active_li
     return prev;
 }
 
+static void list_head_clear (struct list_head *head) {
+    struct active_list *next;
+    struct list_head *n, *ptr;
+    if (!head)
+        return;
+    list_for_each_safe(ptr, n , head) {
+        next = list_entry(ptr, struct active_list, node);
+        if (next->depend.next != &next->depend) {
+            list_head_clear(&next->depend);
+        }
+        list_del_init(&next->node);
+        next->depended = NULL;
+    }
+}
 void active_list_clear(struct active_list *head) {
+    list_head_clear(&head->node);
 }
 
 void active_list_add_depend(struct active_list *node, struct active_list *depend) {
