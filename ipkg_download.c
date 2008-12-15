@@ -4,6 +4,7 @@
    Carl D. Worth
 
    Copyright (C) 2001 University of Southern California
+   Copyright (C) 2008 OpenMoko Inc
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -26,6 +27,29 @@
 #include "xsystem.h"
 #include "file_util.h"
 #include "str_util.h"
+
+
+int
+curl_progress_func (void* data,
+                         double t, /* dltotal */
+                         double d, /* dlnow */
+                         double ultotal,
+                         double ulnow)
+{
+    int i;
+    int p = d*100/t;
+    printf ("\r%3d%% |", p);
+    for (i = 1; i < 73; i++)
+    {
+	if (i <= p)
+	    printf ("=");
+	else
+	    printf ("-");
+    }
+    printf ("|");
+    fflush(stdout);
+    return 0;
+}
 
 int ipkg_download(ipkg_conf_t *conf, const char *src, const char *dest_file_name)
 {
@@ -99,12 +123,14 @@ int ipkg_download(ipkg_conf_t *conf, const char *src, const char *dest_file_name
     CURL *curl;
     CURLcode res;
     FILE * file = fopen (tmp_file_location, "w");
-    
+
     curl = curl_easy_init ();
     if (curl)
     {
 	curl_easy_setopt (curl, CURLOPT_URL, src);
 	curl_easy_setopt (curl, CURLOPT_WRITEDATA, file);
+	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
+	curl_easy_setopt (curl, CURLOPT_PROGRESSFUNCTION, curl_progress_func);
 	res = curl_easy_perform (curl);
 	curl_easy_cleanup (curl);
 	fclose (file);
@@ -112,6 +138,8 @@ int ipkg_download(ipkg_conf_t *conf, const char *src, const char *dest_file_name
     }
     else
 	return -1;
+
+    printf ("\n");
 
     err = file_move(tmp_file_location, dest_file_name);
 
