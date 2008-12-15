@@ -1,5 +1,4 @@
-#SUBDIRS = etc replace familiar libbb
-SUBDIRS =  etc familiar libbb libopkg src
+SUBDIRS =  etc familiar libbb libopkg tests src
 
 HOST_CPU=@host_cpu@
 BUILD_CPU=@build_cpu@

@@ -129,6 +129,7 @@ AC_SUBST(opkglibdir)
 AC_OUTPUT(
     Makefile
     libopkg/Makefile
+    tests/Makefile
     src/Makefile
     etc/Makefile
     familiar/Makefile

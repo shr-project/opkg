@@ -63,14 +63,3 @@ libopkg_la_CFLAGS = -DOPKG_LIB $(ALL_CFLAGS)  $(CURL_CFLAGS) $(GPGME_CFLAGS)
 lib_LTLIBRARIES = libopkg.la
 
 
-noinst_PROGRAMS = opkg_hash_test opkg_extract_test
-
-opkg_hash_test_LDADD = $(top_builddir)/libbb/libbb.la
-opkg_hash_test_SOURCES = opkg_hash_test.c $(opkg_db_sources) $(opkg_util_sources) $(opkg_list_sources)
-opkg_hash_test_CFLAGS = $(ALL_CFLAGS)
-
-opkg_extract_test_LDADD = $(top_builddir)/libbb/libbb.la
-opkg_extract_test_SOURCES = opkg_extract_test.c $(opkg_db_sources) $(opkg_util_sources) $(opkg_list_sources)
-opkg_extract_test_CFLAGS = $(ALL_CFLAGS)
-
-
