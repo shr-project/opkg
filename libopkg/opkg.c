@@ -107,6 +107,49 @@ opkg_free (opkg_t *opkg)
   args_deinit (opkg->args);
 }
 
+int
+opkg_read_config_files (opkg_t *opkg)
+{
+  args_t *a = opkg->args;
+  opkg_conf_t *c = opkg->conf;
+
+  /* Unfortunatly, the easiest way to re-read the config files right now is to
+   * throw away opkg->conf and start again */
+
+  /* copy the settings we need to keep */
+  a->autoremove = c->autoremove;
+  a->force_depends = c->force_depends;
+  a->force_defaults = c->force_defaults;
+  a->force_overwrite = c->force_overwrite;
+  a->force_downgrade = c->force_downgrade;
+  a->force_reinstall = c->force_reinstall;
+  a->force_removal_of_dependent_packages = c->force_removal_of_dependent_packages;
+  a->force_removal_of_essential_packages = c->force_removal_of_essential_packages;
+  a->nodeps = c->nodeps;
+  a->noaction = c->noaction;
+  a->query_all = c->query_all;
+  a->multiple_providers = c->multiple_providers;
+  a->verbosity = c->verbosity;
+
+  if (a->offline_root) free (a->offline_root);
+  a->offline_root = strdup (c->offline_root);
+
+  if (a->offline_root_pre_script_cmd) free (a->offline_root_pre_script_cmd);
+  a->offline_root_pre_script_cmd = strdup (c->offline_root_pre_script_cmd);
+
+  if (a->offline_root_post_script_cmd) free (a->offline_root_post_script_cmd);
+  a->offline_root_post_script_cmd = strdup (c->offline_root_post_script_cmd);
+
+  /* throw away old opkg_conf and start again */
+  opkg_conf_deinit (opkg->conf);
+  opkg_conf_init (opkg->conf, opkg->args);
+
+  free (opkg->options);
+  opkg_init_options_array (opkg->conf, &opkg->options);
+
+  return 0;
+}
+
 void
 opkg_get_option (opkg_t *opkg, char *option, void **value)
 {
