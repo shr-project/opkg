@@ -33,7 +33,7 @@ static char *state_strings[] =
 
 
 
-opkg_state_changed_callback opkg_cb_state;
+opkg_state_changed_callback opkg_cb_state_changed = NULL;
 
 static opkg_state_t opkg_state = 0;
 static char *opkg_state_data = NULL;
@@ -54,6 +54,12 @@ opkg_set_current_state (opkg_state_t state, const char *data)
   }
 
   opkg_state = state;
+
+  if (opkg_cb_state_changed)
+  {
+    opkg_cb_state_changed (opkg_state, opkg_state_data);
+  }
+
 
   printf ("opkg state set to %s: %s\n", state_strings[state], data);
 }
