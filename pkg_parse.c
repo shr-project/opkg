@@ -274,7 +274,6 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 		    pkg->auto_installed = 1;
 		}
 		free(auto_installed_value);
-		pkg->architecture = parseGenericFieldType("Auto-Installed", *lines);
 	    }
 	    break;
 
