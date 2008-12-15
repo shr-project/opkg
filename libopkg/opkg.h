@@ -37,6 +37,8 @@ struct _opkg_package_t
   char *repository;
   char *description;
   char *tags;
+  char *url;
+  int size;
   int installed;
 };
 
@@ -48,7 +50,7 @@ struct _opkg_progress_data_t
 };
 
 opkg_package_t* opkg_package_new ();
-opkg_package_t* opkg_package_new_with_values (const char *name, const char *version, const char *arch, const char *desc, const char *tags, int installed);
+opkg_package_t* opkg_package_new_with_values (const char *name, const char *version, const char *arch, const char *desc, const char *tags, const char *url, int size, int installed);
 void opkg_package_free (opkg_package_t *package);
 
 opkg_t* opkg_new ();

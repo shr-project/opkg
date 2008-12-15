@@ -45,7 +45,7 @@ struct _opkg_t
             __FILE__, __LINE__, __PRETTY_FUNCTION__, # expr); abort (); }
 
 #define progress(d, p) d.percentage = p; if (progress_callback) progress_callback (opkg, &d, user_data);
-#define OLD_PKG_TO_NEW(pkg) opkg_package_new_with_values (pkg->name, pkg->version, pkg->architecture, pkg->description, pkg->tags, (pkg->state_status == SS_INSTALLED));
+#define OLD_PKG_TO_NEW(pkg) opkg_package_new_with_values (pkg->name, pkg->version, pkg->architecture, pkg->description, pkg->tags, pkg->url, (pkg->size ? atoi (pkg->size) : 0), (pkg->state_status == SS_INSTALLED));
 
 /** Private Functions ***/
 
@@ -145,7 +145,7 @@ opkg_package_new ()
 
 opkg_package_t *
 opkg_package_new_with_values (const char *name, const char *version,
-    const char *arch, const char *desc, const char *tags, int installed)
+    const char *arch, const char *desc, const char *tags, const char *url, int size, int installed)
 {
   opkg_package_t *package;
   package = opkg_package_new ();
@@ -157,6 +157,9 @@ opkg_package_new_with_values (const char *name, const char *version,
   package->architecture = sstrdup (arch);
   package->description = sstrdup (desc);
   package->tags = sstrdup (tags);
+  package->url = sstrdup (url);
+
+  package->size = size;
   package->installed = (installed != 0);
 
   return package;
@@ -170,6 +173,7 @@ opkg_package_free (opkg_package_t *p)
   free (p->architecture);
   free (p->description);
   free (p->tags);
+  free (p->url);
 
   free (p);
 }
