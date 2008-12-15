@@ -345,8 +345,4 @@ extern const char * const can_not_create_raw_socket;
 #define fork	vfork
 #endif
 
-/* Stupid gcc always includes its own builtin strlen()... */
-extern size_t xstrlen(const char *string);
-#define strlen(x)	xstrlen(x)
-
 #endif /* __LIBBB_H__ */
