@@ -312,11 +312,18 @@ typedef struct opkg_intercept *opkg_intercept_t;
 static opkg_intercept_t opkg_prep_intercepts(opkg_conf_t *conf)
 {
     opkg_intercept_t ctx;
+    char *oldpath;
     char *newpath;
     int gen;
 
     ctx = malloc (sizeof (*ctx));
-    ctx->oldpath = strdup (getenv ("PATH"));
+    oldpath = getenv ("PATH");
+    if (oldpath) {
+        ctx->oldpath = strdup (oldpath);
+    } else {
+        ctx->oldpath = 0;
+    }
+
 
     sprintf_alloc (&newpath, "%s/opkg/intercept:%s", DATADIR, ctx->oldpath);
     setenv ("PATH", newpath, 1);
@@ -344,8 +351,12 @@ static int opkg_finalize_intercepts(opkg_intercept_t ctx)
     DIR *dir;
     int err = 0;
 
-    setenv ("PATH", ctx->oldpath, 1);
-    free (ctx->oldpath);
+    if (ctx->oldpath) {
+        setenv ("PATH", ctx->oldpath, 1);
+        free (ctx->oldpath);
+    } else {
+        unsetenv("PATH"); 
+    }
 
     dir = opendir (ctx->statedir);
     if (dir) {
