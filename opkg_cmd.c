@@ -153,12 +153,11 @@ int opkg_cmd_exec(opkg_cmd_t *cmd, opkg_conf_t *conf, int argc, const char **arg
       
 
 	result = (cmd->fun)(conf, argc, argv);
-        if ( result == 0 ) {
-           opkg_message(conf, OPKG_NOTICE, "Successfully terminated.\n");
-        } else {
-           opkg_message(conf, OPKG_NOTICE, "An error ocurred, return value: %d.\n", result);
 
+        if ( result != 0 ) {
+           opkg_message(conf, OPKG_NOTICE, "An error ocurred, return value: %d.\n", result);
         }
+
         if ( error_list ) {
            reverse_error_list(&error_list);
 
