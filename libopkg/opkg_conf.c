@@ -64,7 +64,6 @@ int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
 	  { "proxy_passwd", OPKG_OPT_TYPE_STRING, &conf->proxy_passwd },
 	  { "proxy_user", OPKG_OPT_TYPE_STRING, &conf->proxy_user },
 	  { "query-all", OPKG_OPT_TYPE_BOOL, &conf->query_all },
-	  { "verbose-wget", OPKG_OPT_TYPE_BOOL, &conf->verbose_wget },
 	  { "verbosity", OPKG_OPT_TYPE_BOOL, &conf->verbosity },
 	  { NULL }
      };
@@ -143,7 +142,6 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      conf->force_removal_of_essential_packages = 0;
      conf->force_removal_of_dependent_packages = 0;
      conf->nodeps = 0;
-     conf->verbose_wget = 0;
      conf->offline_root = NULL;
      conf->offline_root_pre_script_cmd = NULL;
      conf->offline_root_post_script_cmd = NULL;
@@ -263,9 +261,6 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      }
      if (args->query_all) {
 	  conf->query_all = 1;
-     }
-     if (args->verbose_wget) {
-	  conf->verbose_wget = 1;
      }
      if (args->multiple_providers) {
 	  conf->multiple_providers = 1;

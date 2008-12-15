@@ -35,7 +35,6 @@ struct args
     int nodeps;
     int multiple_providers;
     int query_all;
-    int verbose_wget;
     int verbosity;
     int nocheckfordirorfile;
     int noreadfeedsfile;

@@ -63,7 +63,6 @@ struct opkg_conf
      int force_removal_of_dependent_packages;
      int force_removal_of_essential_packages;
      int nodeps; /* do not follow dependences */
-     int verbose_wget;
      int multiple_providers;
      char *offline_root;
      char *offline_root_pre_script_cmd;

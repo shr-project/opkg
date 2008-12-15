@@ -40,7 +40,6 @@ enum long_args_opt
      ARGS_OPT_FORCE_SPACE,
      ARGS_OPT_NOACTION,
      ARGS_OPT_NODEPS,
-     ARGS_OPT_VERBOSE_WGET,
      ARGS_OPT_VERBOSITY,
      ARGS_OPT_MULTIPLE_PROVIDERS,
      ARGS_OPT_AUTOREMOVE
@@ -71,7 +70,6 @@ int args_init(args_t *args)
      args->autoremove = ARGS_DEFAULT_AUTOREMOVE;
      args->noaction = ARGS_DEFAULT_NOACTION;
      args->nodeps = ARGS_DEFAULT_NODEPS;
-     args->verbose_wget = ARGS_DEFAULT_VERBOSE_WGET;
      args->verbosity = ARGS_DEFAULT_VERBOSITY;
      args->offline_root = ARGS_DEFAULT_OFFLINE_ROOT;
      args->offline_root_pre_script_cmd = ARGS_DEFAULT_OFFLINE_ROOT_PRE_SCRIPT_CMD;
@@ -130,8 +128,6 @@ int args_parse(args_t *args, int argc, char *argv[])
 	  {"offline-root", 1, 0, 'o'},
 	  {"test", 0, 0, ARGS_OPT_NOACTION},
 	  {"tmp-dir", 1, 0, 't'},
-	  {"verbose-wget", 0, 0, ARGS_OPT_VERBOSE_WGET},
-	  {"verbose_wget", 0, 0, ARGS_OPT_VERBOSE_WGET},
 	  {"verbosity", 2, 0, 'V'},
 	  {"version", 0, 0, 'v'},
 	  {0, 0, 0, 0}
@@ -198,9 +194,6 @@ int args_parse(args_t *args, int argc, char *argv[])
 	       break;
 	  case ARGS_OPT_FORCE_SPACE:
 	       args->force_space = 1;
-	       break;
-	  case ARGS_OPT_VERBOSE_WGET:
-	       args->verbose_wget = 1;
 	       break;
 	  case ARGS_OPT_MULTIPLE_PROVIDERS:
 	       args->multiple_providers = 1;
@@ -284,7 +277,6 @@ void args_usage(char *complaint)
      printf("				directory name in a pinch).\n");
      printf("\t-o <offline_root>	Use <offline_root> as the root directory for\n");
      printf("\t-offline <offline_root>	offline installation of packages.\n");
-     printf("\t-verbose_wget		more wget messages\n");
     
      printf("\tForce Options (use when opkg is too smart for its own good):\n");
      printf("\t-force-depends		Make dependency checks warnings instead of errors\n");
