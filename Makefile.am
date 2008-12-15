@@ -1,4 +1,4 @@
-SUBDIRS = familiar libbb libopkg tests src
+SUBDIRS = libbb libopkg tests src
 
 HOST_CPU=@host_cpu@
 BUILD_CPU=@build_cpu@
@@ -26,4 +26,4 @@ MAINTAINERCLEANFILES= \
 	aclocal.m4
 
 package: all-recursive
-	STRIPPROG=$(STRIP) familiar/rules INSTALL=$$PWD/install-sh  binary-arch
+	STRIPPROG=$(STRIP) INSTALL=$$PWD/install-sh  binary-arch

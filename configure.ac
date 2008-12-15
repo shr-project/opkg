@@ -131,11 +131,6 @@ AC_OUTPUT(
     libopkg/Makefile
     tests/Makefile
     src/Makefile
-    familiar/Makefile
-    familiar/control
-    familiar/control-unstripped
-    familiar/libopkg-control
-    familiar/libopkg-dev-control
     libbb/Makefile
     libopkg.pc
     opkg.h)
