@@ -32,7 +32,6 @@
 #include "file_util.h"
 #include "str_util.h"
 
-#include "libopkg.h"
 opkg_download_progress_callback opkg_cb_download_progress = NULL;
 
 int

@@ -27,6 +27,9 @@ typedef enum {
      OPKG_DEBUG2,	/* more debug level message */
 } message_level_t;
 
+typedef int (*opkg_message_callback)(opkg_conf_t *conf, message_level_t level, 
+	char *msg);
+
 extern void opkg_message(opkg_conf_t *conf, message_level_t level, char *fmt, ...);
 
 #endif /* _OPKG_MESSAGE_H_ */

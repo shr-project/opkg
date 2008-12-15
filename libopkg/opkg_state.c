@@ -15,7 +15,6 @@
    General Public License for more details.
 */
 
-#include "libopkg.h"
 #include "opkg_state.h"
 
 

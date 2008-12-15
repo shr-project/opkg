@@ -19,5 +19,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+typedef char* (*opkg_response_callback)(char *question);
 char *get_user_response(const char *format, ...);
 

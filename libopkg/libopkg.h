@@ -24,19 +24,17 @@
 #include "opkg_conf.h"
 #include "opkg_message.h"
 #include "opkg_state.h"
+#include "opkg_download.h"
+#include "opkg_utils.h"
 
 #include "args.h"
 #include "pkg.h"
+#include "user.h"
 
-typedef int (*opkg_message_callback)(opkg_conf_t *conf, message_level_t level, 
-	char *msg);
-typedef int (*opkg_list_callback)(char *name, char *desc, char *version, 
-	pkg_state_status_t status, void *userdata);
 typedef int (*opkg_status_callback)(char *name, int istatus, char *desc,
 	void *userdata);
-typedef char* (*opkg_response_callback)(char *question);
-typedef void (*opkg_download_progress_callback)(int percent, char *url);
-typedef void (*opkg_state_changed_callback)(opkg_state_t state, const char *data);
+typedef int (*opkg_list_callback)(char *name, char *desc, char *version, 
+	pkg_state_status_t status, void *userdata);
 typedef void (*opkg_progress_callback)(int complete, int total, void *userdata);
 
 extern int opkg_op(int argc, char *argv[]); /* opkglib.c */
@@ -76,15 +74,11 @@ extern int opkg_package_whatprovides(args_t *args, const char *file);
 extern int opkg_package_whatconflicts(args_t *args, const char *file);
 extern int opkg_package_whatreplaces(args_t *args, const char *file);
 
-extern opkg_message_callback opkg_cb_message; /* opkglib.c */
-extern opkg_response_callback opkg_cb_response;
+extern opkg_message_callback opkg_cb_message; /* opkg_message.c */
+extern opkg_response_callback opkg_cb_response; /* user.c */
 extern opkg_status_callback opkg_cb_status;
 extern opkg_list_callback opkg_cb_list;
 extern opkg_download_progress_callback opkg_cb_download_progress; /* opkg_download.c */
 extern opkg_state_changed_callback opkg_cb_state_changed; /* opkg_state.c */
-
-extern void push_error_list(struct errlist **errors,char * msg);
-extern void reverse_error_list(struct errlist **errors);
-extern void free_error_list();
 
 #endif

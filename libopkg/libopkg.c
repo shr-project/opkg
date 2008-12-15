@@ -26,8 +26,6 @@
 
 
 
-opkg_message_callback opkg_cb_message = NULL;
-opkg_response_callback opkg_cb_response = NULL;
 opkg_status_callback opkg_cb_status = NULL;
 opkg_list_callback opkg_cb_list = NULL;
 

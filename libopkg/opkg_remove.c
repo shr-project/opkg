@@ -26,8 +26,6 @@
 #include "sprintf_alloc.h"
 #include "str_util.h"
 
-#include "opkg_cmd.h"
-
 /*
  * Returns number of the number of packages depending on the packages provided by this package.
  * Every package implicitly provides itself.

@@ -20,6 +20,8 @@
 
 #include "opkg_conf.h"
 
+typedef void (*opkg_download_progress_callback)(int percent, char *url);
+
 int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name);
 int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir);
 /*

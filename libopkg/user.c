@@ -15,16 +15,18 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
 */
-
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include "file_util.h"
 #include "str_util.h"
-#include "libopkg.h"
-
+#include "user.h"
 
 static char *question = NULL;
 static int question_len = 255;
+
+opkg_response_callback opkg_cb_response = NULL;
 
 char *get_user_response(const char *format, ...)
 {

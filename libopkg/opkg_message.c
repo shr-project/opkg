@@ -18,9 +18,7 @@
 #include "opkg_conf.h"
 #include "opkg_message.h"
 
-#include "libopkg.h"
-
-//#define opkg_message(conf, level, fmt, arg...) opkg_cb_message(conf, level, fmt, ## arg)
+opkg_message_callback opkg_cb_message = NULL;
 
 void
 opkg_message (opkg_conf_t * conf, message_level_t level, char *fmt, ...)
