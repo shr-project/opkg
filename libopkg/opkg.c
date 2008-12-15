@@ -564,6 +564,7 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
   if (pkg->state_status == SS_NOT_INSTALLED)
   {
     /* XXX:  Error: Package seems to be not installed (STATUS = NOT_INSTALLED). */
+    opkg_package_free (pdata.package);
     return OPKG_PACKAGE_NOT_INSTALLED;
   }
   progress (pdata, 25);
@@ -639,6 +640,8 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   /* opkg_upgrade_pkg returns the error codes of opkg_install_pkg */
   if (err)
   {
+
+    opkg_package_free (pdata.package);
     switch (err)
     {
       case OPKG_INSTALL_ERR_NOT_TRUSTED: return OPKG_GPG_ERROR;
@@ -654,8 +657,10 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   progress (pdata, 75);
 
   err = opkg_configure_packages (opkg->conf, NULL);
-  if (err)
+  if (err) {
+    opkg_package_free (pdata.package);  
     return OPKG_UNKNOWN_ERROR;
+  }
 
   /* write out status files and file lists */
   opkg_conf_write_status_files (opkg->conf);
@@ -906,6 +911,7 @@ opkg_list_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_d
 
     package = old_pkg_to_new (pkg);
     callback (opkg, package, user_data);
+    opkg_package_free (package);
   }
 
   pkg_vec_free (all);
@@ -950,6 +956,7 @@ opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, v
     {
       package = old_pkg_to_new (new);
       callback (opkg, package, user_data);
+      opkg_package_free (package);
     }
   }
 
