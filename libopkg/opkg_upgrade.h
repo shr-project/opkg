@@ -14,3 +14,4 @@
 */
 
 int opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old);
+pkg_vec_t *opkg_upgrade_all_list_get(opkg_conf_t *conf);

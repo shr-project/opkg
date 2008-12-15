@@ -929,47 +929,33 @@ opkg_list_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_d
 int
 opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_data)
 {
-  pkg_vec_t *all;
-  int i;
+    pkg_vec_t *all;
+    int i;
 
-  opkg_assert (opkg);
-  opkg_assert (callback);
+    opkg_assert (opkg);
+    opkg_assert (callback);
 
-  /* ensure all data is valid */
-  pkg_info_preinstall_check (opkg->conf);
+    /* ensure all data is valid */
+    pkg_info_preinstall_check (opkg->conf);
 
-  all = pkg_vec_alloc ();
-  pkg_hash_fetch_available (&opkg->conf->pkg_hash, all);
-  for (i = 0; i < all->len; i++)
-  {
-    pkg_t *old, *new;
-    int cmp;
-    opkg_package_t *package;
-
-    old = all->pkgs[i];
-    
-    if (old->state_status != SS_INSTALLED)
-      continue;
-
-    new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, old->name, NULL);
-    if (new == NULL) {
-      /* XXX: Notice: Assuming locally install package is up to date */
-      continue;
-    }
-          
-    cmp = pkg_compare_versions(old, new);
-
-    if (cmp < 0)
+    all = opkg_upgrade_all_list_get (opkg->conf);
+    for (i = 0; i < all->len; i++)
     {
-      package = old_pkg_to_new (new);
-      callback (opkg, package, user_data);
-      opkg_package_free (package);
+        pkg_t *old, *new;
+        opkg_package_t *package;
+
+        old = all->pkgs[i];
+
+        new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, old->name, NULL);
+
+        package = old_pkg_to_new (new);
+        callback (opkg, package, user_data);
+        opkg_package_free (package);
     }
-  }
 
-  pkg_vec_free (all);
+    pkg_vec_free (all);
 
-  return 0;
+    return 0;
 }
 
 opkg_package_t*

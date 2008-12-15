@@ -77,3 +77,35 @@ int opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old)
     new->state_flag |= SF_USER;
     return opkg_install_pkg(conf, new,1);
 }
+
+
+
+pkg_vec_t *opkg_upgrade_all_list_get(opkg_conf_t *conf) {
+    pkg_vec_t *all, *ans;
+    int i;
+
+    /* ensure all data is valid */
+    pkg_info_preinstall_check (conf);
+
+    all = pkg_vec_alloc ();
+    ans = pkg_vec_alloc ();
+    pkg_hash_fetch_all_installed (&conf->pkg_hash, all);
+    for (i = 0; i < all->len; i++)
+    {
+        pkg_t *old, *new;
+        int cmp;
+
+        old = all->pkgs[i];
+        new = pkg_hash_fetch_best_installation_candidate_by_name(conf, old->name, NULL);
+
+        if (new == NULL)
+            continue;
+
+        cmp = pkg_compare_versions(old, new);
+
+        if ( cmp < 0 )
+            pkg_vec_insert(ans, old);
+    }
+    pkg_vec_free (all);
+    return ans;
+}

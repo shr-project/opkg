@@ -267,6 +267,7 @@ void args_usage(char *complaint)
      printf("\nInformational Commands:\n");
      printf("\tlist    		List available packages and descriptions\n");
      printf("\tlist_installed		List all and only the installed packages and description \n");
+     printf("\tlist_upgradable		List all the installed and upgradable packages\n");
      printf("\tfiles <pkg>		List all files belonging to <pkg>\n");
      printf("\tsearch <file|regexp>		Search for a package providing <file>\n");
      printf("\tinfo [pkg|regexp]		Display all info for <pkg>\n");

@@ -55,6 +55,7 @@ static int opkg_status_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_install_pending_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_install_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_list_installed_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_list_upgradable_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_remove_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_purge_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_flag_cmd(opkg_conf_t *conf, int argc, char **argv);
@@ -81,6 +82,7 @@ static opkg_cmd_t cmds[] = {
      {"upgrade", 0, (opkg_cmd_fun_t)opkg_upgrade_cmd},
      {"list", 0, (opkg_cmd_fun_t)opkg_list_cmd},
      {"list_installed", 0, (opkg_cmd_fun_t)opkg_list_installed_cmd},
+     {"list_upgradable", 0, (opkg_cmd_fun_t)opkg_list_upgradable_cmd},
      {"info", 0, (opkg_cmd_fun_t)opkg_info_cmd},
      {"flag", 1, (opkg_cmd_fun_t)opkg_flag_cmd},
      {"status", 0, (opkg_cmd_fun_t)opkg_status_cmd},
@@ -780,6 +782,26 @@ static int opkg_list_installed_cmd(opkg_conf_t *conf, int argc, char **argv)
      }
 
      return 0;
+}
+
+static int opkg_list_upgradable_cmd(opkg_conf_t *conf, int argc, char **argv) 
+{
+    pkg_vec_t *all = opkg_upgrade_all_list_get(conf);
+    pkg_t *_old_pkg, *_new_pkg;
+    char *old_v, *new_v;
+    int i;
+    for (i=0;i<all->len;i++) {
+        _old_pkg = all->pkgs[i];
+        _new_pkg = pkg_hash_fetch_best_installation_candidate_by_name(conf, _old_pkg->name, NULL);
+        old_v = pkg_version_str_alloc(_old_pkg);
+        new_v = pkg_version_str_alloc(_new_pkg);
+        if (opkg_cb_list)
+            opkg_cb_list(_old_pkg->name, new_v, old_v, _old_pkg->state_status, p_userdata);
+        free(old_v);
+        free(new_v);
+    }
+    pkg_vec_free(all);
+    return 0;
 }
 
 static int opkg_info_status_cmd(opkg_conf_t *conf, int argc, char **argv, int installed_only)
