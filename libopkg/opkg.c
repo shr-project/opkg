@@ -194,7 +194,7 @@ opkg_free (opkg_t *opkg)
 }
 
 int
-opkg_read_config_files (opkg_t *opkg)
+opkg_re_read_config_files (opkg_t *opkg)
 {
   args_t *a;
   opkg_conf_t *c;
@@ -727,6 +727,56 @@ opkg_list_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_d
         (pkg->state_status == SS_INSTALLED));
 
     callback (opkg, package, user_data);
+  }
+
+  pkg_vec_free (all);
+
+  return 0;
+}
+
+int
+opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_data)
+{
+  pkg_vec_t *all;
+  int i;
+
+  opkg_assert (opkg);
+  opkg_assert (callback);
+
+  all = pkg_vec_alloc ();
+  pkg_hash_fetch_available (&opkg->conf->pkg_hash, all);
+  for (i = 0; i < all->len; i++)
+  {
+    pkg_t *old, *new;
+    int cmp;
+    opkg_package_t *package;
+
+    old = all->pkgs[i];
+    
+    if (old->state_status != SS_INSTALLED)
+      continue;
+
+    new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, old->name);
+    if (new == NULL) {
+      /* XXX: Notice: Assuming locally install package is up to date */
+      continue;
+    }
+          
+    cmp = pkg_compare_versions(old, new);
+
+    if (cmp < 0)
+    {
+
+      package = opkg_package_new_with_values (
+          old->name,
+          old->version,
+          old->architecture,
+          old->description,
+          old->tags,
+          (old->state_status == SS_INSTALLED));
+
+      callback (opkg, package, user_data);
+    }
   }
 
   pkg_vec_free (all);

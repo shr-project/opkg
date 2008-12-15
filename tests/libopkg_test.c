@@ -26,6 +26,12 @@ package_list_callback (opkg_t *opkg, opkg_package_t *pkg, void *data)
   opkg_package_free (pkg);
 }
 
+void
+package_list_upgradable_callback (opkg_t *opkg, opkg_package_t *pkg, void *data)
+{
+  printf ("%s - %s\n", pkg->name, pkg->version);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -36,7 +42,7 @@ main (int argc, char **argv)
 
   opkg_set_option (opkg, "offline_root", "/tmp/");
 
-  opkg_read_config_files (opkg);
+  opkg_re_read_config_files (opkg);
 
   err = opkg_update_package_lists (opkg, progress_callback, "Updating...");
   printf ("\nopkg_update_package_lists returned %d\n", err);
@@ -47,11 +53,14 @@ main (int argc, char **argv)
   err = opkg_upgrade_package (opkg, "aspell", progress_callback, "Upgrading...");
   printf ("\nopkg_upgrade_package returned %d\n", err);
 
-  err = opkg_upgrade_all (opkg, progress_callback, "Upgrading all...");
-  printf ("\nopkg_upgrade_package returned %d\n", err);
-
   err = opkg_remove_package (opkg, "aspell", progress_callback, "Removing...");
   printf ("\nopkg_remove_package returned %d\n", err);
+
+  printf ("Listing upgradable packages...\n");
+  opkg_list_upgradable_packages (opkg, package_list_upgradable_callback, NULL);
+
+  err = opkg_upgrade_all (opkg, progress_callback, "Upgrading all...");
+  printf ("\nopkg_upgrade_all returned %d\n", err);
 
   opkg_list_packages (opkg, package_list_callback, NULL);
   printf ("\n");
