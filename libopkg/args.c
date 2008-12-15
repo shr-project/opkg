@@ -49,6 +49,9 @@ int args_init(args_t *args)
 {
      char *conf_file_dir;
 
+     if (!args) {
+	  return EFAULT;
+     }
      memset(args, 0, sizeof(args_t));
 
      args->dest = ARGS_DEFAULT_DEST;
@@ -78,7 +81,7 @@ int args_init(args_t *args)
      args->nocheckfordirorfile = 0;
      args->noreadfeedsfile = 0;
 
-     return 1;
+     return 0;
 }
 
 void args_deinit(args_t *args)
