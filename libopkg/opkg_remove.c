@@ -90,7 +90,7 @@ int opkg_remove_dependent_pkgs (opkg_conf_t *conf, pkg_t *pkg, abstract_pkg_t **
     int i;
     int a;
     int count;
-    pkg_vec_t *dependent_pkgs = pkg_vec_alloc();
+    pkg_vec_t *dependent_pkgs;
     abstract_pkg_t * ab_pkg;
 
     if((ab_pkg = pkg->parent) == NULL){
@@ -110,6 +110,8 @@ int opkg_remove_dependent_pkgs (opkg_conf_t *conf, pkg_t *pkg, abstract_pkg_t **
 
     i = 0;
     count = 1;
+    dependent_pkgs = pkg_vec_alloc();
+
     while (dependents [i] != NULL) {
         abstract_pkg_t *dep_ab_pkg = dependents[i];
 	
@@ -131,16 +133,20 @@ int opkg_remove_dependent_pkgs (opkg_conf_t *conf, pkg_t *pkg, abstract_pkg_t **
 	 * 2 - to keep track of pkgs whose deps have been checked alrdy  - Karthik */	
     }
     
-    if (count == 1)
-	    return 0;
-    
-    
-    for (i = 0; i < dependent_pkgs->len; i++) {
-        int err = opkg_remove_pkg(conf, dependent_pkgs->pkgs[i],0);
-        if (err)
-            return err;
+    if (count == 1) {
+        free(dependent_pkgs);  
+	return 0;
     }
-    return 0;
+    
+    
+    int err=0;
+    for (i = 0; i < dependent_pkgs->len; i++) {
+        err = opkg_remove_pkg(conf, dependent_pkgs->pkgs[i],0);
+        if (err)
+            break;
+    }
+    free(dependent_pkgs);
+    return err;
 }
 
 static int user_prefers_removing_dependents(opkg_conf_t *conf, abstract_pkg_t *abpkg, pkg_t *pkg, abstract_pkg_t **dependents)
@@ -268,8 +274,10 @@ int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)
 
 	       /* remove packages depending on this package - Karthik */
 	       err = opkg_remove_dependent_pkgs (conf, pkg, dependents);
-	       free(dependents);
-	       if (err) return err;
+	       if (err) {
+	         free(dependents);
+                 return err;
+               }
 	  }
           if (dependents)
               free(dependents);

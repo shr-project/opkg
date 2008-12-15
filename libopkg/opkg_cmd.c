@@ -909,9 +909,9 @@ static int opkg_remove_cmd(opkg_conf_t *conf, int argc, char **argv)
 
     done = 0;
 
-     available = pkg_vec_alloc();
      pkg_info_preinstall_check(conf);
      if ( argc > 0 ) {
+        available = pkg_vec_alloc();
         pkg_hash_fetch_all_installed(&conf->pkg_hash, available);
         for (i=0; i < argc; i++) {
            pkg_name = malloc(strlen(argv[i])+2);
