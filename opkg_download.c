@@ -41,7 +41,7 @@ curl_progress_func (void* data,
     printf ("\r%3d%% |", p);
     for (i = 1; i < 73; i++)
     {
-	if (i <= p)
+	if (i <= p * 0.73)
 	    printf ("=");
 	else
 	    printf ("-");
