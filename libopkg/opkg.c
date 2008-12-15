@@ -243,59 +243,72 @@ opkg_set_option (opkg_t *opkg, char *option, void *value)
 }
 
 int
-opkg_install_package (opkg_t *opkg, char *package_name)
+opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
 {
   int err;
+  char *package_id;
 
+  progress_callback (opkg, 0, user_data);
+
+  /* download the package */
+  opkg_prepare_url_for_install (opkg->conf, package_name, &package_id);
+  progress_callback (opkg, 50, user_data);
+
+  /* ... */
   pkg_info_preinstall_check (opkg->conf);
 
+  /* unpack the package */
   if (opkg->conf->multiple_providers)
   {
-    err = opkg_install_multi_by_name (opkg->conf, package_name);
+    err = opkg_install_multi_by_name (opkg->conf, package_id);
   }
   else
   {
-    err = opkg_install_by_name (opkg->conf, package_name);
+    err = opkg_install_by_name (opkg->conf, package_id);
   }
 
+  progress_callback (opkg, 75, user_data);
+
+  /* run configure scripts, etc. */
   err = opkg_configure_packages (opkg->conf, NULL);
 
-  if (opkg->conf->noaction)
-    return err;
-
+  /* write out status files and file lists */
   opkg_conf_write_status_files (opkg->conf);
   pkg_write_changed_filelists (opkg->conf);
 
+  progress_callback (opkg, 100, user_data);
   return err;
 }
 
 int
-opkg_remove_package (opkg_t *opkg, char *package_name)
+opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
 {
   return 1;
 }
 
 int
-opkg_upgrade_package (opkg_t *opkg, char *package_name)
+opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
 {
   return 1;
 }
 
 int
-opkg_upgrade_all (opkg_t *opkg)
+opkg_upgrade_all (opkg_t *opkg, opkg_progress_callback_t progress_callback, void *user_data)
 {
   return 1;
 }
 
 int
-opkg_update_package_lists (opkg_t *opkg)
+opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callback, void *user_data)
 {
   char *tmp;
   int err;
   char *lists_dir;
   pkg_src_list_elt_t *iter;
   pkg_src_t *src;
+  int sources_list_count, sources_done;
 
+  progress_callback (opkg, 0, user_data);
 
   sprintf_alloc (&lists_dir, "%s",
                  (opkg->conf->restrict_to_default_dest)
@@ -330,6 +343,15 @@ opkg_update_package_lists (opkg_t *opkg)
     return 1;
   }
 
+  /* cout the number of sources so we can give some progress updates */
+  sources_list_count = 0;
+  sources_done = 0;
+  iter = opkg->conf->pkg_src_list.head;
+  while (iter)
+  {
+    sources_list_count++;
+    iter = iter->next;
+  }
 
   for (iter = opkg->conf->pkg_src_list.head; iter; iter = iter->next)
   {
@@ -420,6 +442,9 @@ opkg_update_package_lists (opkg_t *opkg)
      */
 #endif
     free (list_file_name);
+
+    sources_done++;
+    progress_callback (opkg, 100 * sources_done / sources_list_count, user_data);
   }
   rmdir (tmp);
   free (tmp);

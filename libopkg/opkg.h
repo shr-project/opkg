@@ -16,6 +16,7 @@
 */
 
 typedef struct _opkg_t opkg_t;
+typedef void (*opkg_progress_callback_t) (opkg_t *opkg, int percentage, void *user_data);
 
 opkg_t* opkg_new ();
 void opkg_free (opkg_t *opkg);
@@ -23,8 +24,8 @@ void opkg_get_option (opkg_t *opkg, char *option, void **value);
 void opkg_set_option (opkg_t *opkg, char *option, void *value);
 int opkg_read_config_files (opkg_t *opkg);
 
-int opkg_install_package (opkg_t *opkg, char *package_name);
-int opkg_remove_package (opkg_t *opkg, char *package_name);
-int opkg_upgrade_package (opkg_t *opkg, char *package_name);
-int opkg_upgrade_all (opkg_t *opkg);
-int opkg_update_package_lists (opkg_t *opkg);
+int opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t callback, void *user_data);
+int opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t callback, void *user_data);
+int opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t callback, void *user_data);
+int opkg_upgrade_all (opkg_t *opkg, opkg_progress_callback_t callback, void *user_data);
+int opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t callback, void *user_data);
