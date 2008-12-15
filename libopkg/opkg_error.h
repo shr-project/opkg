@@ -20,6 +20,11 @@ enum opkg_error {
   OPKG_ERR_UNKNOWN = -1,
   OPKG_ERR_NONE = 0,
 
+  OPKG_CONF_ERR_DEFAULT_DEST,  /* could not set default dest */
+  OPKG_CONF_ERR_PARSE,         /* error parsing config file */
+  OPKG_CONF_ERR_TMP_DIR,       /* could not create temporary directory */
+  OPKG_CONF_ERR_LOCK,          /* could not get opkg lock */
+
   OPKG_PKG_DEPS_UNSATISFIED,
   OPKG_PKG_IS_ESSENTIAL,
   OPKG_PKG_HAS_DEPENDENTS,

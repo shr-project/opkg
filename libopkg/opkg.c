@@ -185,13 +185,28 @@ opkg_t *
 opkg_new ()
 {
   opkg_t *opkg;
+  int err;
+
   opkg = malloc (sizeof (opkg_t));
 
   opkg->args = malloc (sizeof (args_t));
-  args_init (opkg->args);
+  err = args_init (opkg->args);
+  if (err)
+  {
+    free (opkg->args);
+    free (opkg);
+    return NULL;
+  }
 
   opkg->conf = malloc (sizeof (opkg_conf_t));
-  opkg_conf_init (opkg->conf, opkg->args);
+  err = opkg_conf_init (opkg->conf, opkg->args);
+  if (err)
+  {
+    free (opkg->conf);
+    free (opkg->args);
+    free (opkg);
+    return NULL;
+  }
 
   opkg_init_options_array (opkg->conf, &opkg->options);
   return opkg;

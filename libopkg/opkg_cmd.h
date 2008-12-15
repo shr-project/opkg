@@ -38,5 +38,6 @@ int opkg_install_wanted_packages(opkg_conf_t *conf);
 int opkg_configure_packages(opkg_conf_t *conf, char *pkg_name);
 
 int pkg_mark_provides(pkg_t *pkg);
+void opkg_print_error_list (opkg_conf_t *conf);
 
 #endif

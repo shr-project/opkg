@@ -271,6 +271,7 @@ opkg_packages_download (args_t * args, const char *name)
 	err = opkg_conf_init (&opkg_conf, args);
 	if (err)
 	{
+		opkg_print_error_list (&opkg_conf);
 		return err;
 	}
 
@@ -485,6 +486,7 @@ opkg_op (int argc, char *argv[])
 	err = opkg_conf_init (&opkg_conf, &args);
 	if (err)
 	{
+		opkg_print_error_list (&opkg_conf);
 		return err;
 	}
 

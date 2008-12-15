@@ -17,6 +17,7 @@
 
 #include "includes.h"
 #include "opkg_conf.h"
+#include "opkg_error.h"
 
 #include "xregex.h"
 #include "sprintf_alloc.h"
@@ -28,6 +29,9 @@
 #include <glob.h>
 #include "opkg_defines.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 				pkg_src_list_t *pkg_src_list,
@@ -100,10 +104,10 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      int err;
      char *tmp_dir_base;
      nv_pair_list_t tmp_dest_nv_pair_list;
-     char * lists_dir =NULL;
+     char *lists_dir = NULL, *lock_file = NULL;
      glob_t globbuf;
      char *etc_opkg_conf_pattern = "/etc/opkg/*.conf";
-     char *pending_dir  =NULL;
+     char *pending_dir = NULL;
 
      memset(conf, 0, sizeof(opkg_conf_t));
 
@@ -117,6 +121,23 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      conf->restrict_to_default_dest = 0;
      conf->default_dest = NULL;
 
+     /* check for lock file */
+     if (args->offline_root)
+       sprintf_alloc (&lock_file, "%s/%s/lock", args->offline_root, OPKG_STATE_DIR_PREFIX);
+     else
+       sprintf_alloc (&lock_file, "%s/lock", OPKG_STATE_DIR_PREFIX);
+
+     conf->lock_fd = creat (lock_file, S_IRUSR | S_IWUSR | S_IRGRP);
+     err = lockf (conf->lock_fd, F_TLOCK, 0);
+
+     free (lock_file);
+
+     if (err)
+     {
+       opkg_message (conf, OPKG_ERROR, "Could not obtain administrative lock\n");
+       return OPKG_CONF_ERR_LOCK;
+     }
+
 
      if (args->tmp_dir)
 	  tmp_dir_base = args->tmp_dir;
@@ -129,7 +150,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      if (conf->tmp_dir == NULL) {
 	  fprintf(stderr, "%s: Failed to create temporary directory `%s': %s\n",
 		  __FUNCTION__, conf->tmp_dir, strerror(errno));
-	  return errno;
+	  return OPKG_CONF_ERR_TMP_DIR;
      }
 
      conf->force_depends = 0;
@@ -165,19 +186,17 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 	       if (opkg_conf_parse_file(conf, args->conf_file,
 				    &conf->pkg_src_list, &tmp_dest_nv_pair_list,&lists_dir)<0) {
                    /* Memory leakage from opkg_conf_parse-file */
-                   return -1;
+                   return OPKG_CONF_ERR_PARSE;
                }
-                   
      }
 
-     /* if (!lists_dir ){*/
      if (strlen(lists_dir)<=1 ){
         lists_dir = realloc(lists_dir,strlen(OPKG_CONF_LISTS_DIR)+2);
         sprintf (lists_dir,"%s",OPKG_CONF_LISTS_DIR);
      }
 
      if (args->offline_root) {
-            char *tmp;// = malloc(strlen(lists_dir) + strlen(args->offline_root) + 1);
+            char *tmp;
             sprintf_alloc(&tmp, "%s/%s",args->offline_root,lists_dir);
             free(lists_dir);
             lists_dir = tmp;
@@ -202,7 +221,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 		    if ( opkg_conf_parse_file(conf, globbuf.gl_pathv[i], 
 				         &conf->pkg_src_list, &tmp_dest_nv_pair_list,&lists_dir)<0) {
                         /* Memory leakage from opkg_conf_parse-file */
-                        return -1;
+                        return OPKG_CONF_ERR_PARSE;
 	            }
 	  }
      }
@@ -289,7 +308,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
         if (args->dest) {
 	     err = opkg_conf_set_default_dest(conf, args->dest);
 	     if (err) {
-	          return err;
+	          return OPKG_CONF_ERR_DEFAULT_DEST;
 	     }
         }
      }
