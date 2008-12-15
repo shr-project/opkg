@@ -66,7 +66,8 @@ else
   AC_MSG_ERROR(GPGME $min_gpgme_version or later needed)
 fi
 
-
+AC_SUBST(GPGME_CFLAGS)
+AC_SUBST(GPGME_LIBS)
 
 
 # Checks for header files

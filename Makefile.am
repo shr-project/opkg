@@ -52,7 +52,7 @@ libopkg_include_HEADERS= \
 #\ replace/replace.h
 
 #libopkg_la_LIBADD = libbb/libbb.la replace/libreplace.a
-libopkg_la_LIBADD = libbb/libbb.la $(CURL_LIBS)
+libopkg_la_LIBADD = libbb/libbb.la $(CURL_LIBS) $(GPGME_LIBS)
 
 opkg_core_sources = args.c args.h opkg.c \
 		    user.c user.h 
@@ -97,9 +97,9 @@ libopkg_la_SOURCES = $(opkg_libcore_sources) $(opkg_cmd_sources) $(opkg_db_sourc
 
 opkg_cl_SOURCES = opkg-frontend.c
 
-libopkg_la_CFLAGS = -DOPKG_LIB $(ALL_CFLAGS)  $(CURL_CFLAGS)
+libopkg_la_CFLAGS = -DOPKG_LIB $(ALL_CFLAGS)  $(CURL_CFLAGS) $(GPGME_CFLAGS)
 
-opkg_CFLAGS = $(ALL_CFLAGS) $(CURL_CFLAGS)
+opkg_CFLAGS = $(ALL_CFLAGS) $(CURL_CFLAGS) $(GPGME_CFLAGS)
 
 opkg_cl_CFLAGS = -DOPKG_LIB $(ALL_CFLAGS)
 
