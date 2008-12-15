@@ -15,7 +15,7 @@
    General Public License for more details.
 */
 
-#include "opkg.h"
+#include "includes.h"
 
 #include "nv_pair.h"
 #include "str_util.h"

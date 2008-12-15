@@ -20,6 +20,7 @@
 
 #include "pkg.h"
 #include "pkg_hash.h"
+#include "includes.h"
 
 enum depend_type {
     PREDEPEND,

@@ -18,11 +18,12 @@
 #ifndef CONFFILE_LIST_H
 #define CONFFILE_LIST_H
 
-#include "conffile.h"
 #include "nv_pair_list.h"
 
 typedef struct nv_pair_list_elt conffile_list_elt_t;
 typedef struct nv_pair_list conffile_list_t;
+
+#include "conffile.h"
 
 int conffile_list_init(conffile_list_t *list);
 void conffile_list_deinit(conffile_list_t *list);

@@ -15,12 +15,14 @@
    General Public License for more details.
 */
 
-#include "opkg.h"
+#include "includes.h"
 
 #include "pkg_dest.h"
 #include "file_util.h"
 #include "str_util.h"
 #include "sprintf_alloc.h"
+#include "opkg_state.h"
+#include "opkg_defines.h"
 
 int pkg_dest_init(pkg_dest_t *dest, const char *name, const char *root_dir,const char * lists_dir)
 {

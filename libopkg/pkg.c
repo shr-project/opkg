@@ -15,7 +15,7 @@
    General Public License for more details.
 */
 
-#include "opkg.h"
+#include "includes.h"
 #include <ctype.h>
 #include <string.h>
 #include <errno.h>

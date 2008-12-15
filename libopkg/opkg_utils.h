@@ -19,6 +19,7 @@
 #define OPKG_UTILS_H
 
 #include "pkg.h"
+#include "opkg_error.h"
 
 void push_error_list(struct errlist **errors,char * msg);
 void reverse_error_list(struct errlist **errors);

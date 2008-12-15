@@ -19,8 +19,9 @@
 #define CONFFILE_H
 
 #include "nv_pair.h"
-
 typedef struct nv_pair conffile_t;
+
+#include "opkg_conf.h"
 
 int conffile_init(conffile_t *conffile, const char *file_name, const char *md5sum);
 void conffile_deinit(conffile_t *conffile);

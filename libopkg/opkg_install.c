@@ -15,7 +15,7 @@
    General Public License for more details.
 */
 
-#include "opkg.h"
+#include "includes.h"
 #include <errno.h>
 #include <dirent.h>
 #include <glob.h>
@@ -35,6 +35,7 @@ typedef void (*sighandler_t)(int);
 #include "opkg_utils.h"
 #include "opkg_message.h"
 #include "opkg_state.h"
+#include "opkg_defines.h"
 
 #include "sprintf_alloc.h"
 #include "file_util.h"

@@ -13,6 +13,4 @@
    General Public License for more details.
 */
 
-#include "opkg.h"
-
 int opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old);

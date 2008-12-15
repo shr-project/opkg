@@ -20,6 +20,7 @@
 
 #include "pkg.h"
 #include "opkg_conf.h"
+#include "opkg_error.h"
 
 opkg_error_t opkg_install_by_name(opkg_conf_t *conf, const char *pkg_name);
 opkg_error_t opkg_install_multi_by_name(opkg_conf_t *conf, const char *pkg_name);

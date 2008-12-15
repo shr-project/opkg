@@ -15,7 +15,6 @@
    General Public License for more details.
 */
 
-#include "opkg.h"
 #include "includes.h"
 #include "libopkg.h"
 
@@ -24,7 +23,8 @@
 #include "opkg_cmd.h"
 #include "file_util.h"
 
-
+#include "opkg_message.h"
+#include "opkg_error.h"
 
 opkg_status_callback opkg_cb_status = NULL;
 opkg_list_callback opkg_cb_list = NULL;

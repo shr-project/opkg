@@ -1,6 +1,7 @@
 #ifndef INCLUDES_H
 #define INCLUDES_H
 
+#include <config.h>
 #include <stdio.h>
 
 #if STDC_HEADERS
@@ -20,15 +21,7 @@
 #endif
 
 #if HAVE_STRING_H
-# if !STDC_HEADERS && HAVE_MEMORY_H
-#  include <memory.h>
-# endif
-/* XXX: What's the right way to pick up GNU's strndup declaration? */
-# if __GNUC__
-#   define __USE_GNU 1
-# endif
 # include <string.h>
-# undef __USE_GNU
 #endif
 
 #if HAVE_STRINGS_H

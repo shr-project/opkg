@@ -18,7 +18,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "opkg.h"
+#include "includes.h"
 #include "opkg_message.h"
 
 #include "conffile.h"

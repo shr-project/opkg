@@ -15,11 +15,11 @@
    General Public License for more details.
 */
 
-#include <stdlib.h>
+#include "includes.h"
 #include <fnmatch.h>
 #include "xregex.h"
-#include "opkg.h"
 #include "pkg.h"
+#include "opkg_message.h"
 
 pkg_vec_t * pkg_vec_alloc(void)
 {

@@ -22,7 +22,7 @@
 #include <gpgme.h>
 #endif
 
-#include "opkg.h"
+#include "includes.h"
 #include "opkg_download.h"
 #include "opkg_message.h"
 #include "opkg_state.h"
@@ -31,6 +31,7 @@
 #include "xsystem.h"
 #include "file_util.h"
 #include "str_util.h"
+#include "opkg_defines.h"
 
 opkg_download_progress_callback opkg_cb_download_progress = NULL;
 

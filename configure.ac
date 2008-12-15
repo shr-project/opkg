@@ -4,6 +4,7 @@ AM_INIT_AUTOMAKE([opkg], [0.99.163])
 AM_CONFIG_HEADER(libopkg/config.h)
 
 AC_CANONICAL_HOST
+AC_GNU_SOURCE 
 
 
 for top_builddir in . .. ../.. $ac_auxdir $ac_auxdir/..; do

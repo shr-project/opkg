@@ -15,17 +15,10 @@
    General Public License for more details.
 */
 
-#include <string.h>
 
-#include "opkg.h"
-#include <libgen.h>
-#include <glob.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <stdio.h>
+#include "includes.h"
 #include <dirent.h>
+#include <glob.h>
 
 #include "opkg_conf.h"
 #include "opkg_cmd.h"
@@ -38,6 +31,8 @@
 #include "file_util.h"
 #include "str_util.h"
 #include "libbb/libbb.h"
+#include "opkg_utils.h"
+#include "opkg_defines.h"
 
 #include <fnmatch.h>
 

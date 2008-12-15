@@ -14,7 +14,7 @@
 */
 
 
-#include "opkg.h"
+#include "includes.h"
 #include "opkg_conf.h"
 #include "opkg_message.h"
 

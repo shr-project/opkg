@@ -20,20 +20,22 @@
 
 typedef struct pkg pkg_t;
 typedef struct abstract_pkg abstract_pkg_t;
+typedef struct pkg_vec pkg_vec_t;
+typedef struct abstract_pkg_vec abstract_pkg_vec_t;
+
+#include "opkg_conf.h"
 
 struct pkg_vec
 {
     pkg_t **pkgs;
     int len;
 };
-typedef struct pkg_vec pkg_vec_t;
 
 struct abstract_pkg_vec
 {
     abstract_pkg_t **pkgs;
     int len;
 };
-typedef struct abstract_pkg_vec abstract_pkg_vec_t;
 
 
 pkg_vec_t * pkg_vec_alloc(void);

@@ -15,9 +15,7 @@
    General Public License for more details.
 */
 
-#include <glob.h>
-
-#include "opkg.h"
+#include "includes.h"
 #include "opkg_conf.h"
 
 #include "xregex.h"
@@ -27,6 +25,9 @@
 #include "file_util.h"
 #include "str_util.h"
 #include "xsystem.h"
+#include <glob.h>
+#include "opkg_defines.h"
+
 
 static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 				pkg_src_list_t *pkg_src_list,

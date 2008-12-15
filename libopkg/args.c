@@ -20,7 +20,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "opkg.h"
+#include "includes.h"
 
 #include "config.h"
 #include "args.h"

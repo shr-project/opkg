@@ -15,12 +15,14 @@
    General Public License for more details.
 */
 
-#include "opkg.h"
+#include "includes.h"
 #include "opkg_message.h"
 
 #include <glob.h>
 
 #include "opkg_remove.h"
+#include "opkg_error.h"
+#include "opkg_state.h"
 
 #include "file_util.h"
 #include "sprintf_alloc.h"

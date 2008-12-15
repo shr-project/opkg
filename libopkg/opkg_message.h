@@ -16,7 +16,6 @@
 #ifndef _OPKG_MESSAGE_H_
 #define _OPKG_MESSAGE_H_
 
-#include "opkg.h"
 #include "opkg_conf.h"
 
 typedef enum {

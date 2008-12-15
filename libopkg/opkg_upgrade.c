@@ -16,7 +16,7 @@
    General Public License for more details.
 */
 
-#include "opkg.h"
+#include "includes.h"
 #include "opkg_install.h"
 #include "opkg_message.h"
 

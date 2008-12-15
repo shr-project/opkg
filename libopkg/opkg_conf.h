@@ -21,7 +21,6 @@
 typedef struct opkg_conf opkg_conf_t;
 
 #include "hash_table.h"
-#include "opkg.h"
 #include "args.h"
 #include "pkg.h"
 #include "pkg_hash.h"

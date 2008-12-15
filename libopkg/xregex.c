@@ -15,7 +15,7 @@
    GNU General Public License for more details.
 */
 
-#include "opkg.h"
+#include "includes.h"
 
 #include "xregex.h"
 

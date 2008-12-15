@@ -19,6 +19,8 @@
 #define PKG_HASH_H
 
 #include "pkg.h"
+#include "pkg_src.h"
+#include "pkg_dest.h"
 #include "pkg_vec.h"
 #include "hash_table.h"
 

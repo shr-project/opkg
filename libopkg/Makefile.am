@@ -11,7 +11,6 @@ libopkg_include_HEADERS= \
 	hash_table.h \
 	includes.h \
 	opkg_conf.h \
-	opkg.h \
 	opkg_message.h \
 	opkg_state.h \
 	nv_pair.h \
@@ -32,7 +31,7 @@ libopkg_la_LIBADD = $(top_builddir)/libbb/libbb.la $(CURL_LIBS) $(GPGME_LIBS)
 
 opkg_core_sources = args.c args.h \
 		    user.c user.h 
-opkg_libcore_sources = args.c args.h libopkg.c libopkg.h opkg.h\
+opkg_libcore_sources = args.c args.h libopkg.c libopkg.h\
 		    user.c user.h opkg_state.c opkg_state.h
 opkg_cmd_sources = opkg_cmd.c opkg_cmd.h \
 		   opkg_configure.c opkg_configure.h \
