@@ -104,6 +104,7 @@ void pkg_vec_insert(pkg_vec_t *vec, const pkg_t *pkg)
      int i;
      int found = 0;
 
+#if 0
      /* look for a duplicate pkg by name, version, and architecture */
      for (i = 0; i < vec->len; i++)
 	  if ((strcmp(pkg->name, vec->pkgs[i]->name) == 0)
@@ -112,6 +113,7 @@ void pkg_vec_insert(pkg_vec_t *vec, const pkg_t *pkg)
 	       found = 1;
 	       break;
 	  }
+#endif
 
      /* we didn't find one, add it */
      if(!found){   
@@ -191,6 +193,7 @@ void abstract_pkg_vec_insert(abstract_pkg_vec_t *vec, abstract_pkg_t *pkg)
 {
     int i;
 
+#if 0
     /* look for a duplicate pkg by name */
     for(i = 0; i < vec->len; i++)
 	if (strcmp(pkg->name, vec->pkgs[i]->name) == 0)
@@ -198,12 +201,15 @@ void abstract_pkg_vec_insert(abstract_pkg_vec_t *vec, abstract_pkg_t *pkg)
 
     /* we didn't find one, add it */
     if(i == vec->len){   
+#endif
 	vec->pkgs = 
 	  (abstract_pkg_t **)
 	    realloc(vec->pkgs, (vec->len + 1) * sizeof(abstract_pkg_t *));
 	vec->pkgs[vec->len] = pkg;
 	vec->len++;
+#if 0
     }
+#endif
 }
 
 abstract_pkg_t * abstract_pkg_vec_get(abstract_pkg_vec_t *vec, int i)
