@@ -295,7 +295,7 @@ opkg_get_option (opkg_t *opkg, char *option, void **value)
 void
 opkg_set_option (opkg_t *opkg, char *option, void *value)
 {
-  int i = 0;
+  int i = 0, found = 0;
   opkg_option_t *options;
 
   opkg_assert (opkg != NULL);
@@ -311,9 +311,16 @@ opkg_set_option (opkg_t *opkg, char *option, void *value)
   {
     if (strcmp (options[i].name, option) == 0)
     {
+      found = 1;
       break;
     }
     i++;
+  }
+
+  if (!found)
+  {
+    /* XXX: Warning: Option not found */
+    return;
   }
 
   /* set the option */
