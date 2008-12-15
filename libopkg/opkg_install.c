@@ -828,22 +828,26 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      #if HAVE_GPGME
      char *list_file_name, *sig_file_name, *lists_dir;
 
-     sprintf_alloc (&lists_dir, "%s",
-                   (conf->restrict_to_default_dest)
-                    ? conf->default_dest->lists_dir
-                    : conf->lists_dir);
-     sprintf_alloc (&list_file_name, "%s/%s", lists_dir, pkg->src->name);
-     sprintf_alloc (&sig_file_name, "%s/%s.sig", lists_dir, pkg->src->name);
-
-     if (file_exists (sig_file_name))
+     /* check to ensure the package has come from a repository */
+     if (pkg->src)
      {
-       if (opkg_verify_file (conf, list_file_name, sig_file_name))
-         return OPKG_INSTALL_ERR_SIGNATURE;
-     }
+       sprintf_alloc (&lists_dir, "%s",
+                     (conf->restrict_to_default_dest)
+                      ? conf->default_dest->lists_dir
+                      : conf->lists_dir);
+       sprintf_alloc (&list_file_name, "%s/%s", lists_dir, pkg->src->name);
+       sprintf_alloc (&sig_file_name, "%s/%s.sig", lists_dir, pkg->src->name);
 
-     free (lists_dir);
-     free (list_file_name);
-     free (sig_file_name);
+       if (file_exists (sig_file_name))
+       {
+         if (opkg_verify_file (conf, list_file_name, sig_file_name))
+           return OPKG_INSTALL_ERR_SIGNATURE;
+       }
+
+       free (lists_dir);
+       free (list_file_name);
+       free (sig_file_name);
+     }
      #endif
 
      /* Check for md5 values */
