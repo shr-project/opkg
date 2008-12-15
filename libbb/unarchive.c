@@ -84,7 +84,6 @@ char *extract_archive(FILE *src_stream, FILE *out_stream, const file_header_t *f
 	char *full_link_name = NULL;
 	char *buffer = NULL;
 	struct utimbuf t;
-        int res;
 
 
 	/* prefix doesnt have to be a proper path it may prepend 
