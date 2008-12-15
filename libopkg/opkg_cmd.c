@@ -151,7 +151,7 @@ void opkg_print_error_list (opkg_conf_t *conf)
            error_list = error_list->next;
 
      }
-     free_error_list(&error_list);
+     free_error_list();
   }
 
 }
