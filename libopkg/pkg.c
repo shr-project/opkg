@@ -1713,7 +1713,7 @@ int pkg_info_preinstall_check(opkg_conf_t *conf)
 	  pkg_t *pkg = available_pkgs->pkgs[i];
 	  if (!pkg->arch_priority && (pkg->state_flag || (pkg->state_want != SW_UNKNOWN))) {
 	       /* clear flags and want for any uninstallable package */
-	       opkg_message(conf, OPKG_NOTICE, "Clearing state_want and state_flag for pkg=%s (arch_priority=%d flag=%d want=%d)\n", 
+	       opkg_message(conf, OPKG_DEBUG, "Clearing state_want and state_flag for pkg=%s (arch_priority=%d flag=%d want=%d)\n", 
 			    pkg->name, pkg->arch_priority, pkg->state_flag, pkg->state_want);
 	       pkg->state_want = SW_UNKNOWN;
 	       pkg->state_flag = 0;

@@ -116,7 +116,7 @@ static void write_status_files_if_changed(opkg_conf_t *conf)
 	  opkg_conf_write_status_files(conf);
 	  pkg_write_changed_filelists(conf);
      } else { 
-	  opkg_message(conf, OPKG_NOTICE, "Nothing to be done\n");
+	  opkg_message(conf, OPKG_DEBUG, "Nothing to be done\n");
      }
 }
 
@@ -146,7 +146,7 @@ int opkg_cmd_exec(opkg_cmd_t *cmd, opkg_conf_t *conf, int argc, const char **arg
 
 	result = (cmd->fun)(conf, argc, argv);
 
-        if ( result != 0 ) {
+        if ( result != 0 && !error_list) {
            opkg_message(conf, OPKG_NOTICE, "An error ocurred, return value: %d.\n", result);
         }
 
@@ -156,7 +156,7 @@ int opkg_cmd_exec(opkg_cmd_t *cmd, opkg_conf_t *conf, int argc, const char **arg
            opkg_message(conf, OPKG_NOTICE, "Collected errors:\n");
            /* Here we print the errors collected and free the list */
            while (error_list != NULL) {
-                 opkg_message(conf, OPKG_NOTICE, "%s",error_list->errmsg);
+                 opkg_message(conf, OPKG_NOTICE, " * %s", error_list->errmsg);
                  error_list = error_list->next;
 
            }
@@ -593,8 +593,7 @@ static int opkg_install_cmd(opkg_conf_t *conf, int argc, char **argv)
           err = opkg_install_by_name(conf, arg);
 	  if (err == OPKG_PKG_HAS_NO_CANDIDATE) {
 	       opkg_message(conf, OPKG_ERROR,
-			    "Cannot find package %s.\n"
-			    "Check the spelling or perhaps run 'opkg update'\n",
+			    "Cannot find package %s.\n",
 			    arg);
 	  }
      }
@@ -683,7 +682,7 @@ static int opkg_download_cmd(opkg_conf_t *conf, int argc, char **argv)
      for (i = 0; i < argc; i++) {
 	  arg = argv[i];
 
-	  pkg = pkg_hash_fetch_best_installation_candidate_by_name(conf, arg);
+	  pkg = pkg_hash_fetch_best_installation_candidate_by_name(conf, arg, &err);
 	  if (pkg == NULL) {
 	       opkg_message(conf, OPKG_ERROR,
 			    "Cannot find package %s.\n"

@@ -170,7 +170,7 @@ abstract_pkg_vec_t *pkg_hash_fetch_all_installation_candidates(hash_table_t *has
 
 
 pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pkg_t *apkg, 
-						  int (*constraint_fcn)(pkg_t *pkg, void *cdata), void *cdata, int quiet)
+						  int (*constraint_fcn)(pkg_t *pkg, void *cdata), void *cdata, int quiet, int *err)
 {
      int i; 
      int nprovides = 0;
@@ -184,6 +184,9 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pk
      pkg_t *latest_matching = NULL;
      pkg_t *held_pkg = NULL;
      pkg_t *good_pkg_by_name = NULL;
+
+     if (err)
+       *err = 0;
 
      if (matching_apkgs == NULL || providers == NULL || 
          apkg == NULL || apkg->provided_by == NULL || (apkg->provided_by->len == 0))
@@ -251,6 +254,14 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pk
 			 pkg_vec_insert(matching_pkgs, maybe);
 		    }
 	       }
+
+		if (vec->len > 0 && matching_pkgs->len < 1)
+		{
+		  opkg_message (conf, OPKG_ERROR, "   Packages found, but none available for the current "
+						  "architecture\n");
+		  if (err)
+		    *err = OPKG_PKG_HAS_NO_AVAILABLE_ARCH;
+		}
 	  }
      }
 
@@ -351,15 +362,18 @@ static int pkg_name_constraint_fcn(pkg_t *pkg, void *cdata)
 	  return 0;   
 }
 
-pkg_t *pkg_hash_fetch_best_installation_candidate_by_name(opkg_conf_t *conf, const char *name)
+pkg_t *pkg_hash_fetch_best_installation_candidate_by_name(opkg_conf_t *conf, const char *name, int *err)
 {
      hash_table_t *hash = &conf->pkg_hash;
      abstract_pkg_t *apkg = NULL;
+     pkg_t *ret;
 
      if (!(apkg = abstract_pkg_fetch_by_name(hash, name)))
 	  return NULL;
-     
-     return pkg_hash_fetch_best_installation_candidate(conf, apkg, pkg_name_constraint_fcn, apkg->name, 0);
+
+     ret = pkg_hash_fetch_best_installation_candidate(conf, apkg, pkg_name_constraint_fcn, apkg->name, 0, err);
+
+     return ret;
 }
 
 
@@ -517,7 +531,7 @@ static void pkg_hash_dump_helper(const char *pkg_name, void *entry, void *data)
   if (dependents != NULL)
     while (dependents [i] != NULL && i < ab_pkg->provided_by->len)
       printf ("\tprovided by - %s\n", dependents [i ++]->name);
-  pkg = pkg_hash_fetch_best_installation_candidate_by_name (conf, ab_pkg->name);
+  pkg = pkg_hash_fetch_best_installation_candidate_by_name (conf, ab_pkg->name, NULL);
   if (pkg) {
     i = 0;
     while (i < pkg->depends_count)

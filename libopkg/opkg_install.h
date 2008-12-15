@@ -22,21 +22,6 @@
 #include "opkg_conf.h"
 #include "opkg_error.h"
 
-enum {
-  PKG_INSTALL_ERR_NONE,
-  PKG_INSTALL_ERR_NOT_TRUSTED,
-  PKG_INSTALL_ERR_DOWNLOAD,
-  PKG_INSTALL_ERR_CONFLICTS,
-  PKG_INSTALL_ERR_ALREADY_INSTALLED,
-  PKG_INSTALL_ERR_DEPENDENCIES,
-  PKG_INSTALL_ERR_NO_DOWNGRADE,
-  PKG_INSTALL_ERR_NO_SPACE,
-  PKG_INSTALL_ERR_SIGNATURE,
-  PKG_INSTALL_ERR_MD5,
-  PKG_INSTALL_ERR_INTERNAL,
-  PKG_INSTALL_ERR_UNKNOWN
-};
-
 opkg_error_t opkg_install_by_name(opkg_conf_t *conf, const char *pkg_name);
 opkg_error_t opkg_install_multi_by_name(opkg_conf_t *conf, const char *pkg_name);
 int opkg_install_from_file(opkg_conf_t *conf, const char *filename);

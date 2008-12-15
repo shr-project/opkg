@@ -27,6 +27,7 @@
 #include "opkg_download.h"
 #include "opkg_remove.h"
 #include "opkg_upgrade.h"
+#include "opkg_error.h"
 
 #include "sprintf_alloc.h"
 #include "file_util.h"
@@ -385,7 +386,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
     return OPKG_PACKAGE_ALREADY_INSTALLED;
   }
 
-  new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, package_name);
+  new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, package_name, NULL);
   if (!new)
   {
     /* XXX: Error: Could not find package to install */
@@ -489,13 +490,13 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
     opkg_package_free (pdata.package);
     switch (err)
     {
-      case PKG_INSTALL_ERR_NOT_TRUSTED: return OPKG_GPG_ERROR;
-      case PKG_INSTALL_ERR_DOWNLOAD: return OPKG_DOWNLOAD_FAILED;
-      case PKG_INSTALL_ERR_DEPENDENCIES:
-      case PKG_INSTALL_ERR_CONFLICTS: return OPKG_DEPENDENCIES_FAILED;
-      case PKG_INSTALL_ERR_ALREADY_INSTALLED: return OPKG_PACKAGE_ALREADY_INSTALLED;
-      case PKG_INSTALL_ERR_SIGNATURE: return OPKG_GPG_ERROR;
-      case PKG_INSTALL_ERR_MD5: return OPKG_MD5_ERROR;
+      case OPKG_INSTALL_ERR_NOT_TRUSTED: return OPKG_GPG_ERROR;
+      case OPKG_INSTALL_ERR_DOWNLOAD: return OPKG_DOWNLOAD_FAILED;
+      case OPKG_INSTALL_ERR_DEPENDENCIES:
+      case OPKG_INSTALL_ERR_CONFLICTS: return OPKG_DEPENDENCIES_FAILED;
+      case OPKG_INSTALL_ERR_ALREADY_INSTALLED: return OPKG_PACKAGE_ALREADY_INSTALLED;
+      case OPKG_INSTALL_ERR_SIGNATURE: return OPKG_GPG_ERROR;
+      case OPKG_INSTALL_ERR_MD5: return OPKG_MD5_ERROR;
       default: return OPKG_UNKNOWN_ERROR;
     }
   }
@@ -625,13 +626,13 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   {
     switch (err)
     {
-      case PKG_INSTALL_ERR_NOT_TRUSTED: return OPKG_GPG_ERROR;
-      case PKG_INSTALL_ERR_DOWNLOAD: return OPKG_DOWNLOAD_FAILED;
-      case PKG_INSTALL_ERR_DEPENDENCIES:
-      case PKG_INSTALL_ERR_CONFLICTS: return OPKG_DEPENDENCIES_FAILED;
-      case PKG_INSTALL_ERR_ALREADY_INSTALLED: return OPKG_PACKAGE_ALREADY_INSTALLED;
-      case PKG_INSTALL_ERR_SIGNATURE: return OPKG_GPG_ERROR;
-      case PKG_INSTALL_ERR_MD5: return OPKG_MD5_ERROR;
+      case OPKG_INSTALL_ERR_NOT_TRUSTED: return OPKG_GPG_ERROR;
+      case OPKG_INSTALL_ERR_DOWNLOAD: return OPKG_DOWNLOAD_FAILED;
+      case OPKG_INSTALL_ERR_DEPENDENCIES:
+      case OPKG_INSTALL_ERR_CONFLICTS: return OPKG_DEPENDENCIES_FAILED;
+      case OPKG_INSTALL_ERR_ALREADY_INSTALLED: return OPKG_PACKAGE_ALREADY_INSTALLED;
+      case OPKG_INSTALL_ERR_SIGNATURE: return OPKG_GPG_ERROR;
+      case OPKG_INSTALL_ERR_MD5: return OPKG_MD5_ERROR;
       default: return OPKG_UNKNOWN_ERROR;
     }
   }
@@ -917,7 +918,7 @@ opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, v
     if (old->state_status != SS_INSTALLED)
       continue;
 
-    new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, old->name);
+    new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, old->name, NULL);
     if (new == NULL) {
       /* XXX: Notice: Assuming locally install package is up to date */
       continue;

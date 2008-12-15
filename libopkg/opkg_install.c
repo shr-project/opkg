@@ -137,7 +137,7 @@ int opkg_install_from_file(opkg_conf_t *conf, const char *filename)
 
 opkg_error_t opkg_install_by_name(opkg_conf_t *conf, const char *pkg_name)
 {
-     int cmp;
+     int cmp, err;
      pkg_t *old, *new;
      char *old_version, *new_version;
 
@@ -147,7 +147,7 @@ opkg_error_t opkg_install_by_name(opkg_conf_t *conf, const char *pkg_name)
         opkg_message(conf, OPKG_DEBUG2, " Old versions from pkg_hash_fetch %s \n",  old->version );
     
      opkg_message(conf, OPKG_DEBUG2, " Getting new  from pkg_hash_fetch \n" );
-     new = pkg_hash_fetch_best_installation_candidate_by_name(conf, pkg_name);
+     new = pkg_hash_fetch_best_installation_candidate_by_name(conf, pkg_name, &err);
      if ( new ) 
         opkg_message(conf, OPKG_DEBUG2, " New versions from pkg_hash_fetch %s \n",  new->version );
 
@@ -165,7 +165,10 @@ opkg_error_t opkg_install_by_name(opkg_conf_t *conf, const char *pkg_name)
      opkg_message(conf, OPKG_DEBUG2, " \n");
 
      if (new == NULL) {
-	  return OPKG_PKG_HAS_NO_CANDIDATE;
+	  if (err)
+	    return err;
+	  else
+	    return OPKG_PKG_HAS_NO_CANDIDATE;
      }
 
      new->state_flag |= SF_USER;
@@ -307,7 +310,7 @@ int pkg_mark_dependencies_for_installation(opkg_conf_t *conf, pkg_t *pkg, pkg_ve
 
      return 0;
 }
-
+#if 0
 int name_mark_dependencies_for_installation(opkg_conf_t *conf, const char *pkg_name, pkg_vec_t *pkgs_needed)
 {
      int cmp;
@@ -360,7 +363,7 @@ int name_mark_dependencies_for_installation(opkg_conf_t *conf, const char *pkg_n
      return pkg_mark_dependencies_for_installation(conf, new, pkgs_needed);
 }
 
-
+#endif
 
 int satisfy_dependencies_for(opkg_conf_t *conf, pkg_t *pkg)
 {
@@ -762,7 +765,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      if (!pkg) {
 	  opkg_message(conf, OPKG_ERROR,
 		       "INTERNAL ERROR: null pkg passed to opkg_install_pkg\n");
-	  return PKG_INSTALL_ERR_INTERNAL;
+	  return OPKG_INSTALL_ERR_INTERNAL;
      }
 
      opkg_message(conf, OPKG_DEBUG2, "Function: %s calling pkg_arch_supported %s \n", __FUNCTION__, __FUNCTION__);
@@ -770,11 +773,11 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      if (!pkg_arch_supported(conf, pkg)) {
 	  opkg_message(conf, OPKG_ERROR, "INTERNAL ERROR: architecture %s for pkg %s is unsupported.\n",
 		       pkg->architecture, pkg->name);
-	  return PKG_INSTALL_ERR_INTERNAL;
+	  return OPKG_INSTALL_ERR_INTERNAL;
      }
      if (pkg->state_status == SS_INSTALLED && conf->force_reinstall == 0 && conf->nodeps == 0) {
 	  err = satisfy_dependencies_for(conf, pkg);
-	  if (err) { return PKG_INSTALL_ERR_DEPENDENCIES; }
+	  if (err) { return OPKG_INSTALL_ERR_DEPENDENCIES; }
 
 	  opkg_message(conf, OPKG_NOTICE,
 		       "Package %s is already installed in %s.\n", 
@@ -789,7 +792,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      old_pkg = pkg_hash_fetch_installed_by_name(&conf->pkg_hash, pkg->name);
 
      err = opkg_install_check_downgrade(conf, pkg, old_pkg, message);
-     if (err) { return PKG_INSTALL_ERR_NO_DOWNGRADE; }
+     if (err) { return OPKG_INSTALL_ERR_NO_DOWNGRADE; }
 
      pkg->state_want = SW_INSTALL;
      if (old_pkg){                          
@@ -799,7 +802,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 
      /* Abhaya: conflicts check */
      err = check_conflicts_for(conf, pkg);
-     if (err) { return PKG_INSTALL_ERR_CONFLICTS; }
+     if (err) { return OPKG_INSTALL_ERR_CONFLICTS; }
     
      /* this setup is to remove the upgrade scenario in the end when
 	installing pkg A, A deps B & B deps on A. So both B and A are
@@ -809,7 +812,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 	 && conf->force_reinstall == 0) return 0;
     
      err = verify_pkg_installable(conf, pkg);
-     if (err) { return PKG_INSTALL_ERR_NO_SPACE; }
+     if (err) { return OPKG_INSTALL_ERR_NO_SPACE; }
 
      if (pkg->local_filename == NULL) {
 	  err = opkg_download_pkg(conf, pkg, conf->tmp_dir);
@@ -817,7 +820,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 	       opkg_message(conf, OPKG_ERROR,
 			    "Failed to download %s. Perhaps you need to run 'opkg update'?\n",
 			    pkg->name);
-	       return PKG_INSTALL_ERR_DOWNLOAD;
+	       return OPKG_INSTALL_ERR_DOWNLOAD;
 	  }
      }
 
@@ -835,7 +838,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      if (file_exists (sig_file_name))
      {
        if (opkg_verify_file (conf, list_file_name, sig_file_name))
-         return PKG_INSTALL_ERR_SIGNATURE;
+         return OPKG_INSTALL_ERR_SIGNATURE;
      }
 
      free (lists_dir);
@@ -853,7 +856,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
                            "Package %s md5sum mismatch. Either the opkg or the package index are corrupt. Try 'opkg update'.\n",
                            pkg->name);
               free(file_md5);
-              return PKG_INSTALL_ERR_MD5;
+              return OPKG_INSTALL_ERR_MD5;
          }
          free(file_md5);
      }
@@ -866,11 +869,11 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 /* Pigi: check if it will pass from here when replacing. It seems to fail */
 /* That's rather strange that files don't change owner. Investigate !!!!!!*/
      err = update_file_ownership(conf, pkg, old_pkg);
-     if (err) { return PKG_INSTALL_ERR_UNKNOWN; }
+     if (err) { return OPKG_ERR_UNKNOWN; }
 
      if (conf->nodeps == 0) {
 	  err = satisfy_dependencies_for(conf, pkg);
-	  if (err) { return PKG_INSTALL_ERR_DEPENDENCIES; }
+	  if (err) { return OPKG_INSTALL_ERR_DEPENDENCIES; }
      }
 
      replacees = pkg_vec_alloc();
@@ -1019,7 +1022,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 	       sigprocmask(SIG_UNBLOCK, &newset, &oldset);
 
           pkg_vec_free (replacees);
-	  return PKG_INSTALL_ERR_UNKNOWN;
+	  return OPKG_ERR_UNKNOWN;
      }
      opkg_set_current_state (conf, OPKG_STATE_NONE, NULL);
 }

@@ -33,7 +33,7 @@ int opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old)
           return 0;
      }
 
-     new = pkg_hash_fetch_best_installation_candidate_by_name(conf, old->name);
+     new = pkg_hash_fetch_best_installation_candidate_by_name(conf, old->name, NULL);
      if (new == NULL) {
           old_version = pkg_version_str_alloc(old);
           opkg_message(conf, OPKG_NOTICE,
