@@ -277,7 +277,7 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 		opkg_message (conf, OPKG_NOTICE, "Signature check failed\n");
 	  } else {
 	    int err;
-	    err = opkg_verify_file (list_file_name, tmp_file_name);
+	    err = opkg_verify_file (conf, list_file_name, tmp_file_name);
 	    if (err == 0)
 		opkg_message (conf, OPKG_NOTICE, "Signature check passed\n");
 	    else

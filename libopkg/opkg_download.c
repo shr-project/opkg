@@ -293,7 +293,7 @@ int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **name
 }
 
 int
-opkg_verify_file (char *text_file, char *sig_file)
+opkg_verify_file (opkg_conf_t *conf, char *text_file, char *sig_file)
 {
 #ifdef HAVE_GPGME
     int status = -1;
@@ -336,7 +336,7 @@ opkg_verify_file (char *text_file, char *sig_file)
 
     return status;
 #else
-    printf ("Signature check skipped because GPG support was not enabled in this build\n");
+    opkg_message (conf, OPKG_NOTICE, "Signature check for %s was skipped because GPG support was not enabled in this build\n");
     return 0;
 #endif
 }
