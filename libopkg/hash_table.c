@@ -139,8 +139,13 @@ int hash_table_insert(hash_table_t *hash, const char *key, void *value)
 		* before we can hook up the value
 		*/
                if (0) opkg_message(NULL, OPKG_DEBUG2, "Function: %s. Value already in hash by collision for '%s' \n", __FUNCTION__, key);
-	       while (hash_entry->next)
+	       while (hash_entry->next) {
 		    hash_entry = hash_entry->next;
+                    if (strcmp(hash_entry->key, key) == 0) {
+                        hash_entry->data = value;
+                        return 0;
+                    }
+               }
 	       hash_entry->next = (hash_entry_t *)malloc(sizeof(hash_entry_t));
 	       if (!hash_entry->next) {
 		    return -ENOMEM;
