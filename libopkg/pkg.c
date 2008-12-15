@@ -1079,43 +1079,37 @@ int pkg_compare_versions(const pkg_t *pkg, const pkg_t *ref_pkg)
      return r;
 }
 
-int verrevcmp(const char *val, const char *ref)
-{
-     int vc, rc;
-     long vl, rl;
-     const char *vp, *rp;
-     const char *vsep, *rsep;
-    
-     if (!val) val= "";
-     if (!ref) ref= "";
-     for (;;) {
-	  vp= val;  while (*vp && !isdigit(*vp)) vp++;
-	  rp= ref;  while (*rp && !isdigit(*rp)) rp++;
-	  for (;;) {
-	       vc= (val == vp) ? 0 : *val++;
-	       rc= (ref == rp) ? 0 : *ref++;
-	       if (!rc && !vc) break;
-	       if (vc && !isalpha(vc)) vc += 256; /* assumes ASCII character set */
-	       if (rc && !isalpha(rc)) rc += 256;
-	       if (vc != rc) return vc - rc;
-	  }
-	  val= vp;
-	  ref= rp;
-	  vl=0;  if (isdigit(*vp)) vl= strtol(val,(char**)&val,10);
-	  rl=0;  if (isdigit(*rp)) rl= strtol(ref,(char**)&ref,10);
-	  if (vl != rl) return vl - rl;
+/* assume ascii; warning: evaluates x multiple times! */
+#define order(x) ((x) == '~' ? -1 \
+		: isdigit((x)) ? 0 \
+		: !(x) ? 0 \
+		: isalpha((x)) ? (x) \
+		: (x) + 256)
 
-	  vc = *val;
-	  rc = *ref;
-	  vsep = strchr(".-", vc);
-	  rsep = strchr(".-", rc);
-	  if (vsep && !rsep) return -1;
-	  if (!vsep && rsep) return +1;
+static int verrevcmp(const char *val, const char *ref) {
+  if (!val) val= "";
+  if (!ref) ref= "";
 
-	  if (!*val && !*ref) return 0;
-	  if (!*val) return -1;
-	  if (!*ref) return +1;
-     }
+  while (*val || *ref) {
+    int first_diff= 0;
+
+    while ( (*val && !isdigit(*val)) || (*ref && !isdigit(*ref)) ) {
+      int vc= order(*val), rc= order(*ref);
+      if (vc != rc) return vc - rc;
+      val++; ref++;
+    }
+
+    while ( *val == '0' ) val++;
+    while ( *ref == '0' ) ref++;
+    while (isdigit(*val) && isdigit(*ref)) {
+      if (!first_diff) first_diff= *val - *ref;
+      val++; ref++;
+    }
+    if (isdigit(*val)) return 1;
+    if (isdigit(*ref)) return -1;
+    if (first_diff) return first_diff;
+  }
+  return 0;
 }
 
 int pkg_version_satisfied(pkg_t *it, pkg_t *ref, const char *op)
