@@ -15,6 +15,9 @@
    General Public License for more details.
 */
 
+#ifndef OPKG_H
+#define OPKG_H
+
 typedef struct _opkg_t opkg_t;
 typedef struct _opkg_package_t opkg_package_t;
 typedef struct _opkg_progress_data_t opkg_progress_data_t;
@@ -67,3 +70,6 @@ int opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t callback, 
 int opkg_list_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_data);
 int opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_data);
 opkg_package_t* opkg_find_package (opkg_t *opkg, const char *name, const char *version, const char *architecture, const char *repository);
+
+
+#endif /* OPKG_H */
