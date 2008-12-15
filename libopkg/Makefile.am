@@ -24,7 +24,8 @@ opkg_list_sources = conffile.c conffile.h conffile_list.c conffile_list.h \
 		    nv_pair.c nv_pair.h nv_pair_list.c nv_pair_list.h \
 		    pkg_dest.c pkg_dest.h pkg_dest_list.c pkg_dest_list.h \
 		    pkg_src.c pkg_src.h pkg_src_list.c pkg_src_list.h \
-		    str_list.c str_list.h void_list.c void_list.h
+		    str_list.c str_list.h void_list.c void_list.h \
+		    active_list.c active.list.h list.h 
 opkg_util_sources = file_util.c file_util.h opkg_message.h opkg_message.c md5.c md5.h \
 		    sprintf_alloc.c sprintf_alloc.h str_util.c str_util.h \
 		    xregex.c xregex.h xsystem.c xsystem.h
