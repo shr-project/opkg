@@ -3,9 +3,9 @@
 #include <stdio.h>
 
 void
-progress_callback (opkg_t *opkg, int percent, void *data)
+progress_callback (opkg_t *opkg, const opkg_progress_data_t *progress, void *data)
 {
-  printf ("\r%s %3d%%", (char*) data, percent);
+  printf ("\r%s %3d%%", (char*) data, progress->percentage);
   fflush (stdout);
 }
 

@@ -44,7 +44,8 @@ struct _opkg_t
     printf ("opkg: file %s: line %d (%s): Assertation '%s' failed",\
             __FILE__, __LINE__, __PRETTY_FUNCTION__, # expr); abort (); }
 
-#define progress(percent) if (progress_callback) progress_callback (opkg, percent, user_data);
+#define progress(d, p) d.percentage = p; if (progress_callback) progress_callback (opkg, &d, user_data);
+#define OLD_PKG_TO_NEW(pkg) opkg_package_new_with_values (pkg->name, pkg->version, pkg->architecture, pkg->description, pkg->tags, (pkg->state_status == SS_INSTALLED));
 
 /** Private Functions ***/
 
@@ -91,6 +92,7 @@ opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
 struct _curl_cb_data
 {
   opkg_progress_callback_t cb;
+  opkg_progress_data_t *progress_data;
   opkg_t *opkg;
   void *user_data;
   int start_range;
@@ -106,6 +108,7 @@ curl_progress_cb (struct _curl_cb_data *cb_data,
 {
   int p = (t) ? d * 100 / t : 0;
   static int prev = -1;
+  int progress = 0;
 
   /* prevent the same value being sent twice (can occur due to rounding) */
   if (p == prev)
@@ -115,8 +118,11 @@ curl_progress_cb (struct _curl_cb_data *cb_data,
   if (t < 1)
     return 0;
 
+  progress = cb_data->start_range + (d / t * ((cb_data->finish_range - cb_data->start_range)));
+  cb_data->progress_data->percentage = progress;
+
   (cb_data->cb)(cb_data->opkg,
-                cb_data->start_range + (d / t * ((cb_data->finish_range - cb_data->start_range))),
+                cb_data->progress_data,
                 cb_data->user_data);
 
   return 0;
@@ -349,19 +355,31 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
 {
   int err;
   char *package_id = NULL;
+  opkg_progress_data_t pdata;
+  pkg_t *new;
 
   opkg_assert (opkg != NULL);
   opkg_assert (package_name != NULL);
 
-  progress (0);
+  /* ... */
+  pkg_info_preinstall_check (opkg->conf);
+
+  new = pkg_hash_fetch_best_installation_candidate_by_name (opkg->conf, package_name);
+
+  if (!new)
+  {
+    /* XXX: Error: Could not find package to install */
+    return 1;
+  }
+  pdata.action = OPKG_INSTALL;
+  pdata.package = OLD_PKG_TO_NEW (new);
+
+  progress (pdata, 0);
 
   /* download the package */
   opkg_prepare_url_for_install (opkg->conf, package_name, &package_id);
 
-  progress (50);
-
-  /* ... */
-  pkg_info_preinstall_check (opkg->conf);
+  progress (pdata, 50);
 
   if (!package_id)
     package_id = strdup (package_name);
@@ -379,7 +397,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   if (err)
     return err;
 
-  progress (75);
+  progress (pdata, 75);
 
   /* run configure scripts, etc. */
   err = opkg_configure_packages (opkg->conf, NULL);
@@ -390,7 +408,8 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   opkg_conf_write_status_files (opkg->conf);
   pkg_write_changed_filelists (opkg->conf);
 
-  progress (100);
+  progress (pdata, 100);
+  opkg_package_free (pdata.package);
   return 0;
 }
 
@@ -399,19 +418,15 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
 {
   pkg_t *pkg = NULL;
   pkg_t *pkg_to_remove;
+  opkg_progress_data_t pdata;
 
   opkg_assert (opkg != NULL);
   opkg_assert (package_name != NULL);
 
-  progress (0);
+
 
   pkg_info_preinstall_check (opkg->conf);
 
-  pkg_vec_t *installed_pkgs = pkg_vec_alloc ();
-
-  pkg_hash_fetch_all_installed (&opkg->conf->pkg_hash, installed_pkgs);
-
-  progress (25);
 
   pkg = pkg_hash_fetch_installed_by_name (&opkg->conf->pkg_hash, package_name);
 
@@ -421,13 +436,17 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
     return 1;
   }
 
+  pdata.action = OPKG_REMOVE;
+  pdata.package = OLD_PKG_TO_NEW (pkg);
+  progress (pdata, 0);
+
+
   if (pkg->state_status == SS_NOT_INSTALLED)
   {
     /* XXX:  Error: Package seems to be not installed (STATUS = NOT_INSTALLED). */
     return 1;
   }
-
-  progress (75);
+  progress (pdata, 25);
 
   if (opkg->conf->restrict_to_default_dest)
   {
@@ -441,7 +460,7 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
   }
 
 
-  progress (75);
+  progress (pdata, 75);
 
   opkg_remove_pkg (opkg->conf, pkg_to_remove, 0);
 
@@ -450,7 +469,8 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
   pkg_write_changed_filelists (opkg->conf);
 
 
-  progress (100);
+  progress (pdata, 100);
+  opkg_package_free (pdata.package);
   return 0;
 }
 
@@ -458,11 +478,12 @@ int
 opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
 {
   pkg_t *pkg;
+  opkg_progress_data_t pdata;
+
+
 
   opkg_assert (opkg != NULL);
   opkg_assert (package_name != NULL);
-
-  progress (0);
 
   pkg_info_preinstall_check (opkg->conf);
 
@@ -489,13 +510,16 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
     return 1;
   }
 
-  progress (25);
+  pdata.action = OPKG_INSTALL;
+  pdata.package = OLD_PKG_TO_NEW (pkg);
+  progress (pdata, 0);
 
   opkg_upgrade_pkg (opkg->conf, pkg);
-  progress (75);
+  progress (pdata, 75);
 
   opkg_configure_packages (opkg->conf, NULL);
-  progress (100);
+  progress (pdata, 100);
+  opkg_package_free (pdata.package);
   return 0;
 }
 
@@ -506,9 +530,13 @@ opkg_upgrade_all (opkg_t *opkg, opkg_progress_callback_t progress_callback, void
   int err = 0;
   int i;
   pkg_t *pkg;
+  opkg_progress_data_t pdata;
+
+  pdata.action = OPKG_INSTALL;
+  pdata.package = NULL;
 
   opkg_assert (opkg != NULL);
-  progress (0);
+  progress (pdata, 0);
 
   installed = pkg_vec_alloc ();
   pkg_info_preinstall_check (opkg->conf);
@@ -517,8 +545,12 @@ opkg_upgrade_all (opkg_t *opkg, opkg_progress_callback_t progress_callback, void
   for (i = 0; i < installed->len; i++)
   {
     pkg = installed->pkgs[i];
+
+    pdata.package = OLD_PKG_TO_NEW (pkg);
+    progress (pdata, 99 * i / installed->len);
+    opkg_package_free (pdata.package);
+
     err += opkg_upgrade_pkg (opkg->conf, pkg);
-    progress (100 * i / installed->len);
   }
   pkg_vec_free (installed);
 
@@ -529,7 +561,8 @@ opkg_upgrade_all (opkg_t *opkg, opkg_progress_callback_t progress_callback, void
   if (err)
     return 1;
 
-  progress (100);
+  pdata.package = NULL;
+  progress (pdata, 100);
   return 0;
 }
 
@@ -542,10 +575,13 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
   pkg_src_list_elt_t *iter;
   pkg_src_t *src;
   int sources_list_count, sources_done;
+  opkg_progress_data_t pdata;
 
   opkg_assert (opkg != NULL);
 
-  progress (0);
+  pdata.action = OPKG_DOWNLOAD;
+  pdata.package = NULL;
+  progress (pdata, 0);
 
   sprintf_alloc (&lists_dir, "%s",
                  (opkg->conf->restrict_to_default_dest)
@@ -614,6 +650,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
       /* XXX: Note: downloading url */
 
       cb_data.cb = progress_callback;
+      cb_data.progress_data = &pdata;
       cb_data.opkg = opkg;
       cb_data.user_data = user_data;
       cb_data.start_range = 100 * sources_done / sources_list_count;
@@ -689,7 +726,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     free (list_file_name);
 
     sources_done++;
-    progress (100 * sources_done / sources_list_count);
+    progress (pdata, 100 * sources_done / sources_list_count);
   }
 
   rmdir (tmp);
@@ -718,14 +755,7 @@ opkg_list_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_d
 
     pkg = all->pkgs[i];
 
-    package = opkg_package_new_with_values (
-        pkg->name,
-        pkg->version,
-        pkg->architecture,
-        pkg->description,
-        pkg->tags,
-        (pkg->state_status == SS_INSTALLED));
-
+    package = OLD_PKG_TO_NEW (pkg);
     callback (opkg, package, user_data);
   }
 
@@ -766,15 +796,7 @@ opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, v
 
     if (cmp < 0)
     {
-
-      package = opkg_package_new_with_values (
-          old->name,
-          old->version,
-          old->architecture,
-          old->description,
-          old->tags,
-          (old->state_status == SS_INSTALLED));
-
+      package = OLD_PKG_TO_NEW (new);
       callback (opkg, package, user_data);
     }
   }

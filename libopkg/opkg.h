@@ -17,10 +17,17 @@
 
 typedef struct _opkg_t opkg_t;
 typedef struct _opkg_package_t opkg_package_t;
+typedef struct _opkg_progress_data_t opkg_progress_data_t;
 
-typedef void (*opkg_progress_callback_t) (opkg_t *opkg, int percentage, void *user_data);
+typedef void (*opkg_progress_callback_t) (opkg_t *opkg, const opkg_progress_data_t *progress, void *user_data);
 typedef void (*opkg_package_callback_t) (opkg_t *opkg, opkg_package_t *package, void *user_data);
 
+enum _opkg_action_t
+{
+  OPKG_INSTALL,
+  OPKG_REMOVE,
+  OPKG_DOWNLOAD
+};
 
 struct _opkg_package_t
 {
@@ -31,6 +38,13 @@ struct _opkg_package_t
   char *description;
   char *tags;
   int installed;
+};
+
+struct _opkg_progress_data_t
+{
+  int percentage;
+  int action;
+  opkg_package_t *package;
 };
 
 opkg_package_t* opkg_package_new ();
