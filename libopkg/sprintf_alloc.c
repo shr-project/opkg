@@ -44,7 +44,7 @@ int sprintf_alloc(char **str, const char *fmt, ...)
 
     /* ripped more or less straight out of PRINTF(3) */
 
-    if ((new_str = malloc(size)) == NULL) 
+    if ((new_str = calloc(1, size)) == NULL) 
       return -1;
 
     *str = new_str;

@@ -39,6 +39,7 @@ int hash_table_init(const char *name, hash_table_t *hash, int len);
 void hash_table_deinit(hash_table_t *hash);
 void *hash_table_get(hash_table_t *hash, const char *key);
 int hash_table_insert(hash_table_t *hash, const char *key, void *value);
+int hash_table_remove(hash_table_t *has, const char *key);
 void hash_table_foreach(hash_table_t *hash, void (*f)(const char *key, void *entry, void *data), void *data);
 
 #endif /* _HASH_TABLE_H_ */

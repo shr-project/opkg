@@ -39,7 +39,7 @@ static void print_regcomp_err(const regex_t *preg, int err)
     
     fprintf(stderr, "%s: Error compiling regex:", __FUNCTION__);
     size = regerror(err, preg, 0, 0);
-    error = malloc(size);
+    error = calloc(1, size);
     if (error) {
 	regerror(err, preg, error, size);
 	fprintf(stderr, "%s\n", error);

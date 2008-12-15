@@ -143,7 +143,7 @@ char *file_md5sum_alloc(const char *file_name)
     char *md5sum_hex;
     unsigned char md5sum_bin[md5sum_bin_len];
 
-    md5sum_hex = malloc(md5sum_hex_len + 1);
+    md5sum_hex = calloc(1, md5sum_hex_len + 1);
     if (md5sum_hex == NULL) {
 	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
 	return strdup("");

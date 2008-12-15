@@ -146,7 +146,7 @@ int hash_table_insert(hash_table_t *hash, const char *key, void *value)
                         return 0;
                     }
                }
-	       hash_entry->next = (hash_entry_t *)malloc(sizeof(hash_entry_t));
+	       hash_entry->next = (hash_entry_t *)calloc(1, sizeof(hash_entry_t));
 	       if (!hash_entry->next) {
 		    return -ENOMEM;
 	       }
@@ -161,6 +161,37 @@ int hash_table_insert(hash_table_t *hash, const char *key, void *value)
      return 0;
 }
 
+int hash_table_remove(hash_table_t *hash, const char *key)
+{
+    int ndx= hash_index(hash, key);
+    hash_entry_t *hash_entry = hash->entries + ndx;
+    hash_entry_t *next_entry=NULL, *last_entry=NULL;
+    while (hash_entry) 
+    {
+        if (hash_entry->key) 
+        {
+            if (strcmp(key, hash_entry->key) == 0) {
+                free(hash_entry->key);
+                if (last_entry) {
+                    last_entry->next = hash_entry->next;
+                    free(hash_entry);
+                } else {
+                    next_entry = hash_entry->next;
+                    if (next_entry) {
+                        memmove(hash_entry, next_entry, sizeof(hash_entry_t));
+                        free(next_entry);
+                    } else {
+                        memset(hash_entry, 0 , sizeof(hash_entry_t));
+                    }
+                }
+                return 1;
+            }
+        }
+        last_entry = hash_entry;
+        hash_entry = hash_entry->next;
+    }
+    return 0;
+}
 
 void hash_table_foreach(hash_table_t *hash, void (*f)(const char *key, void *entry, void *data), void *data)
 { 

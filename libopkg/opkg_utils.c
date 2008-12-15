@@ -61,7 +61,7 @@ char **read_raw_pkgs_from_stream(FILE *fp)
      int count = 0;
      size_t size = 512;
      
-     buf = malloc (size);
+     buf = calloc (1, size);
 
      while (fgets(buf, size, fp)) {
 	  while (strlen (buf) == (size - 1)
@@ -96,7 +96,7 @@ char *trim_alloc(char *line)
      char *new; 
      char *dest, *src, *end;
     
-     new = malloc(strlen(line) + 1);
+     new = calloc(1, strlen(line) + 1);
      if ( new == NULL ){
         fprintf(stderr,"%s: Unable to allocate memory\n",__FUNCTION__);
         return NULL;
@@ -142,7 +142,7 @@ void push_error_list(struct errlist ** errors, char * msg){
   struct errlist *err_lst_tmp;
 
 
-  err_lst_tmp = malloc ( sizeof (err_lst_tmp) );
+  err_lst_tmp = calloc (1,  sizeof (err_lst_tmp) );
   err_lst_tmp->errmsg=strdup(msg) ;
   err_lst_tmp->next = *errors;
   *errors = err_lst_tmp;

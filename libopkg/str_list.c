@@ -31,7 +31,7 @@ void str_list_elt_deinit(str_list_elt_t *elt)
 
 str_list_t *str_list_alloc()
 {
-     str_list_t *list = (str_list_t *)malloc(sizeof(str_list_t));
+     str_list_t *list = (str_list_t *)calloc(1, sizeof(str_list_t));
      if (list)
 	  str_list_init(list);
      return list;

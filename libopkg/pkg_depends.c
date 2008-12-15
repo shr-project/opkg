@@ -653,7 +653,7 @@ int buildProvides(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
     if (pkg->provides)
       return 0;
 
-    pkg->provides = (abstract_pkg_t **)malloc(sizeof(abstract_pkg_t *) * (pkg->provides_count + 1));
+    pkg->provides = (abstract_pkg_t **)calloc((pkg->provides_count + 1), sizeof(abstract_pkg_t *));
     if (pkg->provides == NULL) {
        fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
        return -1 ;
@@ -683,8 +683,7 @@ int buildConflicts(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
     if (!pkg->conflicts_count)
 	return 0;
 
-    conflicts = pkg->conflicts = malloc(sizeof(compound_depend_t) *
-					pkg->conflicts_count);
+    conflicts = pkg->conflicts = calloc(pkg->conflicts_count, sizeof(compound_depend_t));
     if (conflicts == NULL) {
        fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
        return  -1;
@@ -705,7 +704,7 @@ int buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
      if (!pkg->replaces_count)
 	  return 0;
 
-     pkg->replaces = (abstract_pkg_t **)malloc(sizeof(abstract_pkg_t *) * pkg->replaces_count);
+     pkg->replaces = (abstract_pkg_t **)calloc(pkg->replaces_count, sizeof(abstract_pkg_t *));
      if (pkg->replaces == NULL) {
         fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
         return  -1;
@@ -743,7 +742,7 @@ int buildDepends(hash_table_t * hash, pkg_t * pkg)
      if (0 && pkg->pre_depends_count)
 	  fprintf(stderr, "pkg=%s pre_depends_count=%d depends_count=%d\n", 
 		  pkg->name, pkg->pre_depends_count, pkg->depends_count);
-     depends = pkg->depends = malloc(sizeof(compound_depend_t) * count);
+     depends = pkg->depends = calloc(count, sizeof(compound_depend_t));
      if (depends == NULL) {
         fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
         return  -1;
@@ -878,7 +877,7 @@ void buildDependedUponBy(pkg_t * pkg, abstract_pkg_t * ab_pkg)
 
 static depend_t * depend_init(void)
 {
-    depend_t * d = (depend_t *)malloc(sizeof(depend_t));    
+    depend_t * d = (depend_t *)calloc(1, sizeof(depend_t));    
     if ( d==NULL ){
         fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
         return NULL; 
@@ -913,7 +912,7 @@ static int parseDepends(compound_depend_t *compound_depend,
      compound_depend->type = DEPEND;
 
      compound_depend->possibility_count = num_of_ors + 1;
-     possibilities = (depend_t **)malloc(sizeof(depend_t *) * (num_of_ors + 1));
+     possibilities = (depend_t **)calloc((num_of_ors + 1), sizeof(depend_t *) );
      if (!possibilities)
 	  return -ENOMEM;
      compound_depend->possibilities = possibilities;

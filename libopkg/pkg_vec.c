@@ -185,12 +185,9 @@ void abstract_pkg_vec_free(abstract_pkg_vec_t *vec)
  */
 void abstract_pkg_vec_insert(abstract_pkg_vec_t *vec, abstract_pkg_t *pkg)
 {
-
-	vec->pkgs = 
-	  (abstract_pkg_t **)
-	    realloc(vec->pkgs, (vec->len + 1) * sizeof(abstract_pkg_t *));
-	vec->pkgs[vec->len] = pkg;
-	vec->len++;
+    vec->pkgs = (abstract_pkg_t **) realloc(vec->pkgs, (vec->len + 1) * sizeof(abstract_pkg_t *));
+    vec->pkgs[vec->len] = pkg;
+    vec->len++;
 }
 
 abstract_pkg_t * abstract_pkg_vec_get(abstract_pkg_vec_t *vec, int i)

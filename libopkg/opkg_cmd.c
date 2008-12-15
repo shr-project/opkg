@@ -316,7 +316,7 @@ static opkg_intercept_t opkg_prep_intercepts(opkg_conf_t *conf)
     char *newpath;
     int gen;
 
-    ctx = malloc (sizeof (*ctx));
+    ctx = calloc (1, sizeof (*ctx));
     oldpath = getenv ("PATH");
     if (oldpath) {
         ctx->oldpath = strdup (oldpath);
@@ -925,7 +925,7 @@ static int opkg_remove_cmd(opkg_conf_t *conf, int argc, char **argv)
         available = pkg_vec_alloc();
         pkg_hash_fetch_all_installed(&conf->pkg_hash, available);
         for (i=0; i < argc; i++) {
-           pkg_name = malloc(strlen(argv[i])+2);
+           pkg_name = calloc(1, strlen(argv[i])+2);
            strcpy(pkg_name,argv[i]);
            for (a=0; a < available->len; a++) {
                pkg = available->pkgs[a];
@@ -1086,7 +1086,7 @@ static int opkg_files_cmd(opkg_conf_t *conf, int argc, char **argv)
      size_t used_len;
      char *buff ;
 
-     buff = (char *)malloc(buff_len);
+     buff = (char *)calloc(1, buff_len);
      if ( buff == NULL ) {
         fprintf( stderr,"%s: Unable to allocate memory \n",__FUNCTION__);
         return ENOMEM;

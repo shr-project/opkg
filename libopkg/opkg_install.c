@@ -597,7 +597,7 @@ static int pkg_remove_orphan_dependent(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old
         if (found)
             continue;
         d_str = old_pkg->depends_str[i];
-        buf = malloc (strlen (d_str) + 1);
+        buf = calloc (1, strlen (d_str) + 1);
         j=0;
         while (d_str[j] != '\0' && d_str[j] != ' ') {
             buf[j]=d_str[j];

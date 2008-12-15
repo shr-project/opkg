@@ -73,7 +73,7 @@ int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
 	  { NULL }
      };
 
-     *options = (opkg_option_t *)malloc(sizeof(tmp));
+     *options = (opkg_option_t *)calloc(1, sizeof(tmp));
      if ( options == NULL ){
         fprintf(stderr,"%s: Unable to allocate memory\n",__FUNCTION__);
         return -1;
@@ -182,7 +182,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
             lists_dir = tmp;
      }
 
-     pending_dir = malloc(strlen(lists_dir)+strlen("/pending")+5);
+     pending_dir = calloc(1, strlen(lists_dir)+strlen("/pending")+5);
      snprintf(pending_dir,strlen(lists_dir)+strlen("/pending") ,"%s%s",lists_dir,"/pending");
 
      conf->lists_dir = strdup(lists_dir);

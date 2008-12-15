@@ -141,7 +141,7 @@ int parseVersion(pkg_t *pkg, char *raw)
 
   if (!pkg->version)
   {
-  pkg->version= malloc(strlen(raw)+1);
+  pkg->version= calloc(1, strlen(raw)+1);
   if ( pkg->version == NULL ) {
      fprintf(stderr, "%s: out of memory \n", __FUNCTION__);
      return ENOMEM;
@@ -230,7 +230,7 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 		pkg->priority = parseGenericFieldType("Priority", *lines);
 	    else if(isGenericFieldType("Provides", *lines)){
 /* Here we add the internal_use to align the off by one problem between provides_str and provides */
-        	provide = (char * ) malloc(strlen(*lines)+ 35 ); /* Preparing the space for the new opkg_internal_use_only */
+        	provide = (char * ) calloc(1, strlen(*lines)+ 35 ); /* Preparing the space for the new opkg_internal_use_only */
         	if ( alterProvidesLine(*lines,provide) ){
         	    return EINVAL;
         	}
@@ -373,7 +373,7 @@ out:;
     if ( pkg_false_provides==1)
     {
        pkg->provides_count = 1;
-       pkg->provides_str = malloc (sizeof (char*));
+       pkg->provides_str = calloc (1, sizeof (char*));
        pkg->provides_str[0] = strdup ("opkg_internal_use_only");
     }
 

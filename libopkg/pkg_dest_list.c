@@ -59,7 +59,7 @@ pkg_dest_t *pkg_dest_list_append(pkg_dest_list_t *list, const char *name,
     pkg_dest_t *pkg_dest;
 
     /* freed in plg_dest_list_deinit */
-    pkg_dest = malloc(sizeof(pkg_dest_t));
+    pkg_dest = calloc(1, sizeof(pkg_dest_t));
     if (pkg_dest == NULL) {
 	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
 	return NULL;

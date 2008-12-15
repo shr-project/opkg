@@ -77,7 +77,7 @@ pkg_t *pkg_new(void)
 {
      pkg_t *pkg;
 
-     pkg = malloc(sizeof(pkg_t));
+     pkg = calloc(1, sizeof(pkg_t));
      if (pkg == NULL) {
 	  fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
 	  return NULL;
@@ -429,7 +429,7 @@ abstract_pkg_t *abstract_pkg_new(void)
 {
      abstract_pkg_t * ab_pkg;
 
-     ab_pkg = malloc(sizeof(abstract_pkg_t));
+     ab_pkg = calloc(1, sizeof(abstract_pkg_t));
 
      if (ab_pkg == NULL) {
 	  fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
@@ -461,7 +461,7 @@ void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){
      char **raw =NULL;
      char **raw_start=NULL; 
 
-     temp_str = (char *) malloc (strlen(pkg->dest->info_dir)+strlen(pkg->name)+12);
+     temp_str = (char *) calloc (1, strlen(pkg->dest->info_dir)+strlen(pkg->name)+12);
      if (temp_str == NULL ){
         opkg_message(conf, OPKG_INFO, "Out of memory in  %s\n", __FUNCTION__);
         return;
@@ -497,7 +497,7 @@ char * pkg_formatted_info(pkg_t *pkg )
      char *line;
      char * buff;
 
-     buff = malloc(8192);
+     buff = calloc(1, 8192);
      if (buff == NULL) {
 	  fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
 	  return NULL;
@@ -1398,9 +1398,9 @@ int pkg_free_installed_files(pkg_t *pkg)
      str_list_elt_t *iter;
 
      pkg->installed_files_ref_cnt--;
-     if (pkg->installed_files_ref_cnt > 0) {
+
+     if (pkg->installed_files_ref_cnt > 0)
 	  return 0;
-     }
 
      if (pkg->installed_files) {
 

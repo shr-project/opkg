@@ -60,7 +60,7 @@ int void_list_append(void_list_t *list, void *data)
     void_list_elt_t *elt;
 
     /* freed in void_list_deinit */
-    elt = malloc(sizeof(void_list_elt_t));
+    elt = calloc(1, sizeof(void_list_elt_t));
     if (elt == NULL) {
 	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
 	return ENOMEM;
@@ -84,7 +84,7 @@ int void_list_push(void_list_t *list, void *data)
 {
     void_list_elt_t *elt;
 
-    elt = malloc(sizeof(void_list_elt_t));
+    elt = calloc(1, sizeof(void_list_elt_t));
     if (elt == NULL) {
 	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
 	return ENOMEM;

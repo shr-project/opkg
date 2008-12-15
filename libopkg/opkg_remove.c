@@ -54,7 +54,7 @@ int pkg_has_installed_dependents(opkg_conf_t *conf, abstract_pkg_t *parent_apkg,
      /* if caller requested the set of installed dependents */
      if (pdependents) {
 	  int p = 0;
-	  abstract_pkg_t **dependents = (abstract_pkg_t **)malloc((n_installed_dependents+1)*sizeof(abstract_pkg_t *));
+	  abstract_pkg_t **dependents = (abstract_pkg_t **)calloc((n_installed_dependents+1), sizeof(abstract_pkg_t *));
 
           if ( dependents == NULL ){
               fprintf(stderr,"%s Unable to allocate memory. REPORT THIS BUG IN BUGZILLA PLEASE\n", __FUNCTION__);
@@ -181,7 +181,7 @@ static int remove_autoinstalled (opkg_conf_t *conf, pkg_t *pkg)
     int x = 0;
     pkg_t *p;
     d_str = pkg->depends_str[i];
-    buffer = malloc (strlen (d_str) + 1);
+    buffer = calloc (1, strlen (d_str) + 1);
     if (!buffer)
     {
       fprintf(stderr,"%s Unable to allocate memory.\n", __FUNCTION__);

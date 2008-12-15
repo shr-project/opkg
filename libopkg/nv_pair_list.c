@@ -57,7 +57,7 @@ nv_pair_t *nv_pair_list_append(nv_pair_list_t *list, const char *name, const cha
     int err;
 
     /* freed in nv_pair_list_deinit */
-    nv_pair_t *nv_pair = malloc(sizeof(nv_pair_t));
+    nv_pair_t *nv_pair = calloc(1, sizeof(nv_pair_t));
 
     if (nv_pair == NULL) {
 	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);

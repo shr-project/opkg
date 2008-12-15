@@ -48,7 +48,7 @@ pkg_src_t *pkg_src_list_append(pkg_src_list_t *list,
     int err;
 
     /* freed in pkg_src_list_deinit */
-    pkg_src_t *pkg_src = malloc(sizeof(pkg_src_t));
+    pkg_src_t *pkg_src = calloc(1, sizeof(pkg_src_t));
 
     if (pkg_src == NULL) {
 	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
