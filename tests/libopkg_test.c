@@ -148,6 +148,7 @@ main (int argc, char **argv)
 	    "\tlist all - List all available packages\n"
 	    "\tlist installed - List all the installed packages\n"
 	    "\tremove [package] - Remove the specified package\n"
+	    "\trping - Reposiroties ping, check the accessibility of repositories\n"
 	    "\ttest - Run test script\n"
     , basename (argv[0]));
     exit (0);
@@ -229,9 +230,17 @@ main (int argc, char **argv)
       break;
           
     case 'r':
-      err = opkg_remove_package (opkg, argv[2], progress_callback, "Removing...");
-      printf ("\nopkg_remove_package returned %d (%s)\n", err, errors[err]);
-      break;
+      if (argv[1][1] == 'e')
+      {
+      	err = opkg_remove_package (opkg, argv[2], progress_callback, "Removing...");
+      	printf ("\nopkg_remove_package returned %d (%s)\n", err, errors[err]);
+	break;
+      }else if (argv[1][1] == 'p')
+      {
+        err = opkg_repository_accessibility_check(opkg);
+	printf("\nopkg_repository_accessibility_check returned (%d)\n", err);
+        break;
+      }
 
     default:
       printf ("Unknown command \"%s\"\n", argv[1]);

@@ -85,5 +85,6 @@ int opkg_list_packages (opkg_t *opkg, opkg_package_callback_t callback, void *us
 int opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_data);
 opkg_package_t* opkg_find_package (opkg_t *opkg, const char *name, const char *version, const char *architecture, const char *repository);
 
+int opkg_repository_accessibility_check(opkg_t *opkg);
 
 #endif /* OPKG_H */

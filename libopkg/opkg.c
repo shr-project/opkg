@@ -1008,3 +1008,68 @@ opkg_find_package (opkg_t *opkg, const char *name, const char *ver, const char *
 
   return package;
 }
+
+#include <curl/curl.h>
+/**
+ * @brief Check the accessibility of repositories. It will try to access the repository to check if the respository is accessible throught current network status. 
+ * @param opkg The opkg_t
+ * @return return how many repositories cannot access. 0 means all okay. 
+ */ 
+int opkg_repository_accessibility_check(opkg_t *opkg) 
+{
+  pkg_src_list_elt_t *iter;
+  str_list_elt_t *iter1;
+  str_list_t *src;
+  int repositories=0;
+  int ret=0;
+  int err;
+  char *repo_ptr;
+  char *stmp;
+  opkg_assert(opkg != NULL);
+
+  src = str_list_alloc();
+
+  for (iter = opkg->conf->pkg_src_list.head; iter; iter = iter->next) 
+  {
+    if (strstr(iter->data->value, "://") && 
+		    index(strstr(iter->data->value, "://") + 3, '/')) 
+      stmp = strndup(iter->data->value, 
+		      (index(strstr(iter->data->value, "://") + 3, '/') - iter->data->value)*sizeof(char));
+
+    else
+      stmp = strdup(iter->data->value);
+
+    for (iter1 = src->head; iter1; iter1 = iter1->next)
+    {
+      if (strstr(iter1->data, stmp)) 
+        break;
+    }
+    if (iter1)
+      continue;
+
+    sprintf_alloc(&repo_ptr, "%s/index.html",stmp);
+    free(stmp);
+
+    str_list_append(src, repo_ptr);
+    repositories++;
+  }
+  while (repositories > 0) 
+  {
+    iter1 = str_list_pop(src);
+    repositories--;
+
+    err = opkg_download(opkg->conf, iter1->data, "/dev/null", NULL, NULL);
+    if (!(err == CURLE_OK || 
+		err == CURLE_HTTP_RETURNED_ERROR || 
+		err == CURLE_FILE_COULDNT_READ_FILE ||
+		err == CURLE_REMOTE_FILE_NOT_FOUND || 
+		err == CURLE_TFTP_NOTFOUND
+		)) {
+	    ret++;
+    }
+    str_list_elt_deinit(iter1);
+    free(iter1);
+  }
+  free(src);
+  return ret;
+}
