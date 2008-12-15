@@ -52,8 +52,11 @@ struct _opkg_t
 
 /** Private Functions ***/
 
+/**
+ * Clone a pkg_t 
+ */ 
 static opkg_package_t*
-old_pkg_to_new (pkg_t *old)
+pkg_clone (pkg_t *old)
 {
   opkg_package_t *new;
 
@@ -69,6 +72,8 @@ old_pkg_to_new (pkg_t *old)
   new->description = sstrdup (old->description);
   new->tags = sstrdup (old->tags);
   new->url = sstrdup (old->url);
+
+#undef sstrdup
 
   new->size = (old->size) ? atoi (old->size) : 0;
   new->installed = (old->state_status == SS_INSTALLED);
@@ -418,7 +423,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   new->state_flag |= SF_USER;
 
   pdata.action = OPKG_INSTALL;
-  pdata.package = old_pkg_to_new (new);
+  pdata.package = pkg_clone (new);
 
   progress (pdata, 0);
 
@@ -448,7 +453,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
       continue;
 
     opkg_package_free (pdata.package);
-    pdata.package = old_pkg_to_new (pkg);
+    pdata.package = pkg_clone (pkg);
     pdata.action = OPKG_DOWNLOAD;
 
     if (pkg->src == NULL)
@@ -500,7 +505,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
 
   /* 75% of "install" progress is for downloading */
   opkg_package_free (pdata.package);
-  pdata.package = old_pkg_to_new (new);
+  pdata.package = pkg_clone (new);
   pdata.action = OPKG_INSTALL;
   progress (pdata, 75);
 
@@ -564,7 +569,7 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
   }
 
   pdata.action = OPKG_REMOVE;
-  pdata.package = old_pkg_to_new (pkg);
+  pdata.package = pkg_clone (pkg);
   progress (pdata, 0);
 
 
@@ -640,7 +645,7 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   }
 
   pdata.action = OPKG_INSTALL;
-  pdata.package = old_pkg_to_new (pkg);
+  pdata.package = pkg_clone (pkg);
   progress (pdata, 0);
 
   err = opkg_upgrade_pkg (opkg->conf, pkg);
@@ -701,7 +706,7 @@ opkg_upgrade_all (opkg_t *opkg, opkg_progress_callback_t progress_callback, void
   {
     pkg = installed->pkgs[i];
 
-    pdata.package = old_pkg_to_new (pkg);
+    pdata.package = pkg_clone (pkg);
     progress (pdata, 99 * i / installed->len);
     opkg_package_free (pdata.package);
 
@@ -916,7 +921,7 @@ opkg_list_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_d
 
     pkg = all->pkgs[i];
 
-    package = old_pkg_to_new (pkg);
+    package = pkg_clone (pkg);
     callback (opkg, package, user_data);
     opkg_package_free (package);
   }
@@ -948,7 +953,7 @@ opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, v
 
         new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, old->name, NULL);
 
-        package = old_pkg_to_new (new);
+        package = pkg_clone (new);
         callback (opkg, package, user_data);
         opkg_package_free (package);
     }
@@ -1005,7 +1010,7 @@ opkg_find_package (opkg_t *opkg, const char *name, const char *ver, const char *
     }
 
     /* match found */
-    package = old_pkg_to_new (pkg);
+    package = pkg_clone (pkg);
     break;
   }
 
