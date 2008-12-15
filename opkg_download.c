@@ -46,6 +46,14 @@ curl_progress_func (char* url,
 #ifdef OPKG_LIB
     if (opkg_cb_download_progress)
     {
+	static int prev = -1;
+
+	/* don't report the same percentage multiple times
+	 * (this can occur due to rounding) */
+	if (prev == p)
+	    return 0;
+	prev = p;
+
 	opkg_cb_download_progress (p, url);
 	return 0;
     }
