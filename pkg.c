@@ -558,6 +558,13 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
                    temp[0]='\0';
                    snprintf(temp, (strlen(pkg->architecture)+17), "Architecture: %s\n", pkg->architecture);
 	       }
+	  } else if (strcasecmp(field, "Auto-Installed") == 0) {
+		/* Auto-Installed flag */
+		if (pkg->auto_installed) {
+		    char * s = "Auto-Installed: yes\n";
+		    temp = (char *)realloc(temp, strlen(s) + 1);
+		    strcpy (temp, s);
+		}
 	  } else {
 	       goto UNKNOWN_FMT_FIELD;
 	  }
@@ -1017,6 +1024,7 @@ void pkg_print_status(pkg_t * pkg, FILE * file)
      pkg_print_field(pkg, file, "Architecture");
      pkg_print_field(pkg, file, "Conffiles");
      pkg_print_field(pkg, file, "Installed-Time");
+     pkg_print_field(pkg, file, "Auto-Installed");
      fputs("\n", file);
 }
 

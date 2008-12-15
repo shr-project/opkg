@@ -267,6 +267,15 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 	case 'A':
 	    if(isGenericFieldType("Architecture:", *lines))
 		pkg->architecture = parseGenericFieldType("Architecture", *lines);
+	    else if(isGenericFieldType("Auto-Installed:", *lines)) {
+		char *auto_installed_value;
+		auto_installed_value = parseGenericFieldType("Auto-Installed:", *lines);
+		if (strcmp(auto_installed_value, "yes") == 0) {
+		    pkg->auto_installed = 1;
+		}
+		free(auto_installed_value);
+		pkg->architecture = parseGenericFieldType("Auto-Installed", *lines);
+	    }
 	    break;
 
 	case 'F':

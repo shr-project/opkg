@@ -176,6 +176,10 @@ struct pkg
      int arch_priority;
 /* Adding this flag, to "force" opkg to choose a "provided_by_hand" package, if there are multiple choice */
      int provided_by_hand;
+
+     /* this flag specifies whether the package was installed to satisfy another
+      * package's dependancies */
+     int auto_installed;
 };
 
 pkg_t *pkg_new(void);

@@ -413,6 +413,9 @@ int satisfy_dependencies_for(opkg_conf_t *conf, pkg_t *pkg)
 	      && (dep->state_status != SS_UNPACKED)) {
                opkg_message(conf, OPKG_DEBUG2,"Function: %s calling opkg_install_pkg \n",__FUNCTION__);
 	       err = opkg_install_pkg(conf, dep,0);
+	       /* mark this package as having been automatically installed to
+	        * satisfy a dependancy */
+	       dep->auto_installed = 1;
 	       if (err) {
 		    pkg_vec_free(depends);
 		    return err;
