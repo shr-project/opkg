@@ -816,6 +816,9 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
   free (tmp);
   free (lists_dir);
 
+  /* Now re-read the package lists to update package hash tables. */
+  opkg_re_read_config_files (opkg);
+
   return result;
 }
 
