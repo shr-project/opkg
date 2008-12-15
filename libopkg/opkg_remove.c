@@ -161,6 +161,61 @@ static int user_prefers_removing_dependents(opkg_conf_t *conf, abstract_pkg_t *a
     return 0;
 }
 
+static int remove_autoinstalled (opkg_conf_t *conf, pkg_t *pkg)
+{
+  /*
+   * find and remove packages that were autoinstalled and are orphaned by the removal of pkg
+   */
+
+  char *buffer, *d_str;
+  int i;
+
+  for (i = 0; i < pkg->depends_count; ++i)
+  {
+    int x = 0;
+    pkg_t *p;
+    d_str = pkg->depends_str[i];
+    buffer = malloc (strlen (d_str) + 1);
+    if (!buffer)
+    {
+      fprintf(stderr,"%s Unable to allocate memory.\n", __FUNCTION__);
+      return -1;
+    }
+
+    while (d_str[x] != '\0' && d_str[x] != ' ')
+    {
+      buffer[x] = d_str[x];
+      ++x;
+    }
+    buffer[x] = '\0';
+    buffer = realloc (buffer, strlen (buffer) + 1);
+    p = pkg_hash_fetch_installed_by_name (&conf->pkg_hash, buffer);
+
+    /* if the package is not installed, this could have been a circular
+     * depenancy and the package has already been removed */
+    if (!p)
+      return -1;
+
+    if (p->auto_installed)
+    {
+      int deps;
+      abstract_pkg_t **dependents;
+
+      deps = pkg_has_installed_dependents(conf, NULL, p, &dependents);
+      if (deps == 0)
+      {
+	printf ("%s was autoinstalled but is now orphaned\n", buffer);
+         opkg_remove_pkg(conf, p,0);
+      }
+	else
+	   printf ("%s was autoinstalled and is still required by %d installed packages\n", buffer, deps);
+    }
+    free (buffer);
+  }
+
+  return 0;
+}
+
 int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)
 {
 /* Actually, when "message == 1" I have been called from an upgrade, and not from a normal remove
@@ -169,9 +224,6 @@ int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)
 */
      int err;
      abstract_pkg_t *parent_pkg = NULL;
-
-     if (conf->autoremove)
-       printf ("autoremove is enabled, but not yet implemented\n");
 
      if (pkg->essential && !message) {
 	  if (conf->force_removal_of_essential_packages) {
@@ -251,6 +303,13 @@ int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)
 
      if (parent_pkg) 
 	  parent_pkg->state_status = SS_NOT_INSTALLED;
+
+
+     /* remove autoinstalled packages that are orphaned by the removal of this one */
+     if (conf->autoremove)
+       remove_autoinstalled (conf, pkg);
+
+
 
      return 0;
 }
