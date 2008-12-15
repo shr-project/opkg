@@ -1067,14 +1067,10 @@ int pkg_compare_versions(const pkg_t *pkg, const pkg_t *ref_pkg)
 	  return r;
      }
 
-#ifdef USE_DEBVERSION
      r = verrevcmp(pkg->revision, ref_pkg->revision);
      if (r) {
 	  return r;
      }
-
-     r = verrevcmp(pkg->familiar_revision, ref_pkg->familiar_revision);
-#endif
 
      return r;
 }
@@ -1189,10 +1185,7 @@ char *pkg_version_str_alloc(pkg_t *pkg)
 {
      char *complete_version;
      char *epoch_str;
-#ifdef USE_DEBVERSION
      char *revision_str;
-     char *familiar_revision_str;
-#endif
 
      if (pkg->epoch) {
 	  sprintf_alloc(&epoch_str, "%d:", pkg->epoch);
@@ -1200,33 +1193,18 @@ char *pkg_version_str_alloc(pkg_t *pkg)
 	  epoch_str = strdup("");
      }
 
-#ifdef USE_DEBVERSION
      if (pkg->revision && strlen(pkg->revision)) {
 	  sprintf_alloc(&revision_str, "-%s", pkg->revision);
      } else {
 	  revision_str = strdup("");
      }
 
-     if (pkg->familiar_revision && strlen(pkg->familiar_revision)) {
-	  sprintf_alloc(&familiar_revision_str, "-fam%s", pkg->familiar_revision);
-     } else {
-	  familiar_revision_str = strdup("");
-     }
-#endif
 
-#ifdef USE_DEBVERSION
-     sprintf_alloc(&complete_version, "%s%s%s%s",
-		   epoch_str, pkg->version, revision_str, familiar_revision_str);
-#else
-     sprintf_alloc(&complete_version, "%s%s",
-		   epoch_str, pkg->version);
-#endif
+     sprintf_alloc(&complete_version, "%s%s%s",
+		   epoch_str, pkg->version, revision_str);
 
      free(epoch_str);
-#ifdef USE_DEBVERSION
      free(revision_str);
-     free(familiar_revision_str);
-#endif
 
      return complete_version;
 }

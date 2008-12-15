@@ -105,9 +105,7 @@ void parseConffiles(pkg_t * pkg, char * raw)
 int parseVersion(pkg_t *pkg, char *raw)
 {
   char *colon, *eepochcolon;
-#ifdef USE_DEBVERSION
   char *hyphen;
-#endif
   unsigned long epoch;
 
   if (!*raw) {
@@ -149,23 +147,12 @@ int parseVersion(pkg_t *pkg, char *raw)
   }
   strcpy(pkg->version, raw);
 
-#ifdef USE_DEBVERSION
   hyphen= strrchr(pkg->version,'-');
 
   if (hyphen) {
     *hyphen++= 0;
-    if (strncmp("fam", hyphen, 3) == 0) {
-      pkg->familiar_revision=hyphen+3;
-      hyphen= strrchr(pkg->version,'-');
-      if (hyphen) {
-	*hyphen++= 0;
-	pkg->revision = hyphen;
-      }
-    } else {
       pkg->revision = hyphen;
-    }
   }
-#endif
 
 /*
   fprintf(stderr,"Parsed version: %lu, %s, %s, %s\n",
