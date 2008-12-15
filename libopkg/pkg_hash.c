@@ -257,8 +257,7 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pk
 
 		if (vec->len > 0 && matching_pkgs->len < 1)
 		{
-		  opkg_message (conf, OPKG_ERROR, "   Packages found, but none available for the current "
-						  "architecture\n");
+		  opkg_message (conf, OPKG_ERROR, "Packages were found, but none compatible with the architectures configured\n");
 		  if (err)
 		    *err = OPKG_PKG_HAS_NO_AVAILABLE_ARCH;
 		}
