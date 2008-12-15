@@ -23,7 +23,6 @@
 void active_list_init(struct active_list *ptr) {
     INIT_LIST_HEAD(&ptr->node);
     INIT_LIST_HEAD(&ptr->depend);
-    ptr->walked=0;
     ptr->depended = NULL;
 }
 
@@ -31,38 +30,23 @@ void active_list_init(struct active_list *ptr) {
  */ 
 struct active_list * active_list_next(struct active_list *head, struct active_list *ptr) {
     struct active_list *next=NULL;
-    if (!head || !ptr) {
+    if (!head) {
         fprintf(stderr, "active_list_prev head = %p, ptr = %p invalid value!!\n", head, ptr);
         return NULL;
     }
-    if (ptr == head) {
-        head->walked = !head->walked;
-        next = list_entry(ptr->node.next, struct active_list, node);
-        if (next == head)
-            return NULL;
-        return active_list_next(head, next);
+    if (!ptr)
+        ptr = head;
+    next = list_entry(ptr->node.next, struct active_list, node);
+    if (next == head ) {
+        return NULL;
     }
-    if (ptr->depend.next != &ptr->depend) {
-        next = list_entry(ptr->depend.next, struct active_list, node);
-        if (head->walked != next->walked) {
-            ptr->walked = head->walked;
-            return active_list_next(head, next);
-        }
-    } 
-    if (ptr->walked != head->walked) {
-        ptr->walked = head->walked;
-        return ptr;
-    }
-
-    if (ptr->depended && ptr->node.next == &ptr->depended->depend ) {
+    if (ptr->depended && &ptr->depended->depend == ptr->node.next ) {
         return ptr->depended;
     }
-
-    if (ptr->node.next != &head->node) {
-        next = list_entry(ptr->node.next, struct active_list, node);
-        return active_list_next(head, next);
-    } 
-    return NULL;
+    while (next->depend.next != &next->depend) {
+        next = list_entry(next->depend.next, struct active_list, node); 
+    }
+    return next;
 }
 
 
@@ -78,4 +62,5 @@ void active_list_add_depend(struct active_list *node, struct active_list *depend
 void active_list_add(struct active_list *head, struct active_list *node) {
     list_del_init(&node->node);
     list_add_tail(&node->node, &head->node);
+    node->depended  = head;
 }

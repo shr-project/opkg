@@ -23,7 +23,6 @@
 struct active_list {
     struct list_head node;
     struct list_head depend;
-    char walked;
     struct active_list *depended;
 };
 

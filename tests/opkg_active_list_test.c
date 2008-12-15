@@ -110,7 +110,7 @@ int main (void) {
         printf ("%s ",test->str);
     }
     printf("\n");
-    for(ptr = active_list_next(&head, &head); ptr ;ptr = active_list_next(&head, ptr)) {
+    for(ptr = active_list_next(&head, NULL); ptr ;ptr = active_list_next(&head, ptr)) {
         test = list_entry(ptr, struct active_test, list);
         printf ("%s ",test->str);
     }
