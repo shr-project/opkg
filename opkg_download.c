@@ -18,6 +18,7 @@
 */
 
 #include <curl/curl.h>
+#include <gpgme.h>
 
 #include "opkg.h"
 #include "opkg_download.h"
@@ -152,6 +153,7 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
 	curl_easy_setopt (curl, CURLOPT_NOPROGRESS, 0);
 	curl_easy_setopt (curl, CURLOPT_PROGRESSDATA, src);
 	curl_easy_setopt (curl, CURLOPT_PROGRESSFUNCTION, curl_progress_func);
+	curl_easy_setopt (curl, CURLOPT_FAILONERROR, 1);
 	if (conf->http_proxy || conf->ftp_proxy)
 	{
 	    char *userpwd;
@@ -163,6 +165,8 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
 	res = curl_easy_perform (curl);
 	curl_easy_cleanup (curl);
 	fclose (file);
+	if (res)
+	    return res;
 
     }
     else
@@ -270,4 +274,48 @@ int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **name
 	  *namep = strdup(pkg->name);
      }
      return 0;
+}
+
+int
+opkg_verify_file (char *text_file, char *sig_file)
+{
+    int status = -1;
+    gpgme_ctx_t ctx;
+    gpgme_data_t sig, text;
+    gpgme_error_t err = -1;
+    gpgme_verify_result_t result;
+    gpgme_signature_t s;
+    
+    err = gpgme_new (&ctx);
+
+    if (err)
+	return -1;
+
+    err = gpgme_data_new_from_file (&sig, sig_file, 1); 
+    if (err)
+	return -1;
+
+    err = gpgme_data_new_from_file (&text, text_file, 1); 
+    if (err)
+	return -1;
+
+    err = gpgme_op_verify (ctx, sig, text, NULL);
+
+    result = gpgme_op_verify_result (ctx);
+
+    /* see if any of the signitures matched */
+    s = result->signatures;
+    while (s)
+    {
+	status = gpg_err_code (s->status);
+	if (status == GPG_ERR_NO_ERROR)
+	    break;
+	s = s->next;
+    }
+
+    gpgme_data_release (sig);
+    gpgme_data_release (text);
+    gpgme_release (ctx);
+
+    return status;
 }

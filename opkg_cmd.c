@@ -265,6 +265,40 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 			    list_file_name);
 	  }
 	  free(url);
+
+	  /* download detached signitures to verify the package lists */
+	  /* get the url for the sig file */
+	  if (src->extra_data)	/* debian style? */
+	      sprintf_alloc(&url, "%s/%s/%s", src->value, src->extra_data,
+			    "Packages.sig");
+	  else
+	      sprintf_alloc(&url, "%s/%s", src->value, "Packages.sig");
+
+	  /* create temporary dir for it */
+	  char *tmp, *tmp_file_name;
+	  tmp = strdup ("/tmp/opkg.XXXXXX");
+	  if (mkdtemp (tmp) == NULL) {
+	 	perror ("mkdtemp");
+		failures++;
+		continue;
+	  }
+	  sprintf_alloc (&tmp_file_name, "%s/%s", tmp, "Packages.sig");
+
+	  err = opkg_download(conf, url, tmp_file_name);
+	  if (err) {
+	    failures++;
+	  } else {
+	    int err;
+	    err = opkg_verify_file (list_file_name, tmp_file_name);
+	    if (err == 0)
+		opkg_message (conf, OPKG_NOTICE, "Signature check passed\n");
+	    else
+		opkg_message (conf, OPKG_NOTICE, "Signature check failed\n");
+	  }
+	  unlink (tmp_file_name);
+	  free (tmp_file_name);
+
+	  free (url);
 	  free(list_file_name);
      }
      free(lists_dir);
