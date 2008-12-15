@@ -101,7 +101,6 @@ pkg_t *pkg_vec_insert_merge(pkg_vec_t *vec, pkg_t *pkg, int set_status,opkg_conf
 
 void pkg_vec_insert(pkg_vec_t *vec, const pkg_t *pkg)
 {
-     int i;
      int found = 0;
 
 #if 0
@@ -132,10 +131,9 @@ int pkg_vec_contains(pkg_vec_t *vec, pkg_t *apkg)
      return 0;
 }
 
-typedef int (*compare_fcn_t)(const void *, const void *);
-void pkg_vec_sort(pkg_vec_t *vec, int (*compar)(pkg_t *, pkg_t *))
+void pkg_vec_sort(pkg_vec_t *vec, compare_fcn_t compar)
 {
-     qsort(vec->pkgs, vec->len, sizeof(pkg_t *), (compare_fcn_t)compar);
+     qsort(vec->pkgs, vec->len, sizeof(pkg_t *), compar);
 }
 
 int pkg_vec_clear_marks(pkg_vec_t *vec)
@@ -191,7 +189,6 @@ void abstract_pkg_vec_free(abstract_pkg_vec_t *vec)
  */
 void abstract_pkg_vec_insert(abstract_pkg_vec_t *vec, abstract_pkg_t *pkg)
 {
-    int i;
 
 #if 0
     /* look for a duplicate pkg by name */
@@ -229,8 +226,8 @@ int abstract_pkg_vec_contains(abstract_pkg_vec_t *vec, abstract_pkg_t *apkg)
      return 0;
 }
 
-void abstract_pkg_vec_sort(pkg_vec_t *vec, int (*compar)(abstract_pkg_t *, abstract_pkg_t *))
+void abstract_pkg_vec_sort(pkg_vec_t *vec, compare_fcn_t compar)
 {
-     qsort(vec->pkgs, vec->len, sizeof(pkg_t *), (compare_fcn_t)compar);
+     qsort(vec->pkgs, vec->len, sizeof(pkg_t *), compar);
 }
 

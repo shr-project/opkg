@@ -199,8 +199,8 @@ int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status);
 char *pkg_version_str_alloc(pkg_t *pkg);
 
 int pkg_compare_versions(const pkg_t *pkg, const pkg_t *ref_pkg);
-int pkg_name_version_and_architecture_compare(void *a, void *b);
-int abstract_pkg_name_compare(void *a, void *b);
+int pkg_name_version_and_architecture_compare(const void *a, const void *b);
+int abstract_pkg_name_compare(const void *a, const void *b);
 
 char * pkg_formatted_info(pkg_t *pkg );
 char * pkg_formatted_field(pkg_t *pkg, const char *field );

@@ -16,7 +16,7 @@
 */
 
 #include "opkg.h"
-
+#include "sprintf_alloc.h"
 #include "opkg_configure.h"
 #include "opkg_state.h"
 

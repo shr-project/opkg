@@ -1159,10 +1159,10 @@ int pkg_version_satisfied(pkg_t *it, pkg_t *ref, const char *op)
      return 0;
 }
 
-int pkg_name_version_and_architecture_compare(void *p1, void *p2)
+int pkg_name_version_and_architecture_compare(const void *p1, const void *p2)
 {
-     const pkg_t *a = *(const pkg_t **)p1;
-     const pkg_t *b = *(const pkg_t **)p2;
+     const pkg_t *a = *(const pkg_t**) p1;
+     const pkg_t *b = *(const pkg_t**) p2;
      int namecmp;
      int vercmp;
      if (!a->name || !b->name) {
@@ -1189,7 +1189,7 @@ int pkg_name_version_and_architecture_compare(void *p1, void *p2)
      return 0;
 }
 
-int abstract_pkg_name_compare(void *p1, void *p2)
+int abstract_pkg_name_compare(const void *p1, const void *p2)
 {
      const abstract_pkg_t *a = *(const abstract_pkg_t **)p1;
      const abstract_pkg_t *b = *(const abstract_pkg_t **)p2;

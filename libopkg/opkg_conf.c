@@ -551,14 +551,14 @@ static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 	  if (strcmp(type, "option") == 0) {
 	       opkg_conf_set_option(options, name, value);
 	  } else if (strcmp(type, "src") == 0) {
-	       if (!nv_pair_list_find(pkg_src_list, name)) {
+	       if (!nv_pair_list_find((nv_pair_list_t*) pkg_src_list, name)) {
 		    pkg_src_list_append (pkg_src_list, name, value, extra, 0);
 	       } else {
 		    opkg_message(conf, OPKG_ERROR, "ERROR: duplicate src declaration.  Skipping:\n\t src %s %s\n",
 				 name, value);
 	       }
 	  } else if (strcmp(type, "src/gz") == 0) {
-	       if (!nv_pair_list_find(pkg_src_list, name)) {
+	       if (!nv_pair_list_find((nv_pair_list_t*) pkg_src_list, name)) {
 		    pkg_src_list_append (pkg_src_list, name, value, extra, 1);
 	       } else {
 		    opkg_message(conf, OPKG_ERROR, "ERROR: duplicate src declaration.  Skipping:\n\t src %s %s\n",
