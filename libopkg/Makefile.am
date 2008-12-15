@@ -1,14 +1,9 @@
 
-ALL_CFLAGS=-g -O -Wall -Werror -DHOST_CPU_STR=\"@host_cpu@\" -DBUILD_CPU=@build_cpu@ -DLIBDIR=\"@libdir@\" -DOPKGLIBDIR=\"@opkglibdir@\" -DDATADIR=\"@datadir@\" -I$(top_srcdir)
+ALL_CFLAGS=-Wall -Werror -DHOST_CPU_STR=\"@host_cpu@\" -DBUILD_CPU=@build_cpu@ -DLIBDIR=\"@libdir@\" -DOPKGLIBDIR=\"@opkglibdir@\" -DDATADIR=\"@datadir@\" -I$(top_srcdir)
 
 libopkg_includedir=$(includedir)/libopkg
-
 libopkg_include_HEADERS= opkg.h
 
-libopkg_la_LIBADD = $(top_builddir)/libbb/libbb.la $(CURL_LIBS) $(GPGME_LIBS)
-
-# make sure we only export symbols that are for public use
-libopkg_la_LDFLAGS = -export-symbols-regex "^opkg_.*"
 
 opkg_core_sources = args.c args.h \
 		    user.c user.h 
@@ -35,12 +30,16 @@ opkg_util_sources = file_util.c file_util.h opkg_message.h opkg_message.c md5.c 
 		    sprintf_alloc.c sprintf_alloc.h str_util.c str_util.h \
 		    xregex.c xregex.h xsystem.c xsystem.h
 
+lib_LTLIBRARIES = libopkg.la
 libopkg_la_SOURCES = \
 	$(opkg_libcore_sources) \
 	$(opkg_cmd_sources) $(opkg_db_sources) \
 	$(opkg_util_sources) $(opkg_list_sources)
 
 libopkg_la_CFLAGS = $(ALL_CFLAGS) $(BIGENDIAN_CFLAGS) $(CURL_CFLAGS) $(GPGME_CFLAGS)
-lib_LTLIBRARIES = libopkg.la
+libopkg_la_LIBADD = $(top_builddir)/libbb/libbb.la $(CURL_LIBS) $(GPGME_LIBS)
+# make sure we only export symbols that are for public use
+libopkg_la_LDFLAGS = -export-symbols-regex "^opkg_.*"
+
 
 
