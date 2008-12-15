@@ -1,4 +1,4 @@
-/* ipkg_utils.c - the itsy package management system
+/* opkg_utils.c - the itsy package management system
 
    Steven M. Ayer
    
@@ -15,12 +15,12 @@
    General Public License for more details.
 */
 
-#include "ipkg.h"
+#include "opkg.h"
 #include <errno.h>
 #include <ctype.h>
 #include <sys/vfs.h>
 
-#include "ipkg_utils.h"
+#include "opkg_utils.h"
 #include "pkg.h"
 #include "pkg_hash.h"
 

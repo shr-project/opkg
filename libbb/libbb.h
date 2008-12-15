@@ -27,7 +27,7 @@
 
 #include <netdb.h>
 
-// Include because of single use with ipkg
+// Include because of single use with opkg
 #define _BB_INTERNAL_H_
 #define L_archive_offset
 #define L_get_header_ar

@@ -1,4 +1,4 @@
-/* ipkg_cmd.c - the itsy package management system
+/* opkg_cmd.c - the itsy package management system
 
    Carl D. Worth
 
@@ -17,7 +17,7 @@
 
 #include <string.h>
 
-#include "ipkg.h"
+#include "opkg.h"
 #include <libgen.h>
 #include <glob.h>
 #include <errno.h>
@@ -27,9 +27,9 @@
 #include <stdio.h>
 #include <dirent.h>
 
-#include "ipkg_conf.h"
-#include "ipkg_cmd.h"
-#include "ipkg_message.h"
+#include "opkg_conf.h"
+#include "opkg_cmd.h"
+#include "opkg_message.h"
 #include "pkg.h"
 #include "pkg_dest.h"
 #include "pkg_parse.h"
@@ -42,98 +42,98 @@
 #include <fnmatch.h>
 
 
-#include "ipkg_download.h"
-#include "ipkg_install.h"
-#include "ipkg_upgrade.h"
-#include "ipkg_remove.h"
-#include "ipkg_configure.h"
-#include "ipkg_message.h"
+#include "opkg_download.h"
+#include "opkg_install.h"
+#include "opkg_upgrade.h"
+#include "opkg_remove.h"
+#include "opkg_configure.h"
+#include "opkg_message.h"
 
-#ifdef IPKG_LIB
-#include "libipkg.h"
+#ifdef OPKG_LIB
+#include "libopkg.h"
 static void *p_userdata = NULL;
 #endif
 
-static int ipkg_update_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_upgrade_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_list_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_info_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_status_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_install_pending_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_install_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_list_installed_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_remove_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_purge_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_flag_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_files_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_search_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_download_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_depends_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_whatdepends_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_whatdepends_recursively_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_whatsuggests_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_whatrecommends_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_whatprovides_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_whatconflicts_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_whatreplaces_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_compare_versions_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_print_architecture_cmd(ipkg_conf_t *conf, int argc, char **argv);
-static int ipkg_configure_cmd(ipkg_conf_t *conf, int argc, char **argv);
+static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_upgrade_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_list_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_info_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_status_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_install_pending_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_install_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_list_installed_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_remove_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_purge_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_flag_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_files_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_search_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_download_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_depends_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_whatdepends_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_whatdepends_recursively_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_whatsuggests_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_whatrecommends_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_whatprovides_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_whatconflicts_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_whatreplaces_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_compare_versions_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_print_architecture_cmd(opkg_conf_t *conf, int argc, char **argv);
+static int opkg_configure_cmd(opkg_conf_t *conf, int argc, char **argv);
 
 /* XXX: CLEANUP: The usage strings should be incorporated into this
    array for easier maintenance */
-static ipkg_cmd_t cmds[] = {
-     {"update", 0, (ipkg_cmd_fun_t)ipkg_update_cmd}, 
-     {"upgrade", 0, (ipkg_cmd_fun_t)ipkg_upgrade_cmd},
-     {"list", 0, (ipkg_cmd_fun_t)ipkg_list_cmd},
-     {"list_installed", 0, (ipkg_cmd_fun_t)ipkg_list_installed_cmd},
-     {"info", 0, (ipkg_cmd_fun_t)ipkg_info_cmd},
-     {"flag", 1, (ipkg_cmd_fun_t)ipkg_flag_cmd},
-     {"status", 0, (ipkg_cmd_fun_t)ipkg_status_cmd},
-     {"install_pending", 0, (ipkg_cmd_fun_t)ipkg_install_pending_cmd},
-     {"install", 1, (ipkg_cmd_fun_t)ipkg_install_cmd},
-     {"remove", 1, (ipkg_cmd_fun_t)ipkg_remove_cmd},
-     {"purge", 1, (ipkg_cmd_fun_t)ipkg_purge_cmd},
-     {"configure", 0, (ipkg_cmd_fun_t)ipkg_configure_cmd},
-     {"files", 1, (ipkg_cmd_fun_t)ipkg_files_cmd},
-     {"search", 1, (ipkg_cmd_fun_t)ipkg_search_cmd},
-     {"download", 1, (ipkg_cmd_fun_t)ipkg_download_cmd},
-     {"compare_versions", 1, (ipkg_cmd_fun_t)ipkg_compare_versions_cmd},
-     {"compare-versions", 1, (ipkg_cmd_fun_t)ipkg_compare_versions_cmd},
-     {"print-architecture", 0, (ipkg_cmd_fun_t)ipkg_print_architecture_cmd},
-     {"print_architecture", 0, (ipkg_cmd_fun_t)ipkg_print_architecture_cmd},
-     {"print-installation-architecture", 0, (ipkg_cmd_fun_t)ipkg_print_architecture_cmd},
-     {"print_installation_architecture", 0, (ipkg_cmd_fun_t)ipkg_print_architecture_cmd},
-     {"depends", 1, (ipkg_cmd_fun_t)ipkg_depends_cmd},
-     {"whatdepends", 1, (ipkg_cmd_fun_t)ipkg_whatdepends_cmd},
-     {"whatdependsrec", 1, (ipkg_cmd_fun_t)ipkg_whatdepends_recursively_cmd},
-     {"whatrecommends", 1, (ipkg_cmd_fun_t)ipkg_whatrecommends_cmd},
-     {"whatsuggests", 1, (ipkg_cmd_fun_t)ipkg_whatsuggests_cmd},
-     {"whatprovides", 1, (ipkg_cmd_fun_t)ipkg_whatprovides_cmd},
-     {"whatreplaces", 1, (ipkg_cmd_fun_t)ipkg_whatreplaces_cmd},
-     {"whatconflicts", 1, (ipkg_cmd_fun_t)ipkg_whatconflicts_cmd},
+static opkg_cmd_t cmds[] = {
+     {"update", 0, (opkg_cmd_fun_t)opkg_update_cmd}, 
+     {"upgrade", 0, (opkg_cmd_fun_t)opkg_upgrade_cmd},
+     {"list", 0, (opkg_cmd_fun_t)opkg_list_cmd},
+     {"list_installed", 0, (opkg_cmd_fun_t)opkg_list_installed_cmd},
+     {"info", 0, (opkg_cmd_fun_t)opkg_info_cmd},
+     {"flag", 1, (opkg_cmd_fun_t)opkg_flag_cmd},
+     {"status", 0, (opkg_cmd_fun_t)opkg_status_cmd},
+     {"install_pending", 0, (opkg_cmd_fun_t)opkg_install_pending_cmd},
+     {"install", 1, (opkg_cmd_fun_t)opkg_install_cmd},
+     {"remove", 1, (opkg_cmd_fun_t)opkg_remove_cmd},
+     {"purge", 1, (opkg_cmd_fun_t)opkg_purge_cmd},
+     {"configure", 0, (opkg_cmd_fun_t)opkg_configure_cmd},
+     {"files", 1, (opkg_cmd_fun_t)opkg_files_cmd},
+     {"search", 1, (opkg_cmd_fun_t)opkg_search_cmd},
+     {"download", 1, (opkg_cmd_fun_t)opkg_download_cmd},
+     {"compare_versions", 1, (opkg_cmd_fun_t)opkg_compare_versions_cmd},
+     {"compare-versions", 1, (opkg_cmd_fun_t)opkg_compare_versions_cmd},
+     {"print-architecture", 0, (opkg_cmd_fun_t)opkg_print_architecture_cmd},
+     {"print_architecture", 0, (opkg_cmd_fun_t)opkg_print_architecture_cmd},
+     {"print-installation-architecture", 0, (opkg_cmd_fun_t)opkg_print_architecture_cmd},
+     {"print_installation_architecture", 0, (opkg_cmd_fun_t)opkg_print_architecture_cmd},
+     {"depends", 1, (opkg_cmd_fun_t)opkg_depends_cmd},
+     {"whatdepends", 1, (opkg_cmd_fun_t)opkg_whatdepends_cmd},
+     {"whatdependsrec", 1, (opkg_cmd_fun_t)opkg_whatdepends_recursively_cmd},
+     {"whatrecommends", 1, (opkg_cmd_fun_t)opkg_whatrecommends_cmd},
+     {"whatsuggests", 1, (opkg_cmd_fun_t)opkg_whatsuggests_cmd},
+     {"whatprovides", 1, (opkg_cmd_fun_t)opkg_whatprovides_cmd},
+     {"whatreplaces", 1, (opkg_cmd_fun_t)opkg_whatreplaces_cmd},
+     {"whatconflicts", 1, (opkg_cmd_fun_t)opkg_whatconflicts_cmd},
 };
 
-int ipkg_state_changed;
-static void write_status_files_if_changed(ipkg_conf_t *conf)
+int opkg_state_changed;
+static void write_status_files_if_changed(opkg_conf_t *conf)
 {
-     if (ipkg_state_changed && !conf->noaction) {
-	  ipkg_message(conf, IPKG_INFO,
+     if (opkg_state_changed && !conf->noaction) {
+	  opkg_message(conf, OPKG_INFO,
 		       "  writing status file\n");
-	  ipkg_conf_write_status_files(conf);
+	  opkg_conf_write_status_files(conf);
 	  pkg_write_changed_filelists(conf);
      } else { 
-	  ipkg_message(conf, IPKG_NOTICE, "Nothing to be done\n");
+	  opkg_message(conf, OPKG_NOTICE, "Nothing to be done\n");
      }
 }
 
 
-static int num_cmds = sizeof(cmds) / sizeof(ipkg_cmd_t);
+static int num_cmds = sizeof(cmds) / sizeof(opkg_cmd_t);
 
-ipkg_cmd_t *ipkg_cmd_find(const char *name)
+opkg_cmd_t *opkg_cmd_find(const char *name)
 {
      int i;
-     ipkg_cmd_t *cmd;
+     opkg_cmd_t *cmd;
 
      for (i=0; i < num_cmds; i++) {
 	  cmd = &cmds[i];
@@ -145,8 +145,8 @@ ipkg_cmd_t *ipkg_cmd_find(const char *name)
      return NULL;
 }
 
-#ifdef IPKG_LIB
-int ipkg_cmd_exec(ipkg_cmd_t *cmd, ipkg_conf_t *conf, int argc, const char **argv, void *userdata)
+#ifdef OPKG_LIB
+int opkg_cmd_exec(opkg_cmd_t *cmd, opkg_conf_t *conf, int argc, const char **argv, void *userdata)
 {
 	int result;
 	p_userdata = userdata;
@@ -154,18 +154,18 @@ int ipkg_cmd_exec(ipkg_cmd_t *cmd, ipkg_conf_t *conf, int argc, const char **arg
 
 	result = (cmd->fun)(conf, argc, argv);
         if ( result == 0 ) {
-           ipkg_message(conf, IPKG_NOTICE, "Successfully terminated.\n");
+           opkg_message(conf, OPKG_NOTICE, "Successfully terminated.\n");
         } else {
-           ipkg_message(conf, IPKG_NOTICE, "An error ocurred, return value: %d.\n", result);
+           opkg_message(conf, OPKG_NOTICE, "An error ocurred, return value: %d.\n", result);
 
         }
         if ( error_list ) {
            reverse_error_list(&error_list);
 
-           ipkg_message(conf, IPKG_NOTICE, "Collected errors:\n");
+           opkg_message(conf, OPKG_NOTICE, "Collected errors:\n");
            /* Here we print the errors collected and free the list */
            while (error_list != NULL) {
-                 ipkg_message(conf, IPKG_NOTICE, "%s",error_list->errmsg);
+                 opkg_message(conf, OPKG_NOTICE, "%s",error_list->errmsg);
                  error_list = error_list->next;
 
            }
@@ -177,13 +177,13 @@ int ipkg_cmd_exec(ipkg_cmd_t *cmd, ipkg_conf_t *conf, int argc, const char **arg
 	return result;
 }
 #else
-int ipkg_cmd_exec(ipkg_cmd_t *cmd, ipkg_conf_t *conf, int argc, const char **argv)
+int opkg_cmd_exec(opkg_cmd_t *cmd, opkg_conf_t *conf, int argc, const char **argv)
 {
      return (cmd->fun)(conf, argc, argv);
 }
 #endif
 
-static int ipkg_update_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      int err;
      int failures;
@@ -196,7 +196,7 @@ static int ipkg_update_cmd(ipkg_conf_t *conf, int argc, char **argv)
  
     if (! file_is_dir(lists_dir)) {
 	  if (file_exists(lists_dir)) {
-	       ipkg_message(conf, IPKG_ERROR,
+	       opkg_message(conf, OPKG_ERROR,
 			    "%s: ERROR: %s exists, but is not a directory\n",
 			    __FUNCTION__, lists_dir);
 	       free(lists_dir);
@@ -204,7 +204,7 @@ static int ipkg_update_cmd(ipkg_conf_t *conf, int argc, char **argv)
 	  }
 	  err = file_mkdir_hier(lists_dir, 0755);
 	  if (err) {
-	       ipkg_message(conf, IPKG_ERROR,
+	       opkg_message(conf, OPKG_ERROR,
 			    "%s: ERROR: failed to make directory %s: %s\n",
 			    __FUNCTION__, lists_dir, strerror(errno));
 	       free(lists_dir);
@@ -230,7 +230,7 @@ static int ipkg_update_cmd(ipkg_conf_t *conf, int argc, char **argv)
 	      char *tmp_file_name;
 	      FILE *in, *out;
 
-	      tmp = strdup ("/tmp/ipkg.XXXXXX");
+	      tmp = strdup ("/tmp/opkg.XXXXXX");
 
 	      if (mkdtemp (tmp) == NULL) {
 		  perror ("mkdtemp");
@@ -239,9 +239,9 @@ static int ipkg_update_cmd(ipkg_conf_t *conf, int argc, char **argv)
 	      }
 	      
 	      sprintf_alloc (&tmp_file_name, "%s/%s.gz", tmp, src->name);
-	      err = ipkg_download(conf, url, tmp_file_name);
+	      err = opkg_download(conf, url, tmp_file_name);
 	      if (err == 0) {
-		   ipkg_message (conf, IPKG_NOTICE, "Inflating %s\n", url);
+		   opkg_message (conf, OPKG_NOTICE, "Inflating %s\n", url);
 		   in = fopen (tmp_file_name, "r");
 		   out = fopen (list_file_name, "w");
 		   if (in && out)
@@ -257,11 +257,11 @@ static int ipkg_update_cmd(ipkg_conf_t *conf, int argc, char **argv)
 		   free (tmp);
 	      }
 	  } else
-	      err = ipkg_download(conf, url, list_file_name);
+	      err = opkg_download(conf, url, list_file_name);
 	  if (err) {
 	       failures++;
 	  } else {
-	       ipkg_message(conf, IPKG_NOTICE,
+	       opkg_message(conf, OPKG_NOTICE,
 			    "Updated list of available packages in %s\n",
 			    list_file_name);
 	  }
@@ -273,7 +273,7 @@ static int ipkg_update_cmd(ipkg_conf_t *conf, int argc, char **argv)
 #ifdef CONFIG_CLEAR_SW_INSTALL_FLAG
 #warning here
      /* clear SW_INSTALL on any package where state is SS_NOT_INSTALLED.
-      * this is a hack to work around poor bookkeeping in old ipkg upgrade code 
+      * this is a hack to work around poor bookkeeping in old opkg upgrade code 
       * -Jamey 3/1/03
       */
      {
@@ -281,11 +281,11 @@ static int ipkg_update_cmd(ipkg_conf_t *conf, int argc, char **argv)
 	  int changed = 0;
 	  pkg_vec_t *available = pkg_vec_alloc();
 	  pkg_hash_fetch_available(&conf->pkg_hash, available);
-	  ipkg_message(conf, IPKG_DEBUG, "Clearing SW_INSTALL for SS_NOT_INSTALLED packages.\n");
+	  opkg_message(conf, OPKG_DEBUG, "Clearing SW_INSTALL for SS_NOT_INSTALLED packages.\n");
 	  for (i = 0; i < available->len; i++) {
 	       pkg_t *pkg = available->pkgs[i];
 	       if (pkg->state_want == SW_INSTALL && pkg->state_status == SS_NOT_INSTALLED) {
-		    ipkg_message(conf, IPKG_DEBUG, "Clearing SW_INSTALL on package %s.\n", pkg->name);
+		    opkg_message(conf, OPKG_DEBUG, "Clearing SW_INSTALL on package %s.\n", pkg->name);
 		    pkg->state_want = SW_UNKNOWN;
 		    changed = 1;
 	       }
@@ -302,7 +302,7 @@ static int ipkg_update_cmd(ipkg_conf_t *conf, int argc, char **argv)
 
 
 /* scan the args passed and cache the local filenames of the packages */
-int ipkg_multiple_files_scan(ipkg_conf_t *conf, int argc, char **argv)
+int opkg_multiple_files_scan(opkg_conf_t *conf, int argc, char **argv)
 {
      int i;
      int err;
@@ -317,44 +317,44 @@ int ipkg_multiple_files_scan(ipkg_conf_t *conf, int argc, char **argv)
 	  //char *tmp = basename (tmp);
 	  //int tmplen = strlen (tmp);
 
-	  //if (strcmp (tmp + (tmplen - strlen (IPKG_PKG_EXTENSION)), IPKG_PKG_EXTENSION) != 0)
+	  //if (strcmp (tmp + (tmplen - strlen (OPKG_PKG_EXTENSION)), OPKG_PKG_EXTENSION) != 0)
 	  //     continue;
 	  //if (strcmp (tmp + (tmplen - strlen (DPKG_PKG_EXTENSION)), DPKG_PKG_EXTENSION) != 0)
 	  //     continue;
 	
-          ipkg_message(conf, IPKG_DEBUG2, "Debug mfs: %s  \n",filename );
+          opkg_message(conf, OPKG_DEBUG2, "Debug mfs: %s  \n",filename );
 
-	  err = ipkg_prepare_url_for_install(conf, filename, &argv[i]);
+	  err = opkg_prepare_url_for_install(conf, filename, &argv[i]);
 	  if (err)
 	    return err;
      }
      return 0;
 }
 
-struct ipkg_intercept
+struct opkg_intercept
 {
     char *oldpath;
     char *statedir;
 };
 
-typedef struct ipkg_intercept *ipkg_intercept_t;
+typedef struct opkg_intercept *opkg_intercept_t;
 
-ipkg_intercept_t ipkg_prep_intercepts(ipkg_conf_t *conf)
+opkg_intercept_t opkg_prep_intercepts(opkg_conf_t *conf)
 {
-    ipkg_intercept_t ctx;
+    opkg_intercept_t ctx;
     char *newpath;
     int gen;
 
     ctx = malloc (sizeof (*ctx));
     ctx->oldpath = strdup (getenv ("PATH"));
 
-    sprintf_alloc (&newpath, "%s/ipkg/intercept:%s", DATADIR, ctx->oldpath);
+    sprintf_alloc (&newpath, "%s/opkg/intercept:%s", DATADIR, ctx->oldpath);
     setenv ("PATH", newpath, 1);
     free (newpath);
     
     gen = 0;
  retry:
-    sprintf_alloc (&ctx->statedir, "/tmp/ipkg-intercept-%d-%d", getpid (), gen);
+    sprintf_alloc (&ctx->statedir, "/tmp/opkg-intercept-%d-%d", getpid (), gen);
     if (mkdir (ctx->statedir, 0770) < 0) {
 	if (errno == EEXIST) {
 	    free (ctx->statedir);
@@ -364,11 +364,11 @@ ipkg_intercept_t ipkg_prep_intercepts(ipkg_conf_t *conf)
 	perror (ctx->statedir);
 	return NULL;
     }
-    setenv ("IPKG_INTERCEPT_DIR", ctx->statedir, 1);
+    setenv ("OPKG_INTERCEPT_DIR", ctx->statedir, 1);
     return ctx;
 }
 
-int ipkg_finalize_intercepts(ipkg_intercept_t ctx)
+int opkg_finalize_intercepts(opkg_intercept_t ctx)
 {
     char *cmd;
     DIR *dir;
@@ -408,22 +408,22 @@ int ipkg_finalize_intercepts(ipkg_intercept_t ctx)
     return err;
 }
 
-int ipkg_configure_packages(ipkg_conf_t *conf, char *pkg_name)
+int opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
 {
      pkg_vec_t *all;
      int i;
      pkg_t *pkg;
-     ipkg_intercept_t ic;
+     opkg_intercept_t ic;
      int r, err = 0;
 
-     ipkg_message(conf, IPKG_INFO,
+     opkg_message(conf, OPKG_INFO,
 		  "Configuring unpacked packages\n");
      fflush( stdout );
 
      all = pkg_vec_alloc();
      pkg_hash_fetch_available(&conf->pkg_hash, all);
 
-     ic = ipkg_prep_intercepts (conf);
+     ic = opkg_prep_intercepts (conf);
     
      for(i = 0; i < all->len; i++) {
 	  pkg = all->pkgs[i];
@@ -432,10 +432,10 @@ int ipkg_configure_packages(ipkg_conf_t *conf, char *pkg_name)
 	       continue;
 
 	  if (pkg->state_status == SS_UNPACKED) {
-	       ipkg_message(conf, IPKG_NOTICE,
+	       opkg_message(conf, OPKG_NOTICE,
 			    "Configuring %s\n", pkg->name);
 	       fflush( stdout );
-	       r = ipkg_configure(conf, pkg);
+	       r = opkg_configure(conf, pkg);
 	       if (r == 0) {
 		    pkg->state_status = SS_INSTALLED;
 		    pkg->parent->state_status = SS_INSTALLED;
@@ -447,7 +447,7 @@ int ipkg_configure_packages(ipkg_conf_t *conf, char *pkg_name)
 	  }
      }
 
-     r = ipkg_finalize_intercepts (ic);
+     r = opkg_finalize_intercepts (ic);
      if (r && !err)
 	 err = r;
 
@@ -455,18 +455,18 @@ int ipkg_configure_packages(ipkg_conf_t *conf, char *pkg_name)
      return err;
 }
 
-static ipkg_conf_t *global_conf;
+static opkg_conf_t *global_conf;
 
 static void sigint_handler(int sig)
 {
      signal(sig, SIG_DFL);
-     ipkg_message(NULL, IPKG_NOTICE,
-		  "ipkg: interrupted. writing out status database\n");
+     opkg_message(NULL, OPKG_NOTICE,
+		  "opkg: interrupted. writing out status database\n");
      write_status_files_if_changed(global_conf);
      exit(128 + sig);
 }
 
-static int ipkg_install_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_install_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      int i;
      char *arg;
@@ -481,8 +481,8 @@ static int ipkg_install_cmd(ipkg_conf_t *conf, int argc, char **argv)
      for (i=0; i < argc; i++) {
 	  arg = argv[i];
 
-          ipkg_message(conf, IPKG_DEBUG2, "Debug install_cmd: %s  \n",arg );
-          err = ipkg_prepare_url_for_install(conf, arg, &argv[i]);
+          opkg_message(conf, OPKG_DEBUG2, "Debug install_cmd: %s  \n",arg );
+          err = opkg_prepare_url_for_install(conf, arg, &argv[i]);
           if (err != EINVAL && err != 0)
               return err;
      }
@@ -491,29 +491,29 @@ static int ipkg_install_cmd(ipkg_conf_t *conf, int argc, char **argv)
      for (i=0; i < argc; i++) {
 	  arg = argv[i];
 	  if (conf->multiple_providers)
-	       err = ipkg_install_multi_by_name(conf, arg);
+	       err = opkg_install_multi_by_name(conf, arg);
 	  else{
-	       err = ipkg_install_by_name(conf, arg);
+	       err = opkg_install_by_name(conf, arg);
           }
-	  if (err == IPKG_PKG_HAS_NO_CANDIDATE) {
-	       ipkg_message(conf, IPKG_ERROR,
+	  if (err == OPKG_PKG_HAS_NO_CANDIDATE) {
+	       opkg_message(conf, OPKG_ERROR,
 			    "Cannot find package %s.\n"
-			    "Check the spelling or perhaps run 'ipkg update'\n",
+			    "Check the spelling or perhaps run 'opkg update'\n",
 			    arg);
 	  }
      }
 
      /* recheck to verify that all dependences are satisfied */
-     if (0) ipkg_satisfy_all_dependences(conf);
+     if (0) opkg_satisfy_all_dependences(conf);
 
-     ipkg_configure_packages(conf, NULL);
+     opkg_configure_packages(conf, NULL);
 
      write_status_files_if_changed(conf);
 
      return err;
 }
 
-static int ipkg_upgrade_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_upgrade_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      int i;
      pkg_t *pkg;
@@ -526,7 +526,7 @@ static int ipkg_upgrade_cmd(ipkg_conf_t *conf, int argc, char **argv)
 	  for (i=0; i < argc; i++) {
 	       char *arg = argv[i];
 
-               err = ipkg_prepare_url_for_install(conf, arg, &arg);
+               err = opkg_prepare_url_for_install(conf, arg, &arg);
                if (err != EINVAL && err != 0)
                    return err;
 	  }
@@ -539,7 +539,7 @@ static int ipkg_upgrade_cmd(ipkg_conf_t *conf, int argc, char **argv)
 								argv[i],
 								conf->default_dest);
 		    if (pkg == NULL) {
-			 ipkg_message(conf, IPKG_NOTICE,
+			 opkg_message(conf, OPKG_NOTICE,
 				      "Package %s not installed in %s\n",
 				      argv[i], conf->default_dest->name);
 			 continue;
@@ -549,9 +549,9 @@ static int ipkg_upgrade_cmd(ipkg_conf_t *conf, int argc, char **argv)
 							   argv[i]);
 	       }
 	       if (pkg)
-		    ipkg_upgrade_pkg(conf, pkg);
+		    opkg_upgrade_pkg(conf, pkg);
 	       else {
-		    ipkg_install_by_name(conf, arg);
+		    opkg_install_by_name(conf, arg);
                }
 	  }
      } else {
@@ -562,22 +562,22 @@ static int ipkg_upgrade_cmd(ipkg_conf_t *conf, int argc, char **argv)
 	  pkg_hash_fetch_all_installed(&conf->pkg_hash, installed);
 	  for (i = 0; i < installed->len; i++) {
 	       pkg = installed->pkgs[i];
-	       ipkg_upgrade_pkg(conf, pkg);
+	       opkg_upgrade_pkg(conf, pkg);
 	  }
 	  pkg_vec_free(installed);
      }
 
      /* recheck to verify that all dependences are satisfied */
-     if (0) ipkg_satisfy_all_dependences(conf);
+     if (0) opkg_satisfy_all_dependences(conf);
 
-     ipkg_configure_packages(conf, NULL);
+     opkg_configure_packages(conf, NULL);
 
      write_status_files_if_changed(conf);
 
      return 0;
 }
 
-static int ipkg_download_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_download_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      int i, err;
      char *arg;
@@ -589,20 +589,20 @@ static int ipkg_download_cmd(ipkg_conf_t *conf, int argc, char **argv)
 
 	  pkg = pkg_hash_fetch_best_installation_candidate_by_name(conf, arg);
 	  if (pkg == NULL) {
-	       ipkg_message(conf, IPKG_ERROR,
+	       opkg_message(conf, OPKG_ERROR,
 			    "Cannot find package %s.\n"
-			    "Check the spelling or perhaps run 'ipkg update'\n",
+			    "Check the spelling or perhaps run 'opkg update'\n",
 			    arg);
 	       continue;
 	  }
 
-	  err = ipkg_download_pkg(conf, pkg, ".");
+	  err = opkg_download_pkg(conf, pkg, ".");
 
 	  if (err) {
-	       ipkg_message(conf, IPKG_ERROR,
+	       opkg_message(conf, OPKG_ERROR,
 			    "Failed to download %s\n", pkg->name);
 	  } else {
-	       ipkg_message(conf, IPKG_NOTICE,
+	       opkg_message(conf, OPKG_NOTICE,
 			    "Downloaded %s as %s\n",
 			    pkg->name, pkg->local_filename);
 	  }
@@ -612,12 +612,12 @@ static int ipkg_download_cmd(ipkg_conf_t *conf, int argc, char **argv)
 }
 
 
-static int ipkg_list_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_list_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      int i ;
      pkg_vec_t *available;
      pkg_t *pkg;
-     char desc_short[IPKG_LIST_DESCRIPTION_LENGTH];
+     char desc_short[OPKG_LIST_DESCRIPTION_LENGTH];
      char *newline;
      char *pkg_name = NULL;
      char *version_str;
@@ -633,21 +633,21 @@ static int ipkg_list_cmd(ipkg_conf_t *conf, int argc, char **argv)
 	  if (pkg_name && fnmatch(pkg_name, pkg->name, 0)) 
 	       continue;
 	  if (pkg->description) {
-	       strncpy(desc_short, pkg->description, IPKG_LIST_DESCRIPTION_LENGTH);
+	       strncpy(desc_short, pkg->description, OPKG_LIST_DESCRIPTION_LENGTH);
 	  } else {
 	       desc_short[0] = '\0';
 	  }
-	  desc_short[IPKG_LIST_DESCRIPTION_LENGTH - 1] = '\0';
+	  desc_short[OPKG_LIST_DESCRIPTION_LENGTH - 1] = '\0';
 	  newline = strchr(desc_short, '\n');
 	  if (newline) {
 	       *newline = '\0';
 	  }
-#ifndef IPKG_LIB
+#ifndef OPKG_LIB
 	  printf("%s - %s\n", pkg->name, desc_short);
 #else
-	  if (ipkg_cb_list) {
+	  if (opkg_cb_list) {
 	  	version_str = pkg_version_str_alloc(pkg);
-	  	ipkg_cb_list(pkg->name,desc_short,
+	  	opkg_cb_list(pkg->name,desc_short,
 		                             version_str,
 	                                 pkg->state_status,
 	                                 p_userdata);
@@ -661,12 +661,12 @@ static int ipkg_list_cmd(ipkg_conf_t *conf, int argc, char **argv)
 }
 
 
-static int ipkg_list_installed_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_list_installed_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      int i ;
      pkg_vec_t *available;
      pkg_t *pkg;
-     char desc_short[IPKG_LIST_DESCRIPTION_LENGTH];
+     char desc_short[OPKG_LIST_DESCRIPTION_LENGTH];
      char *newline;
      char *pkg_name = NULL;
      char *version_str;
@@ -682,21 +682,21 @@ static int ipkg_list_installed_cmd(ipkg_conf_t *conf, int argc, char **argv)
 	  if (pkg_name && fnmatch(pkg_name, pkg->name, 0)) 
 	       continue;
 	  if (pkg->description) {
-	       strncpy(desc_short, pkg->description, IPKG_LIST_DESCRIPTION_LENGTH);
+	       strncpy(desc_short, pkg->description, OPKG_LIST_DESCRIPTION_LENGTH);
 	  } else {
 	       desc_short[0] = '\0';
 	  }
-	  desc_short[IPKG_LIST_DESCRIPTION_LENGTH - 1] = '\0';
+	  desc_short[OPKG_LIST_DESCRIPTION_LENGTH - 1] = '\0';
 	  newline = strchr(desc_short, '\n');
 	  if (newline) {
 	       *newline = '\0';
 	  }
-#ifndef IPKG_LIB
+#ifndef OPKG_LIB
 	  printf("%s - %s\n", pkg->name, desc_short);
 #else
-	  if (ipkg_cb_list) {
+	  if (opkg_cb_list) {
 	  	version_str = pkg_version_str_alloc(pkg);
-	  	ipkg_cb_list(pkg->name,desc_short,
+	  	opkg_cb_list(pkg->name,desc_short,
 		                             version_str,
 	                                 pkg->state_status,
 	                                 p_userdata);
@@ -708,7 +708,7 @@ static int ipkg_list_installed_cmd(ipkg_conf_t *conf, int argc, char **argv)
      return 0;
 }
 
-static int ipkg_info_status_cmd(ipkg_conf_t *conf, int argc, char **argv, int installed_only)
+static int opkg_info_status_cmd(opkg_conf_t *conf, int argc, char **argv, int installed_only)
 {
      int i;
      pkg_vec_t *available;
@@ -736,7 +736,7 @@ static int ipkg_info_status_cmd(ipkg_conf_t *conf, int argc, char **argv, int in
 	  if (pkg_name && fnmatch(pkg_name, pkg->name, 0)) {
 	       continue;
 	  }
-#ifndef IPKG_LIB
+#ifndef OPKG_LIB
 	  if (n_fields) {
 	       for (j = 0; j < n_fields; j++)
 		    pkg_print_field(pkg, stdout, pkg_fields[j]);
@@ -747,7 +747,7 @@ static int ipkg_info_status_cmd(ipkg_conf_t *conf, int argc, char **argv, int in
 
 	  buff = pkg_formatted_info(pkg);
           if ( buff ) {
-	       if (ipkg_cb_status) ipkg_cb_status(pkg->name,
+	       if (opkg_cb_status) opkg_cb_status(pkg->name,
 						  pkg->state_status,
 						  buff,
 						  p_userdata);
@@ -763,12 +763,12 @@ static int ipkg_info_status_cmd(ipkg_conf_t *conf, int argc, char **argv, int in
 	       for (iter = pkg->conffiles.head; iter; iter = iter->next) {
 		    conffile_t *cf = iter->data;
 		    int modified = conffile_has_been_modified(conf, cf);
-		    ipkg_message(conf, IPKG_NOTICE, "conffile=%s md5sum=%s modified=%d\n",
+		    opkg_message(conf, OPKG_NOTICE, "conffile=%s md5sum=%s modified=%d\n",
 				 cf->name, cf->value, modified);
 	       }
 	  }
      }
-#ifndef IPKG_LIB
+#ifndef OPKG_LIB
      if (buff)
 	  free(buff);
 #endif
@@ -777,17 +777,17 @@ static int ipkg_info_status_cmd(ipkg_conf_t *conf, int argc, char **argv, int in
      return 0;
 }
 
-static int ipkg_info_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_info_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
-     return ipkg_info_status_cmd(conf, argc, argv, 0);
+     return opkg_info_status_cmd(conf, argc, argv, 0);
 }
 
-static int ipkg_status_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_status_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
-     return ipkg_info_status_cmd(conf, argc, argv, 1);
+     return opkg_info_status_cmd(conf, argc, argv, 1);
 }
 
-static int ipkg_configure_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_configure_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      
      int err;
@@ -796,10 +796,10 @@ static int ipkg_configure_cmd(ipkg_conf_t *conf, int argc, char **argv)
 
 	  pkg_name = argv[0];
 
-	  err = ipkg_configure_packages (conf, pkg_name);
+	  err = opkg_configure_packages (conf, pkg_name);
      
      } else {
-	  err = ipkg_configure_packages (conf, NULL);
+	  err = opkg_configure_packages (conf, NULL);
      }
 
      write_status_files_if_changed(conf);
@@ -807,33 +807,33 @@ static int ipkg_configure_cmd(ipkg_conf_t *conf, int argc, char **argv)
      return err;
 }
 
-static int ipkg_install_pending_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_install_pending_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      int i, err;
      char *globpattern;
      glob_t globbuf;
     
-     sprintf_alloc(&globpattern, "%s/*" IPKG_PKG_EXTENSION, conf->pending_dir);
+     sprintf_alloc(&globpattern, "%s/*" OPKG_PKG_EXTENSION, conf->pending_dir);
      err = glob(globpattern, 0, NULL, &globbuf);
      free(globpattern);
      if (err) {
 	  return 0;
      }
 
-     ipkg_message(conf, IPKG_NOTICE,
+     opkg_message(conf, OPKG_NOTICE,
 		  "The following packages in %s will now be installed.\n",
 		  conf->pending_dir);
      for (i = 0; i < globbuf.gl_pathc; i++) {
-	  ipkg_message(conf, IPKG_NOTICE,
+	  opkg_message(conf, OPKG_NOTICE,
 		       "%s%s", i == 0 ? "" : " ", globbuf.gl_pathv[i]);
      }
-     ipkg_message(conf, IPKG_NOTICE, "\n");
+     opkg_message(conf, OPKG_NOTICE, "\n");
      for (i = 0; i < globbuf.gl_pathc; i++) {
-	  err = ipkg_install_from_file(conf, globbuf.gl_pathv[i]);
+	  err = opkg_install_from_file(conf, globbuf.gl_pathv[i]);
 	  if (err == 0) {
 	       err = unlink(globbuf.gl_pathv[i]);
 	       if (err) {
-		    ipkg_message(conf, IPKG_ERROR,
+		    opkg_message(conf, OPKG_ERROR,
 				 "%s: ERROR: failed to unlink %s: %s\n",
 				 __FUNCTION__, globbuf.gl_pathv[i], strerror(err));
 		    return err;
@@ -845,7 +845,7 @@ static int ipkg_install_pending_cmd(ipkg_conf_t *conf, int argc, char **argv)
      return err;
 }
 
-static int ipkg_remove_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_remove_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      int i,a,done;
      pkg_t *pkg;
@@ -880,14 +880,14 @@ static int ipkg_remove_cmd(ipkg_conf_t *conf, int argc, char **argv)
                }
         
                if (pkg == NULL) {
-	            ipkg_message(conf, IPKG_ERROR, "Package %s is not installed.\n", pkg->name);
+	            opkg_message(conf, OPKG_ERROR, "Package %s is not installed.\n", pkg->name);
 	            continue;
                }
                if (pkg->state_status == SS_NOT_INSTALLED) {    // Added the control, so every already removed package could be skipped
-	            ipkg_message(conf, IPKG_ERROR, "Package seems to be %s not installed (STATUS = NOT_INSTALLED).\n", pkg->name);
+	            opkg_message(conf, OPKG_ERROR, "Package seems to be %s not installed (STATUS = NOT_INSTALLED).\n", pkg->name);
                     continue;
                }
-               ipkg_remove_pkg(conf, pkg_to_remove,0);
+               opkg_remove_pkg(conf, pkg_to_remove,0);
                done = 1;
            }
            free (pkg_name);
@@ -907,11 +907,11 @@ static int ipkg_remove_cmd(ipkg_conf_t *conf, int argc, char **argv)
 		    flagged_pkg_count++;
 	       } else {
 		    if (!pkg_has_installed_dependents(conf, pkg->parent, pkg, NULL))
-			 ipkg_message(conf, IPKG_NOTICE, "Non-user leaf package: %s\n", pkg->name);
+			 opkg_message(conf, OPKG_NOTICE, "Non-user leaf package: %s\n", pkg->name);
 	       }
 	  }
 	  if (!flagged_pkg_count) {
-	       ipkg_message(conf, IPKG_NOTICE, "No packages flagged as installed by user, \n"
+	       opkg_message(conf, OPKG_NOTICE, "No packages flagged as installed by user, \n"
 			    "so refusing to uninstall unflagged non-leaf packages\n");
 	       return 0;
 	  }
@@ -926,8 +926,8 @@ static int ipkg_remove_cmd(ipkg_conf_t *conf, int argc, char **argv)
 		    if (!(pkg->state_flag & SF_USER)
 			&& !pkg_has_installed_dependents(conf, pkg->parent, pkg, NULL)) {
 			 removed++;
-			 ipkg_message(conf, IPKG_NOTICE, "Removing non-user leaf package %s\n");
-			 ipkg_remove_pkg(conf, pkg,0);
+			 opkg_message(conf, OPKG_NOTICE, "Removing non-user leaf package %s\n");
+			 opkg_remove_pkg(conf, pkg,0);
                          done = 1;
 		    }
 	       }
@@ -936,13 +936,13 @@ static int ipkg_remove_cmd(ipkg_conf_t *conf, int argc, char **argv)
      }
 
      if ( done == 0 ) 
-        ipkg_message(conf, IPKG_NOTICE, "No packages removed.\n");
+        opkg_message(conf, OPKG_NOTICE, "No packages removed.\n");
 
      write_status_files_if_changed(conf);
      return 0;
 }
 
-static int ipkg_purge_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_purge_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      int i;
      pkg_t *pkg;
@@ -962,18 +962,18 @@ static int ipkg_purge_cmd(ipkg_conf_t *conf, int argc, char **argv)
 	  }
 
 	  if (pkg == NULL) {
-	       ipkg_message(conf, IPKG_ERROR,
+	       opkg_message(conf, OPKG_ERROR,
 			    "Package %s is not installed.\n", argv[i]);
 	       continue;
 	  }
-	  ipkg_purge_pkg(conf, pkg);
+	  opkg_purge_pkg(conf, pkg);
      }
 
      write_status_files_if_changed(conf);
      return 0;
 }
 
-static int ipkg_flag_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_flag_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      int i;
      pkg_t *pkg;
@@ -992,7 +992,7 @@ static int ipkg_flag_cmd(ipkg_conf_t *conf, int argc, char **argv)
 	  }
 
 	  if (pkg == NULL) {
-	       ipkg_message(conf, IPKG_ERROR,
+	       opkg_message(conf, OPKG_ERROR,
 			    "Package %s is not installed.\n", argv[i]);
 	       continue;
 	  }
@@ -1005,8 +1005,8 @@ static int ipkg_flag_cmd(ipkg_conf_t *conf, int argc, char **argv)
           if (( strcmp(flags,"installed")==0)||( strcmp(flags,"unpacked")==0)){
 	      pkg->state_status = pkg_state_status_from_str(flags);
           }
-	  ipkg_state_changed++;
-	  ipkg_message(conf, IPKG_NOTICE,
+	  opkg_state_changed++;
+	  opkg_message(conf, OPKG_NOTICE,
 		       "Setting flags for package %s to %s\n",
 		       pkg->name, flags);
      }
@@ -1015,7 +1015,7 @@ static int ipkg_flag_cmd(ipkg_conf_t *conf, int argc, char **argv)
      return 0;
 }
 
-static int ipkg_files_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_files_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      pkg_t *pkg;
      str_list_t *installed_files;
@@ -1038,7 +1038,7 @@ static int ipkg_files_cmd(ipkg_conf_t *conf, int argc, char **argv)
      pkg = pkg_hash_fetch_installed_by_name(&conf->pkg_hash,
 					    argv[0]);
      if (pkg == NULL) {
-	  ipkg_message(conf, IPKG_ERROR,
+	  opkg_message(conf, OPKG_ERROR,
 		       "Package %s not installed.\n", argv[0]);
 	  return 0;
      }
@@ -1046,7 +1046,7 @@ static int ipkg_files_cmd(ipkg_conf_t *conf, int argc, char **argv)
      installed_files = pkg_get_installed_files(pkg);
      pkg_version = pkg_version_str_alloc(pkg);
 
-#ifndef IPKG_LIB
+#ifndef OPKG_LIB
      printf("Package %s (%s) is installed on %s and has the following files:\n",
 	    pkg->name, pkg_version, pkg->dest->name);
      for (iter = installed_files->head; iter; iter = iter->next) {
@@ -1071,7 +1071,7 @@ static int ipkg_files_cmd(ipkg_conf_t *conf, int argc, char **argv)
 	       strncat(buff, iter->data, buff_len);
 	       strncat(buff, "\n", buff_len);
 	  } 
-	  if (ipkg_cb_list) ipkg_cb_list(pkg->name,
+	  if (opkg_cb_list) opkg_cb_list(pkg->name,
 					 buff,
 					 pkg_version_str_alloc(pkg),
 					 pkg->state_status,
@@ -1086,7 +1086,7 @@ static int ipkg_files_cmd(ipkg_conf_t *conf, int argc, char **argv)
      return 0;
 }
 
-static int ipkg_depends_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_depends_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
 
      if (argc > 0) {
@@ -1104,24 +1104,24 @@ static int ipkg_depends_cmd(ipkg_conf_t *conf, int argc, char **argv)
 	       const char *target = argv[i];
 	       int j;
 
-	       ipkg_message(conf, IPKG_ERROR, "target=%s\n", target);
+	       opkg_message(conf, OPKG_ERROR, "target=%s\n", target);
 
 	       for (j = 0; j < available_pkgs->len; j++) {
 		    pkg_t *pkg = available_pkgs->pkgs[j];
 		    if (fnmatch(target, pkg->name, 0) == 0) {
 			 int k;
 			 int count = pkg->depends_count + pkg->pre_depends_count;
-			 ipkg_message(conf, IPKG_ERROR, "What %s (arch=%s) %s\n",
+			 opkg_message(conf, OPKG_ERROR, "What %s (arch=%s) %s\n",
 				      target, pkg->architecture, rel_str);
 			 for (k = 0; k < count; k++) {
 			      compound_depend_t *cdepend = &pkg->depends[k];
 			      int l;
 			      for (l = 0; l < cdepend->possibility_count; l++) {
 				   depend_t *possibility = cdepend->possibilities[l];
-				   ipkg_message(conf, IPKG_ERROR, "    %s", possibility->pkg->name);
+				   opkg_message(conf, OPKG_ERROR, "    %s", possibility->pkg->name);
 				   if (conf->verbosity > 0) {
 					// char *ver = abstract_pkg_version_str_alloc(possibility->pkg); 
-					ipkg_message(conf, IPKG_NOTICE, " %s", possibility->version);
+					opkg_message(conf, OPKG_NOTICE, " %s", possibility->version);
 					if (possibility->version) {
 					     char *typestr = NULL;
 					     switch (possibility->constraint) {
@@ -1132,11 +1132,11 @@ static int ipkg_depends_cmd(ipkg_conf_t *conf, int argc, char **argv)
 					     case LATER_EQUAL: typestr = ">="; break;
 					     case LATER: typestr = ">"; break;
 					     }
-					     ipkg_message(conf, IPKG_NOTICE, " (%s %s)", typestr, possibility->version);
+					     opkg_message(conf, OPKG_NOTICE, " (%s %s)", typestr, possibility->version);
 					}
 					// free(ver);
 				   }
-				   ipkg_message(conf, IPKG_ERROR, "\n");
+				   opkg_message(conf, OPKG_ERROR, "\n");
 			      }
 			 }
 		    }
@@ -1156,7 +1156,7 @@ enum what_field_type {
   WHATSUGGESTS
 };
 
-static int ipkg_what_depends_conflicts_cmd(ipkg_conf_t *conf, enum what_field_type what_field_type, int recursive, int argc, char **argv)
+static int opkg_what_depends_conflicts_cmd(opkg_conf_t *conf, enum what_field_type what_field_type, int recursive, int argc, char **argv)
 {
 
      if (argc > 0) {
@@ -1181,7 +1181,7 @@ static int ipkg_what_depends_conflicts_cmd(ipkg_conf_t *conf, enum what_field_ty
 
 	  /* mark the root set */
 	  pkg_vec_clear_marks(available_pkgs);
-	  ipkg_message(conf, IPKG_NOTICE, "Root set:\n");
+	  opkg_message(conf, OPKG_NOTICE, "Root set:\n");
 	  for (i = 0; i < argc; i++) {
 	       const char *dependee_pattern = argv[i];
 	       pkg_vec_mark_if_matches(available_pkgs, dependee_pattern);
@@ -1191,11 +1191,11 @@ static int ipkg_what_depends_conflicts_cmd(ipkg_conf_t *conf, enum what_field_ty
 	       if (pkg->state_flag & SF_MARKED) {
 		    /* mark the parent (abstract) package */
 		    pkg_mark_provides(pkg);
-		    ipkg_message(conf, IPKG_NOTICE, "  %s\n", pkg->name);
+		    opkg_message(conf, OPKG_NOTICE, "  %s\n", pkg->name);
 	       }
 	  }
 
-	  ipkg_message(conf, IPKG_NOTICE, "What %s root set\n", rel_str);
+	  opkg_message(conf, OPKG_NOTICE, "What %s root set\n", rel_str);
 	  do {
 	       int j;
 	       changed = 0;
@@ -1222,11 +1222,11 @@ static int ipkg_what_depends_conflicts_cmd(ipkg_conf_t *conf, enum what_field_ty
 				   pkg_mark_provides(pkg);
 				   changed++;
 
-				   ipkg_message(conf, IPKG_NOTICE, "    %s", pkg->name);
+				   opkg_message(conf, OPKG_NOTICE, "    %s", pkg->name);
 				   if (conf->verbosity > 0) {
 					char *ver = pkg_version_str_alloc(pkg); 
-					ipkg_message(conf, IPKG_NOTICE, " %s", ver);
-					ipkg_message(conf, IPKG_NOTICE, "\t%s %s", rel_str, possibility->pkg->name);
+					opkg_message(conf, OPKG_NOTICE, " %s", ver);
+					opkg_message(conf, OPKG_NOTICE, "\t%s %s", rel_str, possibility->pkg->name);
 					if (possibility->version) {
 					     char *typestr = NULL;
 					     switch (possibility->constraint) {
@@ -1237,13 +1237,13 @@ static int ipkg_what_depends_conflicts_cmd(ipkg_conf_t *conf, enum what_field_ty
 					     case LATER_EQUAL: typestr = ">="; break;
 					     case LATER: typestr = ">"; break;
 					     }
-					     ipkg_message(conf, IPKG_NOTICE, " (%s %s)", typestr, possibility->version);
+					     opkg_message(conf, OPKG_NOTICE, " (%s %s)", typestr, possibility->version);
 					}
 					free(ver);
 					if (!pkg_dependence_satisfiable(conf, possibility))
-					     ipkg_message(conf, IPKG_NOTICE, " unsatisfiable");
+					     opkg_message(conf, OPKG_NOTICE, " unsatisfiable");
 				   }
-				   ipkg_message(conf, IPKG_NOTICE, "\n");
+				   opkg_message(conf, OPKG_NOTICE, "\n");
 				   goto next_package;
 			      }
 			 }
@@ -1270,31 +1270,31 @@ int pkg_mark_provides(pkg_t *pkg)
      return 0;
 }
 
-static int ipkg_whatdepends_recursively_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_whatdepends_recursively_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
-     return ipkg_what_depends_conflicts_cmd(conf, WHATDEPENDS, 1, argc, argv);
+     return opkg_what_depends_conflicts_cmd(conf, WHATDEPENDS, 1, argc, argv);
 }
-static int ipkg_whatdepends_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_whatdepends_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
-     return ipkg_what_depends_conflicts_cmd(conf, WHATDEPENDS, 0, argc, argv);
-}
-
-static int ipkg_whatsuggests_cmd(ipkg_conf_t *conf, int argc, char **argv)
-{
-     return ipkg_what_depends_conflicts_cmd(conf, WHATSUGGESTS, 0, argc, argv);
+     return opkg_what_depends_conflicts_cmd(conf, WHATDEPENDS, 0, argc, argv);
 }
 
-static int ipkg_whatrecommends_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_whatsuggests_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
-     return ipkg_what_depends_conflicts_cmd(conf, WHATRECOMMENDS, 0, argc, argv);
+     return opkg_what_depends_conflicts_cmd(conf, WHATSUGGESTS, 0, argc, argv);
 }
 
-static int ipkg_whatconflicts_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_whatrecommends_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
-     return ipkg_what_depends_conflicts_cmd(conf, WHATCONFLICTS, 0, argc, argv);
+     return opkg_what_depends_conflicts_cmd(conf, WHATRECOMMENDS, 0, argc, argv);
 }
 
-static int ipkg_what_provides_replaces_cmd(ipkg_conf_t *conf, enum what_field_type what_field_type, int argc, char **argv)
+static int opkg_whatconflicts_cmd(opkg_conf_t *conf, int argc, char **argv)
+{
+     return opkg_what_depends_conflicts_cmd(conf, WHATCONFLICTS, 0, argc, argv);
+}
+
+static int opkg_what_provides_replaces_cmd(opkg_conf_t *conf, enum what_field_type what_field_type, int argc, char **argv)
 {
 
      if (argc > 0) {
@@ -1312,7 +1312,7 @@ static int ipkg_what_provides_replaces_cmd(ipkg_conf_t *conf, enum what_field_ty
 	       const char *target = argv[i];
 	       int j;
 
-	       ipkg_message(conf, IPKG_ERROR, "What %s %s\n",
+	       opkg_message(conf, OPKG_ERROR, "What %s %s\n",
 			    rel_str, target);
 	       for (j = 0; j < available_pkgs->len; j++) {
 		    pkg_t *pkg = available_pkgs->pkgs[j];
@@ -1324,10 +1324,10 @@ static int ipkg_what_provides_replaces_cmd(ipkg_conf_t *conf, enum what_field_ty
 			       ? pkg->provides[k]
 			       : pkg->replaces[k]);
 			 if (fnmatch(target, apkg->name, 0) == 0) {
-			      ipkg_message(conf, IPKG_ERROR, "    %s", pkg->name);
+			      opkg_message(conf, OPKG_ERROR, "    %s", pkg->name);
 			      if (strcmp(target, apkg->name) != 0)
-				   ipkg_message(conf, IPKG_ERROR, "\t%s %s\n", rel_str, apkg->name);
-			      ipkg_message(conf, IPKG_ERROR, "\n");
+				   opkg_message(conf, OPKG_ERROR, "\t%s %s\n", rel_str, apkg->name);
+			      opkg_message(conf, OPKG_ERROR, "\n");
 			 }
 		    }
 	       }
@@ -1337,17 +1337,17 @@ static int ipkg_what_provides_replaces_cmd(ipkg_conf_t *conf, enum what_field_ty
      return 0;
 }
 
-static int ipkg_whatprovides_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_whatprovides_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
-     return ipkg_what_provides_replaces_cmd(conf, WHATPROVIDES, argc, argv);
+     return opkg_what_provides_replaces_cmd(conf, WHATPROVIDES, argc, argv);
 }
 
-static int ipkg_whatreplaces_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_whatreplaces_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
-     return ipkg_what_provides_replaces_cmd(conf, WHATREPLACES, argc, argv);
+     return opkg_what_provides_replaces_cmd(conf, WHATREPLACES, argc, argv);
 }
 
-static int ipkg_search_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_search_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      int i;
 
@@ -1372,10 +1372,10 @@ static int ipkg_search_cmd(ipkg_conf_t *conf, int argc, char **argv)
 	  for (iter = installed_files->head; iter; iter = iter->next) {
 	       installed_file = iter->data;
 	       if (fnmatch(argv[0], installed_file, 0)==0)  {
-#ifndef IPKG_LIB
+#ifndef OPKG_LIB
 		    printf("%s: %s\n", pkg->name, installed_file);
 #else
-			if (ipkg_cb_list) ipkg_cb_list(pkg->name, 
+			if (opkg_cb_list) opkg_cb_list(pkg->name, 
 						       installed_file, 
 			                               pkg_version_str_alloc(pkg), 
 			                               pkg->state_status, p_userdata);
@@ -1394,7 +1394,7 @@ static int ipkg_search_cmd(ipkg_conf_t *conf, int argc, char **argv)
      return 0;
 }
 
-static int ipkg_compare_versions_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_compare_versions_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      if (argc == 3) {
 	  /* this is a bit gross */
@@ -1403,8 +1403,8 @@ static int ipkg_compare_versions_cmd(ipkg_conf_t *conf, int argc, char **argv)
 	  parseVersion(&p2, argv[2]); 
 	  return pkg_version_satisfied(&p1, &p2, argv[1]);
      } else {
-	  ipkg_message(conf, IPKG_ERROR,
-		       "ipkg compare_versions <v1> <op> <v2>\n"
+	  opkg_message(conf, OPKG_ERROR,
+		       "opkg compare_versions <v1> <op> <v2>\n"
 		       "<op> is one of <= >= << >> =\n");
 	  return -1;
      }
@@ -1416,7 +1416,7 @@ static int ipkg_compare_versions_cmd(ipkg_conf_t *conf, int argc, char **argv)
 #define HOST_CPU_STR HOST_CPU_STR_(HOST_CPU_FOO)
 #endif
 
-static int ipkg_print_architecture_cmd(ipkg_conf_t *conf, int argc, char **argv)
+static int opkg_print_architecture_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      nv_pair_list_elt_t *l;
 

@@ -20,12 +20,12 @@
 #include <stdarg.h>
 #include "file_util.h"
 #include "str_util.h"
-#ifdef IPKG_LIB	
-#include "libipkg.h"
+#ifdef OPKG_LIB	
+#include "libopkg.h"
 #endif	
 
 
-#ifdef IPKG_LIB
+#ifdef OPKG_LIB
 static char *question = NULL;
 static int question_len = 255;
 #endif	
@@ -36,7 +36,7 @@ char *get_user_response(const char *format, ...)
      char *response;
      va_start(ap, format);
 
-#ifndef IPKG_LIB
+#ifndef OPKG_LIB
      vprintf(format, ap);
      do {
 	  response = file_read_line_alloc(stdin);
@@ -49,7 +49,7 @@ char *get_user_response(const char *format, ...)
 	  }
 	  len = vsnprintf(question,question_len,format,ap);
      } while (len > question_len);
-     response = strdup(ipkg_cb_response(question));
+     response = strdup(opkg_cb_response(question));
 #endif
      str_chomp(response);
      str_tolower(response);

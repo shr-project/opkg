@@ -15,7 +15,7 @@
    General Public License for more details.
 */
 
-#include "ipkg.h"
+#include "opkg.h"
 #include <ctype.h>
 #include <string.h>
 #include <errno.h>
@@ -24,14 +24,14 @@
 
 #include "pkg_parse.h"
 #include "pkg_extract.h"
-#include "ipkg_message.h"
-#include "ipkg_utils.h"
+#include "opkg_message.h"
+#include "opkg_utils.h"
 
 #include "sprintf_alloc.h"
 #include "file_util.h"
 #include "str_util.h"
 #include "xsystem.h"
-#include "ipkg_conf.h"
+#include "opkg_conf.h"
 
 typedef struct enum_map enum_map_t;
 struct enum_map
@@ -153,9 +153,9 @@ void pkg_deinit(pkg_t *pkg)
 	don't free */
      pkg->revision = NULL;
      pkg->familiar_revision = NULL;
-     /* owned by ipkg_conf_t */
+     /* owned by opkg_conf_t */
      pkg->dest = NULL;
-     /* owned by ipkg_conf_t */
+     /* owned by opkg_conf_t */
      pkg->src = NULL;
      free(pkg->architecture);
      pkg->architecture = NULL;
@@ -185,8 +185,8 @@ void pkg_deinit(pkg_t *pkg)
      free(pkg->local_filename);
      pkg->local_filename = NULL;
      /* CLEANUP: It'd be nice to pullin the cleanup function from
-	ipkg_install.c here. See comment in
-	ipkg_install.c:cleanup_temporary_files */
+	opkg_install.c here. See comment in
+	opkg_install.c:cleanup_temporary_files */
      free(pkg->tmp_unpack_dir);
      pkg->tmp_unpack_dir = NULL;
      free(pkg->md5sum);
@@ -393,27 +393,27 @@ int abstract_pkg_init(abstract_pkg_t *ab_pkg)
      return 0;
 }
 
-void set_flags_from_control(ipkg_conf_t *conf, pkg_t *pkg){
+void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){
      char * temp_str;
      char **raw =NULL;
      char **raw_start=NULL; 
 
      temp_str = (char *) malloc (strlen(pkg->dest->info_dir)+strlen(pkg->name)+12);
      if (temp_str == NULL ){
-        ipkg_message(conf, IPKG_INFO, "Out of memory in  %s\n", __FUNCTION__);
+        opkg_message(conf, OPKG_INFO, "Out of memory in  %s\n", __FUNCTION__);
         return;
      }
      sprintf( temp_str,"%s/%s.control",pkg->dest->info_dir,pkg->name);
    
      raw = raw_start = read_raw_pkgs_from_file(temp_str);
      if (raw == NULL ){
-        ipkg_message(conf, IPKG_ERROR, "Unable to open the control file in  %s\n", __FUNCTION__);
+        opkg_message(conf, OPKG_ERROR, "Unable to open the control file in  %s\n", __FUNCTION__);
         return;
      }
 
      while(*raw){
         if (!pkg_valorize_other_field(pkg, &raw ) == 0) {
-            ipkg_message(conf, IPKG_DEBUG, "unable to read control file for %s. May be empty\n", pkg->name);
+            opkg_message(conf, OPKG_DEBUG, "unable to read control file for %s. May be empty\n", pkg->name);
         }
      }
      raw = raw_start;
@@ -763,9 +763,9 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
 	       int i;
 
 	       if (pkg->provides_count) {
-               /* Here we check if the ipkg_internal_use_only is used, and we discard it.*/
+               /* Here we check if the opkg_internal_use_only is used, and we discard it.*/
                   for ( i=0; i < pkg->provides_count; i++ ){
-	              if (strstr(pkg->provides_str[i],"ipkg_internal_use_only")!=NULL) {
+	              if (strstr(pkg->provides_str[i],"opkg_internal_use_only")!=NULL) {
                          memset (pkg->provides_str[i],'\x0',strlen(pkg->provides_str[i])); /* Pigi clear my trick flag, just in case */
                          flag_provide_false = 1;
                       }
@@ -1355,7 +1355,7 @@ int pkg_free_installed_files(pkg_t *pkg)
      return 0;
 }
 
-int pkg_remove_installed_files_list(ipkg_conf_t *conf, pkg_t *pkg)
+int pkg_remove_installed_files_list(opkg_conf_t *conf, pkg_t *pkg)
 {
      int err;
      char *list_file_name;
@@ -1396,7 +1396,7 @@ conffile_t *pkg_get_conffile(pkg_t *pkg, const char *file_name)
      return NULL;
 }
 
-int pkg_run_script(ipkg_conf_t *conf, pkg_t *pkg,
+int pkg_run_script(opkg_conf_t *conf, pkg_t *pkg,
 		   const char *script, const char *args)
 {
      int err;
@@ -1424,7 +1424,7 @@ int pkg_run_script(ipkg_conf_t *conf, pkg_t *pkg,
 	  sprintf_alloc(&path, "%s/%s", pkg->tmp_unpack_dir, script);
      }
 
-     ipkg_message(conf, IPKG_INFO, "Running script %s\n", path);
+     opkg_message(conf, OPKG_INFO, "Running script %s\n", path);
      if (conf->noaction) return 0;
 
      /* XXX: CLEANUP: There must be a better way to handle maintainer
@@ -1432,7 +1432,7 @@ int pkg_run_script(ipkg_conf_t *conf, pkg_t *pkg,
 	than '/'. I've been playing around with some clever chroot
 	tricks and I might come up with something workable. */
      if (conf->offline_root) {
-	  setenv("IPKG_OFFLINE_ROOT", conf->offline_root, 1);
+	  setenv("OPKG_OFFLINE_ROOT", conf->offline_root, 1);
      }
 
      setenv("PKG_ROOT",
@@ -1584,7 +1584,7 @@ pkg_state_status_t pkg_state_status_from_str(char *str)
      return SS_NOT_INSTALLED;
 }
 
-int pkg_arch_supported(ipkg_conf_t *conf, pkg_t *pkg)
+int pkg_arch_supported(opkg_conf_t *conf, pkg_t *pkg)
 {
      nv_pair_list_elt_t *l;
 
@@ -1596,17 +1596,17 @@ int pkg_arch_supported(ipkg_conf_t *conf, pkg_t *pkg)
      while (l) {
 	  nv_pair_t *nv = l->data;
 	  if (strcmp(nv->name, pkg->architecture) == 0) {
-	       ipkg_message(conf, IPKG_DEBUG, "arch %s (priority %s) supported for pkg %s\n", nv->name, nv->value, pkg->name);
+	       opkg_message(conf, OPKG_DEBUG, "arch %s (priority %s) supported for pkg %s\n", nv->name, nv->value, pkg->name);
 	       return 1;
 	  }
 	  l = l->next;
      }
 
-     ipkg_message(conf, IPKG_DEBUG, "arch %s unsupported for pkg %s\n", pkg->architecture, pkg->name);
+     opkg_message(conf, OPKG_DEBUG, "arch %s unsupported for pkg %s\n", pkg->architecture, pkg->name);
      return 0;
 }
 
-int pkg_get_arch_priority(ipkg_conf_t *conf, const char *archname)
+int pkg_get_arch_priority(opkg_conf_t *conf, const char *archname)
 {
      nv_pair_list_elt_t *l;
 
@@ -1623,14 +1623,14 @@ int pkg_get_arch_priority(ipkg_conf_t *conf, const char *archname)
      return 0;
 }
 
-int pkg_info_preinstall_check(ipkg_conf_t *conf)
+int pkg_info_preinstall_check(opkg_conf_t *conf)
 {
      int i;
      hash_table_t *pkg_hash = &conf->pkg_hash;
      pkg_vec_t *available_pkgs = pkg_vec_alloc();
      pkg_vec_t *installed_pkgs = pkg_vec_alloc();
 
-     ipkg_message(conf, IPKG_INFO, "pkg_info_preinstall_check: updating arch priority for each package\n");
+     opkg_message(conf, OPKG_INFO, "pkg_info_preinstall_check: updating arch priority for each package\n");
      pkg_hash_fetch_available(pkg_hash, available_pkgs);
      /* update arch_priority for each package */
      for (i = 0; i < available_pkgs->len; i++) {
@@ -1638,12 +1638,12 @@ int pkg_info_preinstall_check(ipkg_conf_t *conf)
 	  int arch_priority = 1;
 	  if (!pkg)
 	       continue;
-	  // ipkg_message(conf, IPKG_DEBUG2, " package %s version=%s arch=%p:", pkg->name, pkg->version, pkg->architecture);
+	  // opkg_message(conf, OPKG_DEBUG2, " package %s version=%s arch=%p:", pkg->name, pkg->version, pkg->architecture);
 	  if (pkg->architecture) 
 	       arch_priority = pkg_get_arch_priority(conf, pkg->architecture);
 	  else 
-	       ipkg_message(conf, IPKG_ERROR, "pkg_info_preinstall_check: no architecture for package %s\n", pkg->name);
-	  // ipkg_message(conf, IPKG_DEBUG2, "%s arch_priority=%d\n", pkg->architecture, arch_priority);
+	       opkg_message(conf, OPKG_ERROR, "pkg_info_preinstall_check: no architecture for package %s\n", pkg->name);
+	  // opkg_message(conf, OPKG_DEBUG2, "%s arch_priority=%d\n", pkg->architecture, arch_priority);
 	  pkg->arch_priority = arch_priority;
      }
 
@@ -1651,7 +1651,7 @@ int pkg_info_preinstall_check(ipkg_conf_t *conf)
 	  pkg_t *pkg = available_pkgs->pkgs[i];
 	  if (!pkg->arch_priority && (pkg->state_flag || (pkg->state_want != SW_UNKNOWN))) {
 	       /* clear flags and want for any uninstallable package */
-	       ipkg_message(conf, IPKG_NOTICE, "Clearing state_want and state_flag for pkg=%s (arch_priority=%d flag=%d want=%d)\n", 
+	       opkg_message(conf, OPKG_NOTICE, "Clearing state_want and state_flag for pkg=%s (arch_priority=%d flag=%d want=%d)\n", 
 			    pkg->name, pkg->arch_priority, pkg->state_flag, pkg->state_want);
 	       pkg->state_want = SW_UNKNOWN;
 	       pkg->state_flag = 0;
@@ -1660,19 +1660,19 @@ int pkg_info_preinstall_check(ipkg_conf_t *conf)
      pkg_vec_free(available_pkgs);
 
      /* update the file owner data structure */
-     ipkg_message(conf, IPKG_INFO, "pkg_info_preinstall_check: update file owner list\n");
+     opkg_message(conf, OPKG_INFO, "pkg_info_preinstall_check: update file owner list\n");
      pkg_hash_fetch_all_installed(pkg_hash, installed_pkgs);
      for (i = 0; i < installed_pkgs->len; i++) {
 	  pkg_t *pkg = installed_pkgs->pkgs[i];
 	  str_list_t *installed_files = pkg_get_installed_files(pkg); /* this causes installed_files to be cached */
 	  str_list_elt_t *iter;
 	  if (installed_files == NULL) {
-	       ipkg_message(conf, IPKG_ERROR, "No installed files for pkg %s\n", pkg->name);
+	       opkg_message(conf, OPKG_ERROR, "No installed files for pkg %s\n", pkg->name);
 	       break;
 	  }
 	  for (iter = installed_files->head; iter; iter = iter->next) {
 	       char *installed_file = iter->data;
-	       // ipkg_message(conf, IPKG_DEBUG2, "pkg %s: file=%s\n", pkg->name, installed_file);
+	       // opkg_message(conf, OPKG_DEBUG2, "pkg %s: file=%s\n", pkg->name, installed_file);
 	       file_hash_set_file_owner(conf, installed_file, pkg);
 	  }
      }
@@ -1682,7 +1682,7 @@ int pkg_info_preinstall_check(ipkg_conf_t *conf)
 }
 
 struct pkg_write_filelist_data {
-     ipkg_conf_t *conf;
+     opkg_conf_t *conf;
      pkg_t *pkg;
      FILE *stream;
 };
@@ -1696,28 +1696,28 @@ void pkg_write_filelist_helper(const char *key, void *entry_, void *data_)
      }
 }
 
-int pkg_write_filelist(ipkg_conf_t *conf, pkg_t *pkg)
+int pkg_write_filelist(opkg_conf_t *conf, pkg_t *pkg)
 {
      struct pkg_write_filelist_data data;
      char *list_file_name = NULL;
      int err = 0;
 
      if (!pkg) {
-	  ipkg_message(conf, IPKG_ERROR, "Null pkg\n");
+	  opkg_message(conf, OPKG_ERROR, "Null pkg\n");
 	  return -EINVAL;
      }
-     ipkg_message(conf, IPKG_INFO,
+     opkg_message(conf, OPKG_INFO,
 		  "    creating %s.list file\n", pkg->name);
      sprintf_alloc(&list_file_name, "%s/%s.list", pkg->dest->info_dir, pkg->name);
      if (!list_file_name) {
-	  ipkg_message(conf, IPKG_ERROR, "Failed to alloc list_file_name\n");
+	  opkg_message(conf, OPKG_ERROR, "Failed to alloc list_file_name\n");
 	  return -ENOMEM;
      }
-     ipkg_message(conf, IPKG_INFO,
+     opkg_message(conf, OPKG_INFO,
 		  "    creating %s file for pkg %s\n", list_file_name, pkg->name);
      data.stream = fopen(list_file_name, "w");
      if (!data.stream) {
-	  ipkg_message(conf, IPKG_ERROR, "Could not open %s for writing: %s\n",
+	  opkg_message(conf, OPKG_ERROR, "Could not open %s for writing: %s\n",
 		       list_file_name, strerror(errno));
 		       return errno;
      }
@@ -1730,7 +1730,7 @@ int pkg_write_filelist(ipkg_conf_t *conf, pkg_t *pkg)
      return err;
 }
 
-int pkg_write_changed_filelists(ipkg_conf_t *conf)
+int pkg_write_changed_filelists(opkg_conf_t *conf)
 {
      pkg_vec_t *installed_pkgs = pkg_vec_alloc();
      hash_table_t *pkg_hash = &conf->pkg_hash;
@@ -1739,15 +1739,15 @@ int pkg_write_changed_filelists(ipkg_conf_t *conf)
      if (conf->noaction)
 	  return 0;
 
-     ipkg_message(conf, IPKG_INFO, "%s: saving changed filelists\n", __FUNCTION__);
+     opkg_message(conf, OPKG_INFO, "%s: saving changed filelists\n", __FUNCTION__);
      pkg_hash_fetch_all_installed(pkg_hash, installed_pkgs);
      for (i = 0; i < installed_pkgs->len; i++) {
 	  pkg_t *pkg = installed_pkgs->pkgs[i];
 	  if (pkg->state_flag & SF_FILELIST_CHANGED) {
-               ipkg_message(conf, IPKG_DEBUG, "Calling pkg_write_filelist for pkg=%s from %s\n", pkg->name, __FUNCTION__);
+               opkg_message(conf, OPKG_DEBUG, "Calling pkg_write_filelist for pkg=%s from %s\n", pkg->name, __FUNCTION__);
 	       err = pkg_write_filelist(conf, pkg);
 	       if (err)
-		    ipkg_message(conf, IPKG_NOTICE, "pkg_write_filelist pkg=%s returned %d\n", pkg->name, err);
+		    opkg_message(conf, OPKG_NOTICE, "pkg_write_filelist pkg=%s returned %d\n", pkg->name, err);
 	  }
      }
      return 0;

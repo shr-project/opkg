@@ -15,12 +15,12 @@
    General Public License for more details.
 */
 
-#include "ipkg.h"
+#include "opkg.h"
 #include <errno.h>
 #include <ctype.h>
    
 #include "pkg.h"
-#include "ipkg_utils.h"
+#include "opkg_utils.h"
 #include "pkg_parse.h"
 
 int isGenericFieldType(char * type, char * line)
@@ -202,7 +202,7 @@ int alterProvidesLine(char *raw, char *temp)
       raw++;
   }      
   
-  snprintf ( temp, 35, "Provides: ipkg_internal_use_only, ");           /* First part of the line */
+  snprintf ( temp, 35, "Provides: opkg_internal_use_only, ");           /* First part of the line */
   while (*raw) {
      strncat( temp, raw++, 1);
   }
@@ -251,7 +251,7 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 	    pkg->section = parseGenericFieldType("Section", *lines);
 	else if(isGenericFieldType("MD5sum:", *lines))
 	    pkg->md5sum = parseGenericFieldType("MD5sum", *lines);
-	/* The old ipkg wrote out status files with the wrong case for MD5sum,
+	/* The old opkg wrote out status files with the wrong case for MD5sum,
 	   let's parse it either way */
 	else if(isGenericFieldType("MD5Sum:", *lines))
 	    pkg->md5sum = parseGenericFieldType("MD5Sum", *lines);
@@ -292,7 +292,7 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 
 	else if(isGenericFieldType("Provides", *lines)){
 /* Here we add the internal_use to align the off by one problem between provides_str and provides */
-            provide = (char * ) malloc(strlen(*lines)+ 35 ); /* Preparing the space for the new ipkg_internal_use_only */
+            provide = (char * ) malloc(strlen(*lines)+ 35 ); /* Preparing the space for the new opkg_internal_use_only */
             if ( alterProvidesLine(*lines,provide) ){
                return EINVAL;
             }
@@ -337,7 +337,7 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
     *raw = lines;
 /* If the ipk has not a Provides line, we insert our false line */ 
     if ( pkg_false_provides==1)
-       pkg->provides_str = parseDependsString ((char *)"Provides: ipkg_internal_use_only ", &pkg->provides_count);
+       pkg->provides_str = parseDependsString ((char *)"Provides: opkg_internal_use_only ", &pkg->provides_count);
 
     if (pkg->name) {
 	return 0;

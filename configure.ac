@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script
-AC_INIT(ipkg.c)
-AM_INIT_AUTOMAKE([ipkg], [0.99.163])
+AC_INIT(opkg.c)
+AM_INIT_AUTOMAKE([opkg], [0.99.163])
 AM_CONFIG_HEADER(config.h)
 
 AC_CANONICAL_HOST
@@ -19,7 +19,7 @@ AC_PROG_LN_S
 AM_PROG_INSTALL_STRIP
 AC_PROG_LIBTOOL
 
-# Checks for libraries (hah! ipkg is pretty much self-contained)
+# Checks for libraries (hah! opkg is pretty much self-contained)
 PKG_CHECK_MODULES(CURL, libcurl)
 
 # Checks for header files
@@ -51,23 +51,23 @@ AC_FUNC_UTIME_NULL
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([memmove memset mkdir regcomp strchr strcspn strdup strerror strndup strrchr strstr strtol strtoul sysinfo utime])
 
-ipkglibdir=
-AC_ARG_WITH(ipkglibdir,
-[  --with-ipkglibdir=DIR   specifies directory to put status and info files.
-                          "/ipkg" is always added so if you want your files 
-                          to be in /usr/lib/ipkg you should indicate 
-                          --with-ipkglibdir=/usr/lib ],
+opkglibdir=
+AC_ARG_WITH(opkglibdir,
+[  --with-opkglibdir=DIR   specifies directory to put status and info files.
+                          "/opkg" is always added so if you want your files 
+                          to be in /usr/lib/opkg you should indicate 
+                          --with-opkglibdir=/usr/lib ],
 [case "${withval}" in
-yes)    AC_MSG_ERROR(bad value ${withval} given for ipkg libs directories ) ;;
+yes)    AC_MSG_ERROR(bad value ${withval} given for opkg libs directories ) ;;
 no)     ;;
-*)      ipkglibdir=$with_ipkglibdir ;;
+*)      opkglibdir=$with_opkglibdir ;;
 esac])
 
 # Default local prefix if it is empty
-if test x$ipkglibdir = x; then
-        ipkglibdir=/usr/lib
+if test x$opkglibdir = x; then
+        opkglibdir=/usr/lib
 fi
 
-AC_SUBST(ipkglibdir)
+AC_SUBST(opkglibdir)
 
-AC_OUTPUT(Makefile etc/Makefile familiar/Makefile familiar/control familiar/control-unstripped familiar/libipkg-control  familiar/libipkg-dev-control libbb/Makefile libipkg.pc ipkg.h)
+AC_OUTPUT(Makefile etc/Makefile familiar/Makefile familiar/control familiar/control-unstripped familiar/libopkg-control  familiar/libopkg-dev-control libbb/Makefile libopkg.pc opkg.h)

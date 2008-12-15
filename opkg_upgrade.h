@@ -1,8 +1,6 @@
-/* ipkg-frontend.c - the itsy package management system
+/* opkg_upgrade.c - the itsy package management system
 
-   Florina Boor
-
-   Copyright (C) 2003 kernel concepts
+   Copyright (C) 2003 Daniele Nicolodi <daniele@grinta.net>
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -13,16 +11,8 @@
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
-   
-   ipkg command line frontend using libipkg
-   
 */
 
-#include "libipkg.h"
+#include "opkg.h"
 
-/* This is really small, eh? ;-) */
-
-int main(int argc, char *argv[])
-{
-	return ipkg_op(argc,argv);	
-}
+int opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old);

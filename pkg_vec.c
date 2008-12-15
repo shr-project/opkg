@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <fnmatch.h>
 #include "xregex.h"
-#include "ipkg.h"
+#include "opkg.h"
 #include "pkg.h"
 
 pkg_vec_t * pkg_vec_alloc(void)
@@ -46,21 +46,21 @@ void pkg_vec_free(pkg_vec_t *vec)
  *             so identical versions have identical version strings,
  *             implying identical packages; let's marry these
  */
-pkg_t *pkg_vec_insert_merge(pkg_vec_t *vec, pkg_t *pkg, int set_status,ipkg_conf_t *conf)
+pkg_t *pkg_vec_insert_merge(pkg_vec_t *vec, pkg_t *pkg, int set_status,opkg_conf_t *conf)
 {
      int i;
      int found = 0;
 
      /* look for a duplicate pkg by name, version, and architecture */
      for (i = 0; i < vec->len; i++){
-         ipkg_message(conf, IPKG_DEBUG2, "Function: %s. Found pkg=%s version=%s arch=%s cmp=%s version=%s arch=%s \n", 
+         opkg_message(conf, OPKG_DEBUG2, "Function: %s. Found pkg=%s version=%s arch=%s cmp=%s version=%s arch=%s \n", 
                       __FUNCTION__, pkg->name, pkg->version, pkg->architecture, 
                        vec->pkgs[i]->name, vec->pkgs[i]->version,vec->pkgs[i]->architecture );
 	  if ((strcmp(pkg->name, vec->pkgs[i]->name) == 0)
 	      && (pkg_compare_versions(pkg, vec->pkgs[i]) == 0)
 	      && (strcmp(pkg->architecture, vec->pkgs[i]->architecture) == 0)) {
 	       found  = 1;
-               ipkg_message(conf, IPKG_DEBUG2, "Function: %s. Found duplicate for pkg=%s version=%s arch=%s\n",
+               opkg_message(conf, OPKG_DEBUG2, "Function: %s. Found duplicate for pkg=%s version=%s arch=%s\n",
                              __FUNCTION__, pkg->name, pkg->version, pkg->architecture);
 	       break;
 	  }
@@ -68,7 +68,7 @@ pkg_t *pkg_vec_insert_merge(pkg_vec_t *vec, pkg_t *pkg, int set_status,ipkg_conf
 
      /* we didn't find one, add it */
      if (!found){   
-         ipkg_message(conf, IPKG_DEBUG2, "Function: %s. Adding new pkg=%s version=%s arch=%s\n",
+         opkg_message(conf, OPKG_DEBUG2, "Function: %s. Adding new pkg=%s version=%s arch=%s\n",
                       __FUNCTION__, pkg->name, pkg->version, pkg->architecture);
 
 	  vec->pkgs = (pkg_t **)realloc(vec->pkgs, (vec->len + 1) * sizeof(pkg_t *));
@@ -78,18 +78,18 @@ pkg_t *pkg_vec_insert_merge(pkg_vec_t *vec, pkg_t *pkg, int set_status,ipkg_conf
      }
      /* update the one that we have */
      else {
-          ipkg_message(conf, IPKG_DEBUG2, "Function: %s. calling pkg_merge for pkg=%s version=%s arch=%s",
+          opkg_message(conf, OPKG_DEBUG2, "Function: %s. calling pkg_merge for pkg=%s version=%s arch=%s",
                         __FUNCTION__, pkg->name, pkg->version, pkg->architecture);
 	  if (set_status) {
 	       /* this is from the status file, so need to merge with existing database */
-               ipkg_message(conf, IPKG_DEBUG2, " with set_status\n");
+               opkg_message(conf, OPKG_DEBUG2, " with set_status\n");
 	       pkg_merge(vec->pkgs[i], pkg, set_status);
 	       /* XXX: CLEANUP: It's not so polite to free something here
 		  that was passed in from above. */
 	       pkg_deinit(pkg);
 	       free(pkg);
 	  } else {
-               ipkg_message(conf, IPKG_DEBUG2, " WITHOUT set_status\n");
+               opkg_message(conf, OPKG_DEBUG2, " WITHOUT set_status\n");
 	       /* just overwrite the old one */
 	       pkg_deinit(vec->pkgs[i]);
 	       free(vec->pkgs[i]);

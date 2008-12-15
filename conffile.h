@@ -24,7 +24,7 @@ typedef struct nv_pair conffile_t;
 
 int conffile_init(conffile_t *conffile, const char *file_name, const char *md5sum);
 void conffile_deinit(conffile_t *conffile);
-int conffile_has_been_modified(struct ipkg_conf *conf, conffile_t *conffile);
+int conffile_has_been_modified(struct opkg_conf *conf, conffile_t *conffile);
 
 #endif
 

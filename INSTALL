@@ -1,4 +1,4 @@
-ipkg uses autoconf and friends for configuration. The familiar steps of:
+opkg uses autoconf and friends for configuration. The familiar steps of:
 
 	./configure
 	make

@@ -34,7 +34,7 @@
 
 2006-02-02 pigi ( pigi@frumar.it)
         * Version update to 0.99.158
-        * Modified the way upgrade handle the removing of a package, to be sure that ipkg doesn't break busybox upgrade
+        * Modified the way upgrade handle the removing of a package, to be sure that opkg doesn't break busybox upgrade
         *          this should fix #1503
         
 2006-01-30 pigi ( pigi@frumar.it)
@@ -55,10 +55,10 @@
 2005-12-15 pigi ( pigi@frumar.it)
         * Version update to 0.99.155
         * Added a function to remove the package that is being upgraded.
-        * Fixed a problem when installing by hand. Now ipkg knows that a package has been selected by hand, 
+        * Fixed a problem when installing by hand. Now opkg knows that a package has been selected by hand, 
         *       and, if every check returns ok, it install the wanted package, instead of selecting one from feed.
         *       Moreover, now downgrade should works again.
-        * Fixed the "Replaces" bug. Now ipkg is able to replace a package also if it doesn't conflict.
+        * Fixed the "Replaces" bug. Now opkg is able to replace a package also if it doesn't conflict.
         * Other minor changes in debug options
 
 2005-09-15 pigi ( pigi@frumar.it)
@@ -68,11 +68,11 @@
         * Added a little fix for an off-by-one error in checking for depends.
 
 2005-07-29 pigi ( pigi@frumar.it)
-        * Applied a patch for the GNU tar compatibility . Now ipkg can handle filenames > 100 char.
+        * Applied a patch for the GNU tar compatibility . Now opkg can handle filenames > 100 char.
 
 2005-07-29 pigi ( pigi@frumar.it)
 	* Version update to 0.99.153
-        * Fixed a problem with Provides:. Now ipkg is able to install foo when foo is provided by bar, and is able to determine the best candidate based on 
+        * Fixed a problem with Provides:. Now opkg is able to install foo when foo is provided by bar, and is able to determine the best candidate based on 
         * package name. This also fix #1328
 
 2005-07-06 pigi ( pigi@frumar.it)
@@ -89,7 +89,7 @@
 
 2005-05-11 pigi ( pigi@frumar.it)
 	* Version update to 0.99.149
-        * Added the possibility to choice the ipkglibdir from configure ( --with-libipkgdir )
+        * Added the possibility to choice the opkglibdir from configure ( --with-libopkgdir )
 
 2005-04-10 pigi ( pigi@frumar.it)
 	* Version update to 0.99.148
@@ -100,38 +100,38 @@
 
 2005-03-30 pigi ( pigi@frumar.it)
 	* Version update to 0.99.147
-        * Found a bug in ipkg_install when freeing a cursor 
+        * Found a bug in opkg_install when freeing a cursor 
 
 2005-03-28 pigi ( pigi@frumar.it)
 	* Version update to 0.99.146
-        * Modified the ipkg_error messaging to collect all the messages at the end of the program
+        * Modified the opkg_error messaging to collect all the messages at the end of the program
 
 2005-03-26 pigi ( pigi@frumar.it)
         * Little bug in message when "depends broken" 
 
 2005-03-14 pigi ( pigi@frumar.it)
 	* Version update to 0.99.145
-	* Found a bug in ipkg remove when a package was depending in itself and ipkg where asked to "-recursive"
+	* Found a bug in opkg remove when a package was depending in itself and opkg where asked to "-recursive"
           This fix bug # 1301
         * A very little beautify in args.c
 
 2005-03-07 pigi ( pigi@frumar.it)
-	* Added the check for md5 in resolv_conf_file. Now ipkg ask for confirmation only it the files differ
+	* Added the check for md5 in resolv_conf_file. Now opkg ask for confirmation only it the files differ
 
 2005-02-22 pigi ( pigi@frumar.it)
 	* Version update to 0.99.144
-	* A little fix suggested by drw in ipkg_conf.c
-	* Changed the ipkg.h to be build in automake for oe mechanism . This will enhance the building phase 
+	* A little fix suggested by drw in opkg_conf.c
+	* Changed the opkg.h to be build in automake for oe mechanism . This will enhance the building phase 
           by honouring the lib hierarchy choose by users
         * Changes in automake to honour the new building mechanism
 
 2005-02-20 pigi ( pigi@frumar.it)
 	* Version update to 0.99.143
-	* libipkg.h: reverting the previous modify
-        * ipkg_conf.c: fixing a probable bug in list_dir that fix problems with opie-packagemanager ( tanks to drw for signaling)
+	* libopkg.h: reverting the previous modify
+        * opkg_conf.c: fixing a probable bug in list_dir that fix problems with opie-packagemanager ( tanks to drw for signaling)
 
 2005-02-20 pigi ( pigi@frumar.it)
-	* libipkg.h: added some define to fix the broken external interface after 0.99.139 and lists_dir
+	* libopkg.h: added some define to fix the broken external interface after 0.99.139 and lists_dir
 
 2005-02-17 pigi ( pigi@frumar.it)
 	* pkg_depends.c: applied patch from rjt@cambridgebroadband.com to remove some c99ism 
@@ -142,16 +142,16 @@
 
 2005-02-06 pigi ( pigi@frumar.it)
 	* Version update to 0.99.141
-        * Added space in ipkg_message to give more readible messages
+        * Added space in opkg_message to give more readible messages
         * Corrected a problem when creating the directories in pkg_dest_init
 
 2005-02-05 pigi ( pigi@frumar.it)
 	* Version update to 0.99.140
-        * Fixed the bug in ipkg_conf for a wrong pointer.
+        * Fixed the bug in opkg_conf for a wrong pointer.
 
 2005-02-05 pigi ( pigi@frumar.it)
 	* Version update to 0.99.139
-        * Fixed the "replaces" problem  reported by pb_. Now ipkg is able to resolve a "replace/conflict" reference
+        * Fixed the "replaces" problem  reported by pb_. Now opkg is able to resolve a "replace/conflict" reference
         * Added the possibility to keep the lists file in a different location. Fullfill enh #1276
 
 2005-02-02 pigi ( pigi@frumar.it)
@@ -163,7 +163,7 @@
 	* libbb.h: patch for the uclib 
 
 2005-01-14 pigi ( pigi@frumar.it)
-	* ipkg_install.c: applied patch from rjt@cambridgebroadband.com to remove some c99ism 
+	* opkg_install.c: applied patch from rjt@cambridgebroadband.com to remove some c99ism 
 
 2005-01-14 jamey ( jamey@handhelds.org )
 	* pkg_hash.c: applied patch from Jean Tourrilhes to allow default
@@ -191,7 +191,7 @@
 	* Version update to 0.99.134
         * Added a new option for listing only the installed packages. Asked by pb_ but really important
 	* Little modification to autoconfigure.sh 
- 	* removed fileutils dependencies that has disappeared from 0.8 in control-cl.in  control-unstripped.in libipkg-control.in  
+ 	* removed fileutils dependencies that has disappeared from 0.8 in control-cl.in  control-unstripped.in libopkg-control.in  
 
 2004-11-18 pigi ( pigi@frumar.it)
 	* Version update to 0.99.133
@@ -205,8 +205,8 @@
 2004-09-20 pigi ( pigi@frumar.it)
 	* Version update to 0.99.131
         * Added a lot of debug info in DEBUG2
-        * Added a check in ipkg_install.c to permit replacing of existing file when installing a package
-        * from a file ( not an upgrade ) when ipkg find a file clash but the owner of the package is the 
+        * Added a check in opkg_install.c to permit replacing of existing file when installing a package
+        * from a file ( not an upgrade ) when opkg find a file clash but the owner of the package is the 
         * same. That should fix the #1246
 
 2004-09-02 pigi ( pigi@frumar.it)
@@ -218,13 +218,13 @@
 
 2004-09-01 pigi ( pigi@frumar.it)
         * Applied patches from pb_ (bug #1244)
-        * Added EXTRADIST = ipkg.c and others in Makefile.am as in ipkg.0.99.xxx.tar.gz the ipkg.c was missing. ( 
+        * Added EXTRADIST = opkg.c and others in Makefile.am as in opkg.0.99.xxx.tar.gz the opkg.c was missing. ( 
           reported by odvard12@yahoo.com )
 	* Version update to 0.99.129
 
 2004-08-19 Florian <florian.boor@kernelconcepts.de>
 	* Version update to 0.99.128
-	* libipkg.c, ipkg_cmd.c: Fixed return value zero if installation
+	* libopkg.c, opkg_cmd.c: Fixed return value zero if installation
 	  failed. Changed text because failing to install a package
           is not necessarily a bug :-)
 	* Makefile.in, libbb/Makefile.in: Removed autogenerated files.
@@ -244,7 +244,7 @@
 	* configure.ac: updated to 0.99.126
 2004-06-12 florian <florian.boor@kernelconcepts.de>
 	* Makefile.am: Added some missing headers to the list.
-	* libipkg.pc.in: Fixed hardcoded prefix... tsts
+	* libopkg.pc.in: Fixed hardcoded prefix... tsts
 2004-06-12 pigi ( pigi@frumar.it)
         * pb_ patch for setuid bit in unarchive
 2004-06-05 pigi ( pigi@frumar.it)
@@ -255,8 +255,8 @@
 2004-05-21 pigi ( pigi@frumar.it)
 	* configure.ac: updated to 0.99.124
         * import the kergoth patch for Makefile.am to fix the linking problems on arch <> arm
-        * added the ipkg remove <regexp> feature.
-        * fixed the ipkg usage message, 'cause in "ifdef LIBIPKG" we don't have the ipkg info field version.
+        * added the opkg remove <regexp> feature.
+        * fixed the opkg usage message, 'cause in "ifdef LIBOPKG" we don't have the opkg info field version.
         * added the message "No package removed" if no package has been removed. This to avoid misunderstanding
           with the successfully done message at the exit of execution.
 2004-05-16 pigi ( pigi@frumar.it)
@@ -264,16 +264,16 @@
         * Anothere little fix. Added the version number in control.in. This should fix definitelly the problem with dependencies
 2004-05-16 pigi ( pigi@frumar.it)
 	* configure.ac: updated to 0.99.122-2
-        * New subrelease released to correct the problem for dependencies (libipkg >= 0.99.122-1) in ipkg control file
+        * New subrelease released to correct the problem for dependencies (libopkg >= 0.99.122-1) in opkg control file
 2004-05-14 pigi ( pigi@frumar.it)
 	* configure.ac: updated to 0.99.122-1
         * needed for a recompilation with the libtool updated. This could fix the #1209 created by my old libtool version
         * cleaned the cvs dir by removing the really unneeded busybox directory
 2004-05-10 pigi ( pigi@frumar.it)
 	* configure.ac: updated to 0.99.122
-        * pb_, cworth and I discussed a bit on ipkg output to users. We agreed on removing some confusing
+        * pb_, cworth and I discussed a bit on opkg output to users. We agreed on removing some confusing
         * messages, moving them to a debug level of verbosity.
-        * I do added also some message to user indicating the phase ipkg is in, and a global ending message
+        * I do added also some message to user indicating the phase opkg is in, and a global ending message
         * informing the user for the status of operation.
         * This fixes the #1206, and hopefully does not introduce others ;-) 
 2004-05-03 pigi ( pigi@frumar.it)
@@ -295,7 +295,7 @@
         * I' ve also included the fix for the empty lists as for bug # 1136 reported and suggested by k.vangelder@chello.nl 
 2004-03-17 pigi ( pigi@frumar.it)
         *  Added the implement for Essential in status file. This is needed to avoid the unintentional remove
-           of essential packages. In effect the command "ipkg remove ipkg" worked without problems, but then
+           of essential packages. In effect the command "opkg remove opkg" worked without problems, but then
            it was difficult to reinstall. This fix the bug # 867
 2004-03-15 jamey <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.117
@@ -312,18 +312,18 @@
            the default.
            This fixes the bug #1099
 2004-03-07 pigi ( pigi@frumar.it)
-        *  Minimal changes for a clean compile in libipkg.c ( so we can close the bug# 1119 )
+        *  Minimal changes for a clean compile in libopkg.c ( so we can close the bug# 1119 )
 2004-03-03 pigi ( pigi@frumar.it)
         * Missing \n in Size and Source Fields.
 2004-03-03 pigi ( pigi@frumar.it)
-        * Florian noticed a free missiing in ipkg_cmd.c ( should sleep more at night ) 
+        * Florian noticed a free missiing in opkg_cmd.c ( should sleep more at night ) 
           it was in an (almost) unsed part of the code ( old code ) but, just in case...
         * Changed a comment in pkg.c ( it was in italian ) and added a bit of explain in 
           pkg_formatted_field
 2004-03-02 jamey <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.116
 	* pkg.h: from Pigi: pkg_formatted_info and pkg_formatted_field now allocate the strings they fill in
-	* pkg.c, ipkg_cmd.c: from Pigi: updated to the new pkg.h interface 
+	* pkg.c, opkg_cmd.c: from Pigi: updated to the new pkg.h interface 
 2004-02-29 florian <florian.boor@kernelconcepts.de>
 	pkg.c: Pigi and me poked around a little bit and located the cause of
 	       latest segfault. strncat is not used correctly in pkg_formatted_info
@@ -332,14 +332,14 @@
 		   BUT: There are many similar bugs remaining!
 2004-02-24 jamey <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.115
-	* ipkg_cmd.c: segv caught by pigi: buffer freed in loop but used on next iterations.  bug squashed.
+	* opkg_cmd.c: segv caught by pigi: buffer freed in loop but used on next iterations.  bug squashed.
 	* user.c: realloc question buffer if it is too short so that messages are not truncated.
 2004-02-20 jamey <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.114
 	* libbb/unarchive.c: patch from pigi@frumar.it: fix erroneous invalid header checksum message
 2004-02-19 jamey <jamey.hicks@hp.com>
 	* configure.ac: update to 0.99.113
-	* libipkg.c: patch from drw to fix ipkg list
+	* libopkg.c: patch from drw to fix opkg list
 2004-02-19 florian <florian.boor@kernelconcepts.de>
 	* Some minor changes to make code compile on more compilers.
 2004-02-14 jamey <jamey.hicks@hp.com>
@@ -350,20 +350,20 @@
         * pkg.c: wim delvaux's patch for status file in other destinations
 2004-01-23 florian <florian.boor@kernelconcepts.de>
 	* Applied Dan's patch that adds a package download command to
-	  libipkg.	
+	  libopkg.	
 2004-01-20 florian <florian.boor@kernelconcepts.de>
 	* Applied Dan's changes to work incuded from a C++ app.	
 2004-01-15 jamey
 	* configure.ac: updated to 0.99.110
-	* libipkg.c: added default callbacks for output
-	* ipkg_conf.c: default verbosity to 1
+	* libopkg.c: added default callbacks for output
+	* opkg_conf.c: default verbosity to 1
 2004-01-12 jamey
 	* configure.ac: updated to 0.99.109
-	* ipkg_install.c: fix potential segv sprintf_alloc with fewer args than required by format string (yay valgrind)
+	* opkg_install.c: fix potential segv sprintf_alloc with fewer args than required by format string (yay valgrind)
 	* sprintf_alloc.c: add null pointer checking
 2004-01-12 jamey
 	* configure.ac: updated to 0.99.108
-	* Makefile.am, familiar/: use ipkg-cl as default executable, install as ipkg via update-alternatives
+	* Makefile.am, familiar/: use opkg-cl as default executable, install as opkg via update-alternatives
 2004-01-12 jamey
 	* configure.ac: updated to 0.99.107
 	* void_list.c: check for null data
@@ -372,78 +372,78 @@
 	* Added void* parameter to some callbacks. 
 
 2003-12-02 florian <florian.boor@kernelconcepts.de>
-	* Added familiar/ipkg-cl.control.in, which is a prototype of
-	  control file for ipkg-cl package creation.
+	* Added familiar/opkg-cl.control.in, which is a prototype of
+	  control file for opkg-cl package creation.
 2003-12-01 florian <florian.boor@kernelconcepts.de>
-	* added ipkg command line tool using libipkg, binary is known as ipkg-cl
-	* ipkg-frontend.c: source for this tool
+	* added opkg command line tool using libopkg, binary is known as opkg-cl
+	* opkg-frontend.c: source for this tool
 	* libbb/Makefile.am: Removed changing of CFLAGS, this avoids a nasty warning.
-	* Makefile.am: Same fix and addition of new target creating ipkg-cl.
+	* Makefile.am: Same fix and addition of new target creating opkg-cl.
 	* removed ltmain.sh, libtool which seem to be created by autostuff
 	
 2003-12-01 jamey
 	* configure.ac: updated to 0.99.106
-	* pkg.c, ipkg_conf.c: check for null pointers (null pkg->dest in particular)
+	* pkg.c, opkg_conf.c: check for null pointers (null pkg->dest in particular)
 2003-11-11 jamey
 	* configure.ac: updated to 0.99.105
-	* ipkg_conf.c: added verbosity option to conf file
+	* opkg_conf.c: added verbosity option to conf file
 2003-11-11 jamey
 	* configure.ac: updated to 0.99.104
-	* ipkg_install.c: removed spurious calls to fflush, remove obsolete maintainer scripts on upgrade
-	* ipkg_remove.c: remove unused function: remove_conffiles
+	* opkg_install.c: removed spurious calls to fflush, remove obsolete maintainer scripts on upgrade
+	* opkg_remove.c: remove unused function: remove_conffiles
 2003-11-11 jamey
 	* configure.ac: updated to 0.99.103
-	* libipkg.pc.in, configure.ac: pkgconfig for libipkg
-	* ipkg_conf.c, pkg.c: check for error on fopen
+	* libopkg.pc.in, configure.ac: pkgconfig for libopkg
+	* opkg_conf.c, pkg.c: check for error on fopen
 	* pkg_hash.c: reduced verbosity
 	* libtool: arm-linux-strip does not support --strip-debug on .a files
 2003-11-10 jamey
 	* configure.ac: updated to 0.99.102
-	* ipkg_cmd.c: compute architecture_priority of packages in database before doing download command
-	* conffile.c file_util.[ch] ipkg_install.c: better separation of installation root filenames and actual filenames
+	* opkg_cmd.c: compute architecture_priority of packages in database before doing download command
+	* conffile.c file_util.[ch] opkg_install.c: better separation of installation root filenames and actual filenames
 	* pkg.h: added prototype for pkg_free_installed_files
 2003-11-10 jamey
 	* configure.ac: updated to 0.99.101
-	* libipkg changes
+	* libopkg changes
 	* generate .list files from file_hash
 2003-11-05 jamey
 	* configure.ac: updated to 0.99.100
-	* ipkg_install.c: fix segv: was passing conflictee->parent instead of conflictee
+	* opkg_install.c: fix segv: was passing conflictee->parent instead of conflictee
 2003-10-08 jamey
 	* configure.ac: updated to 0.99.99
-	* ipkg_install.c: use the root_dir after stripping off offline_root prefix
+	* opkg_install.c: use the root_dir after stripping off offline_root prefix
 2003-10-08 jamey
 	* configure.ac: updated to 0.99.98
 	* pkg_hash.c: fixed segv if replaced_by->len was 0
-	* ipkg_cmd.c: ipkg remove with no arguments will remove non-user leaf packages
-	* ipkg_remove.[ch]: export pkg_has_installed_dependents
+	* opkg_cmd.c: opkg remove with no arguments will remove non-user leaf packages
+	* opkg_remove.[ch]: export pkg_has_installed_dependents
 	* pkg_depends.c: add pkg->parent to pkg->provides
-	* ipkg_install.c: strip offline_root prefix off of conffile name so comparing the md5sums should work
+	* opkg_install.c: strip offline_root prefix off of conffile name so comparing the md5sums should work
 	* pkg.c: missing comma added
 2003-10-01 jamey
 	* configure.ac: updated to 0.99.97
-	* ipkg_cmd.c: added whatdependsrec command to show what recursively depends on a package or packages
+	* opkg_cmd.c: added whatdependsrec command to show what recursively depends on a package or packages
 	* pkg_vec.[ch]: added pkg_vec_clear_marks and pkg_vec_mark_if_matches
 	* args.c: usage string updated
 2003-09-28 jamey
 	* configure.ac: updated to 0.99.96
-	* ipkg_conf.c: adjusted verbosity
-	* ipkg_install.c: only remove replacee if it is also conflicted, per debian standard
+	* opkg_conf.c: adjusted verbosity
+	* opkg_install.c: only remove replacee if it is also conflicted, per debian standard
 	* pkg_depends.c: only add to replaced_by if it also conflicts, per debian standard
 		added pkg_provides, pkg_replaces, pkg_conflicts
 	* pkg_hash.c: adjusted verbosity	          
 2003-09-28 jamey
 	* configure.ac: updated to 0.99.95
-	* args.[ch], ipkg_cmd.c, ipkg_conf.[ch], ipkg_download.c, ipkg_install.c, ipkg_remove.c, pkg.[ch]:
-	   Implemented -test mode for ipkg.
+	* args.[ch], opkg_cmd.c, opkg_conf.[ch], opkg_download.c, opkg_install.c, opkg_remove.c, pkg.[ch]:
+	   Implemented -test mode for opkg.
 2003-09-28 jamey
 	* configure.ac: updated to 0.99.94
 	* pkg_hash.c: fix pkg_hash_fetch_best_installation_candidate so
 	that one can install another provider of an installed package name
 2003-09-26 jamey
 	* configure.ac: updated to 0.99.93
-	* ipkg_install.c: corrected message level depending on conf->force_depend
-	* ipkg_conf.c: check for duplicate src entries
+	* opkg_install.c: corrected message level depending on conf->force_depend
+	* opkg_conf.c: check for duplicate src entries
 	* nv_pair_list.[ch]: added nv_pair_list_find
 2003-09-16 jamey
 	* configure.ac: updated to 0.99.92
@@ -462,8 +462,8 @@
 	* pkg_hash.c: updated old_pkg->installed_files list when setting file owner if it was previously owned by old_pkg
 	* pkg_extract.c: use installed_file list if it exists in pkg_extract_data_file_names_to_file
 	* pkg.[ch]: added pkg_write_filelist() and pkg_write_changed_filelists()
-	* ipkg_remove.c: do not call ipkg_conf_write_status_files from ipkg_remove
-	* ipkg_install.c: use ipkg_write_filelist()
+	* opkg_remove.c: do not call opkg_conf_write_status_files from opkg_remove
+	* opkg_install.c: use opkg_write_filelist()
 	* ipgk_cmd.c: after writing status file, write any changed pkg filelists
 2003-08-20 11:02  jamey
 	* configure.ac: updated to 0.99.89
@@ -471,7 +471,7 @@
 2003-08-06 18:34  jamey
 	* configure.ac: updated to 0.99.88
 	* pkg_hash: bug 942, declare internal induction variable
-	* ipkg_cmd.c, ipkg_conf.[ch], pkg_src.[ch], pkg_src_list.[ch]: bug 604, support Packages.gz
+	* opkg_cmd.c, opkg_conf.[ch], pkg_src.[ch], pkg_src_list.[ch]: bug 604, support Packages.gz
 2003-08-06 18:34  jamey
 	* configure.ac: updated to 0.99.87
 	* pkg.c: remove extra printing of Suggests field
@@ -479,20 +479,20 @@
 	* pkg_depends.c: print info about recommendations as Notice instead of DEBUG
 2003-07-11 18:34  jamey
 	* configure.ac: updated to 0.99.86
-	* ipkg.h, ipkg_cmd.c, ipkg_configure.c, ipkg_install.c, ipkg_remove.c: only write status file if something changed.
+	* opkg.h, opkg_cmd.c, opkg_configure.c, opkg_install.c, opkg_remove.c: only write status file if something changed.
 2003-07-11 18:34  jamey
 	* configure.ac: updated to 0.99.85
 	* pkg.c, pkg.h, pkg_depends.c, pkg_depends.h, pkg_parse.c: bug 885:
 	  add recommends and suggests
-	* args.c, ipkg_cmd.c, ipkg_cmd.h: add ipkg configure command
+	* args.c, opkg_cmd.c, opkg_cmd.h: add opkg configure command
 	* pkg_vec.c: apply patch for bug 883
 2003-05-11 Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.84
-	* pkg.c, ipkg-compare-versions.c: fix problem where . and - were not treated as separators in version comparison
+	* pkg.c, opkg-compare-versions.c: fix problem where . and - were not treated as separators in version comparison
 2003-04-11 Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.83
-	* ipkg_install.c: use pkg->installed_size instead of pkg->size
-	* ipkg_cmd.c, ipkg_conf.c: put lists under offline_root if specified
+	* opkg_install.c: use pkg->installed_size instead of pkg->size
+	* opkg_cmd.c, opkg_conf.c: put lists under offline_root if specified
 2003-04-11 Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.82
 	* pkg_hash.c: ignore Replaces directive when a package replaces itself
@@ -507,26 +507,26 @@
 2003-04-07 Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.79
 	* pkg_hash.c: default architecture to host_cpu if unspecified
-	* ipkg_install.c, ipkg_download.c: refuse to install package with no architecture
+	* opkg_install.c, opkg_download.c: refuse to install package with no architecture
 2003-04-07 Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.78
-	* args.[ch], ipkg_conf.[ch]: added query_all (-A)
-	* ipkg_cmd.c: finished implementing whatdepends, whatrequires, whatprovides, and whatconflicts
+	* args.[ch], opkg_conf.[ch]: added query_all (-A)
+	* opkg_cmd.c: finished implementing whatdepends, whatrequires, whatprovides, and whatconflicts
 2003-04-03 Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.77
-	* ipkg_cmd.c: implemented whatdepends
-	* ipkg_conf.c: fixed typo
+	* opkg_cmd.c: implemented whatdepends
+	* opkg_conf.c: fixed typo
 2003-04-03 Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.76
 	* args.c: was zeroing args structure too late
-	* ipkg_conf.c: test for existence of /etc/ipkg.conf before trying to load it
+	* opkg_conf.c: test for existence of /etc/opkg.conf before trying to load it
 2003-04-03 Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.75
 	* familiar/rules: update postinst only to generate ipaqarch.conf if none exists
 	* args.[ch]: added -t or --tmp-dir option to specify tmp-dir
 2003-04-03 Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.74
-	* ipkg_cmd.c: avoid segv by only calling xregfree after xregcomp was called
+	* opkg_cmd.c: avoid segv by only calling xregfree after xregcomp was called
 	* pkg_hash.c: prefer pkgs that are marked hold/prefer, next
 	abstract pkgs that are installed, next latest pkg if one provider,
 	give up if multiple providers are acceptable -- let user decide
@@ -539,7 +539,7 @@
 2003-04-03 Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.71
 	* pkg.c: Added pkg_name_version_and_architecture_compare and abstract_pkg_name_compare
-	* ipkg_cmd.c: allow multiple fields for info and status command.
+	* opkg_cmd.c: allow multiple fields for info and status command.
 	Allow posix regexp's for package name in status, info, and list
 	commands.
 	* pkg_remove.c: fixed type error
@@ -547,27 +547,27 @@
 	* pkg_hash.c: Provides functionality seems to be working again
 2003-04-02 Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.70
-	* args.c, args.h, ipkg_conf.c, ipkg_conf.h, ipkg_install.c: implemented nodeps option
+	* args.c, args.h, opkg_conf.c, opkg_conf.h, opkg_install.c: implemented nodeps option
 	* pkg_vec.[ch]: added [abstract_]pkg_vec_{contains,sort}
 	* pkg.c: print which script not being run in offline root mode
 2003-04-02 Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.69
 	* pkg_vec.c: compare architecture to architecture, not to name
-	* ipkg_utils.c: do not exit, instead return NULL
-	* ipkg_install.c: do not exit, instead return -EINVAL
-	* ipkg_download.c: make sure to set pkg dest
-	* ipkg_cmd.c: notice instead of info for writing status file message
+	* opkg_utils.c: do not exit, instead return NULL
+	* opkg_install.c: do not exit, instead return -EINVAL
+	* opkg_download.c: make sure to set pkg dest
+	* opkg_cmd.c: notice instead of info for writing status file message
 2003-04-02 Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.68
 	* pkg_vec.c, pkg_depends.c: pkg_t's are the same if they have same name, version, and architecture 
 2003-04-01 Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.67
-	* ipkg_install.c: one last check for supported architecture in ipkg_install_pkg
+	* opkg_install.c: one last check for supported architecture in opkg_install_pkg
 	* pkg.c: make pkg_print_field less fragile by using strcasecmp,
 	added support to print Conflicts
 	* pkg_hash.c: if multiple candidates with right architecture
 	satisfy constraint_fcn, return latest version
-	* ipkg_cmd.c: when verbosity > 1, show if conffiles have been
+	* opkg_cmd.c: when verbosity > 1, show if conffiles have been
 	modified in info command
 	* hash_table.c, hash_table.h: count number of elements in hash
 	tables
@@ -580,30 +580,30 @@
 	* pkg_parse.c, pkg.c: added Installed-Time as field saved to status file
 2003-04-01 Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.65
-	* ipkg_cmd.c, ipkg_conf.c: applied ipkg dest installation patch from Ben Lau <benlau@linux.org.hk>
-	* ipkg_cmd.c: fixed probably segv when using offline_root, fixed problem installing from local file.
-	* ipkg_conf.c: 
-	  - Do not add default architectures if ipkg configuration files include architecture definitions.
-	  - Look for /etc/ipkg/*.conf under offline root if using offline root mode
+	* opkg_cmd.c, opkg_conf.c: applied opkg dest installation patch from Ben Lau <benlau@linux.org.hk>
+	* opkg_cmd.c: fixed probably segv when using offline_root, fixed problem installing from local file.
+	* opkg_conf.c: 
+	  - Do not add default architectures if opkg configuration files include architecture definitions.
+	  - Look for /etc/opkg/*.conf under offline root if using offline root mode
 	* void_list.h: added void_list_empty()
 	* nv_pair_list.h: added nv_pair_list_empty()
 2003-03-28 14:30  Jamey Hicks <jamey@handhelds.org> 
 	* configure.ac: 0.99.64
-	* pkg_hash.c: change fprintf stderr to ipkg_message
+	* pkg_hash.c: change fprintf stderr to opkg_message
 	* pkg.h: added SF_MARKED and abstract_pkg_t state_flag field
 	* pkg.c: include Provides, Replaces, and Architecture in status
 	file
-	* ipkg_remove.c: make sure to print each dependent package only
+	* opkg_remove.c: make sure to print each dependent package only
 	once
-	* ipkg_message.h: added IPKG_DEBUG2
-	* ipkg_install.c: modify message and level depending on
+	* opkg_message.h: added OPKG_DEBUG2
+	* opkg_install.c: modify message and level depending on
 	force_depends
-	* ipkg_cmd.c: call pkg_info_preinstall_check before any
+	* opkg_cmd.c: call pkg_info_preinstall_check before any
 	install/upgrade/remove action
 	* ChangeLog, autoconfigure.sh, includes.h,
-	ipkg_conf.c, ipkg_remove.c, pkg.c, pkg.h, update-alternatives,
+	opkg_conf.c, opkg_remove.c, pkg.c, pkg.h, update-alternatives,
 	xregex.h: applied kergoth's update-alternatives patch
-	* ipkg_cmd.c, ipkg_remove.c: remove maybe_broken_removal... which
+	* opkg_cmd.c, opkg_remove.c: remove maybe_broken_removal... which
 	was an expensive no-op; before removing package, make sure that
 	nothing is installed that depends on the apkgs **provided** by a
 	package
@@ -612,112 +612,112 @@
 	of file obsolescence and package replacements in progress
 2003-03-27 18:26  jamey
 	* autoconfigure.sh: accidentally committed /usr/local/bin calls
-	* ipkg_conf.c: needed a strdup, set default verbosity back to 0
+	* opkg_conf.c: needed a strdup, set default verbosity back to 0
 	* familiar/postinst: default architecture priorities
-	* Makefile.in, autoconfigure.sh, ipkg_cmd.c, ipkg_conf.c, pkg.c:
+	* Makefile.in, autoconfigure.sh, opkg_cmd.c, opkg_conf.c, pkg.c:
 	both name and value in nv_pair_list must be actual strings
 	* pkg_hash.c: do not try to invoke NULL constraint_fcn
-	* ipkg_install.c: added file_hash_{set,get}_file_owner, created
+	* opkg_install.c: added file_hash_{set,get}_file_owner, created
 	check_downgrade
-	* ipkg_conf.c, ipkg_conf.h, ipkg_remove.c, pkg.c, pkg_hash.c,
+	* opkg_conf.c, opkg_conf.h, opkg_remove.c, pkg.c, pkg_hash.c,
 	pkg_hash.h: added file_hash_{set,get}_file_owner
 	* hash_table.c: check for key already being present in
 	hash_table_insert
 	* configure.ac: update to 0.99.63
-	* ipkg_hash_test.c: update due to new prototypes
-	* ipkg_conf.c: missed a conversion from str_list to nv_pair_list
-	* ipkg_install.c: minor tweaks
+	* opkg_hash_test.c: update due to new prototypes
+	* opkg_conf.c: missed a conversion from str_list to nv_pair_list
+	* opkg_install.c: minor tweaks
 	* pkg.c, pkg.h: added pkg_info_preinstall_check to update
 	pkg->arch_priority
 	* pkg_depends.c, pkg_depends.h: use constrained
 	pkg_hash_fetch_best_installation_candidate in
 	pkg_hash_fetch_unsatisfied_dependencies
-	* pkg_hash.c, pkg_hash.h, ipkg_cmd.c, ipkg_upgrade.c: split
+	* pkg_hash.c, pkg_hash.h, opkg_cmd.c, opkg_upgrade.c: split
 	pkg_hash_fetch_best_installation_candidate into a by name and a
 	constrained version
-	* ipkg_install.c: block SIGINT while doing core of package
+	* opkg_install.c: block SIGINT while doing core of package
 	installation (single package)
-	* ipkg_conf.c, ipkg_conf.h: support for architecture priority
+	* opkg_conf.c, opkg_conf.h: support for architecture priority
 	* pkg_depends.c: cleanup, reindent
 	* pkg.c, pkg.h: support for architecture_priority
-	* ipkg_cmd.c: installed SIGINT handler when upgrading or removing,
+	* opkg_cmd.c: installed SIGINT handler when upgrading or removing,
 	support for architecture_priority
 	* pkg_hash.c: added support for architecture priority, reindented
 	* pkg_vec.c: minor cleanup
 2003-03-24  Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.61
-	* familiar/postinst: mkdir -p /etc/ipkg
+	* familiar/postinst: mkdir -p /etc/opkg
 2003-03-24  Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.61
-	* ipkg_conf.c: read configuration from all *.conf files in /etc/ipkg/
-	* familiar/postinst: create /etc/ipkg/*.conf according to platform ipkg is installed on
+	* opkg_conf.c: read configuration from all *.conf files in /etc/opkg/
+	* familiar/postinst: create /etc/opkg/*.conf according to platform opkg is installed on
 2003-03-20  Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.60
 	* various: added support for package architectures
 	* configure.ac: do not test for malloc
-2003-03-17  Aman Gupta <ipkg@themastermind1.net>
+2003-03-17  Aman Gupta <opkg@themastermind1.net>
 	* configure.ac: updated to 0.99.59
 	* args.c: show all verbosity levels in usage info
 	* args.h: changed default verbosity level to 1
-	* ipkg_cmd.c: ipkg_multiple_files_scan() was useless, switch to using 
-	ipkg_prepare_url_for_install()
-	* ipkg_install.c: fix --force-reinstall
-	* ipkg_remove.c: stop removing of modified conffiles
+	* opkg_cmd.c: opkg_multiple_files_scan() was useless, switch to using 
+	opkg_prepare_url_for_install()
+	* opkg_install.c: fix --force-reinstall
+	* opkg_remove.c: stop removing of modified conffiles
 2003-03-04  Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.56
-	* ipkg_message.c: show error messages by default
-	* ipkg_message.h: protect against multiple inclusion
-	* conffile.[ch]: switch to ipkg_message, added conf argument to conffile_has_been_modified
-	* ipkg.h: move EXTENSION macros here
+	* opkg_message.c: show error messages by default
+	* opkg_message.h: protect against multiple inclusion
+	* conffile.[ch]: switch to opkg_message, added conf argument to conffile_has_been_modified
+	* opkg.h: move EXTENSION macros here
 	* pkg_depends.c: minor cleanup
 	* pkg.h: added prefer and obsolete flags
 	* pkg.c: parse and unparse SF_PREFER and SF_OBSOLETE
-	* ipkg_install.[ch]: 
+	* opkg_install.[ch]: 
 	  - added {pkg,name}_mark_dependencies_for_installation, 
 	  - added conf argument to conffile_has_been_modified 
-	  - missing ifdef IPKG_DEBUG_NO_TMP_CLEANUP
-	* ipkg_remove.c: added conf argument to conffile_has_been_modified
-	* ipkg_download.c: added ipkg_prepare_for_install
+	  - missing ifdef OPKG_DEBUG_NO_TMP_CLEANUP
+	* opkg_remove.c: added conf argument to conffile_has_been_modified
+	* opkg_download.c: added opkg_prepare_for_install
 2003-03-01  Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.55
-	* ipkg.h: wrap #if 0 around definition of of IPKG_DEBUG_NO_TMP_CLEANUP
+	* opkg.h: wrap #if 0 around definition of of OPKG_DEBUG_NO_TMP_CLEANUP
 2003-03-01  Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.54
-	* ipkg_install.c: make old package SW_DEINSTALL during ipkg installation
-	* ipkg_cmd.[ch]: added some code to install packages marked SW_INSTALL, but have not enabled this code yet.
+	* opkg_install.c: make old package SW_DEINSTALL during opkg installation
+	* opkg_cmd.[ch]: added some code to install packages marked SW_INSTALL, but have not enabled this code yet.
 2003-03-01  Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: updated to 0.99.53
 	* pkg_depends.c: let SW_INSTALL satisfy dependences (instead of SS_INSTALL)
 2003-03-01  Daniele Nicolodi <daniele@grinta.net>	
-	* ipkg_install.c: indentation fixes and finish switch to message
+	* opkg_install.c: indentation fixes and finish switch to message
 	facility
-	* ipkg_cmd.c: indentation fixes, switch to message facility and
+	* opkg_cmd.c: indentation fixes, switch to message facility and
 	some code cleanup
-	* ipkg_message.c (ipkg_message): check for a NULL *conf parameter
-	* ipkg_message.h: renamed IPKG_ERR in IPKG_ERROR
+	* opkg_message.c (opkg_message): check for a NULL *conf parameter
+	* opkg_message.h: renamed OPKG_ERR in OPKG_ERROR
 2003-02-28  Jamey Hicks <jamey@handhelds.org> (patch from Daniele Nicolodi <daniele@grinta.net>)
 	* configure.ac: incremented version to 0.99.5
-	* ipkg_message.[ch]: added message facility
+	* opkg_message.[ch]: added message facility
 	* args.[ch]: verbosity control
-	* ipkg_conf.[ch]: verbosity control
-	* ipkg_install.c: switch to using message factility
+	* opkg_conf.[ch]: verbosity control
+	* opkg_install.c: switch to using message factility
 2003-02-28  Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: incremented version to 0.99.51
-	* ipkg_cmd.c: added ipkg_statisfy_all_dependences, called after
+	* opkg_cmd.c: added opkg_statisfy_all_dependences, called after
 	install/upgrade of packages to handle packages that were split and
 	no longer provide all the resources they used to provide.
 2003-02-27  Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: incremented version to 0.99.50
-	* ipkg_cmd.c: write out status after doing an upgrade
+	* opkg_cmd.c: write out status after doing an upgrade
 2003-02-27  Jamey Hicks <jamey@handhelds.org> (another patch from pb)
 	* configure.ac: incremented version to 0.99.49
 	* pkg_parse.c, pkg.c: do not treat deb revision specially
 2003-02-27  Jamey Hicks <jamey@handhelds.org> (another patch from pb)
 	* configure.ac: incremented version number to 0.99.48
-	* args.c: added help for ipkg flags sub-command
-	* ipkg_cmd.c: added ipkg_flag_cmd, do not upgrade package marked hold
-	* ipkg_install.c: do not remove obsolesced files if old_pkg is flagged noprune
-	* ipkg_remove.c: pkg->state_flag is a bitvector now
+	* args.c: added help for opkg flags sub-command
+	* opkg_cmd.c: added opkg_flag_cmd, do not upgrade package marked hold
+	* opkg_install.c: do not remove obsolesced files if old_pkg is flagged noprune
+	* opkg_remove.c: pkg->state_flag is a bitvector now
 	* pkg.c: pkg->state_flag is a bitvector now
 	* pkg.h: pkg->state_flag is a bitvector now
 2003-02-27  Jamey Hicks <jamey@handhelds.org> (another patch from pb)
@@ -730,9 +730,9 @@
 2003-02-24  Jamey Hicks <jamey@handhelds.org> (per patch from Philip Blundell <pb@handhelds.org>)
 	* configure.ac: incremented version to 0.99.45
 	* file_util.c: include space for null in line_size
-	* ipkg_cmd.c: sigint handler while configuring packages
-	* ipkg_install.c: state_status != SS_INSTALLED and != SS_UNPACKED
-	* ipkg_remove.c: missing i++
+	* opkg_cmd.c: sigint handler while configuring packages
+	* opkg_install.c: state_status != SS_INSTALLED and != SS_UNPACKED
+	* opkg_remove.c: missing i++
 	* pkg.c: do not run scripts in offline_root mode
 	* pkg_depends.c: every package provides itself
 	* pkg_hash.c: better handling of packges provided by multiple providers
@@ -741,25 +741,25 @@
 	* args.c: added doc for -force-overwrite
 2002-11-26  Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: incremented version number to 0.99.43
-	* ipkg_install.c: completely skip the space check when -force_space asserted
+	* opkg_install.c: completely skip the space check when -force_space asserted
 2002-11-23  Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: incremented version number to 0.99.42
 	* args.c: missed one spot checking for -force_space or -force-space    
 2002-11-23  Jamey Hicks <jamey@handhelds.org>
 	* configure.ac: incremented version number to 0.99.41
-	* ipkg_install.c: added -force_space option to override out of space check
+	* opkg_install.c: added -force_space option to override out of space check
 2002-11-23  Aman Gupta  <oz@themastermind1.net>
 	* configure.ac: incremented version number to 0.99.40
-	* ipkg_configure.c: updated to match new text output format
-	* ipkg_install.c: updated to new text output format
+	* opkg_configure.c: updated to match new text output format
+	* opkg_install.c: updated to new text output format
 			  fixed problems where ipks installed from file or
 			  http were being installed over newer ipks of the
 			  same name
-	* ipkg_remove.c: updated to new text output format
-			 made ipkg remove do what ipkg purge originally did,
+	* opkg_remove.c: updated to new text output format
+			 made opkg remove do what opkg purge originally did,
 			 by having it remove conffiles, and status entries for
-			 ipks that are removed. ipkg_purge now calls
-			 ipkg_remove
+			 ipks that are removed. opkg_purge now calls
+			 opkg_remove
 2002-11-22  Jamey Hicks <jamey.hicks@hp.com>
 	* configure.ac: incremented version number to 0.99.39
         * applied patches from Aman Gupta for better handling of dests
@@ -771,18 +771,18 @@
 	* pkg_hash.c: moved internals of hash_tables out of pkg_hash.c
 2002-10-29  Jamey Hicks <jamey.hicks@hp.com>
 	* configure.ac: incremented version number to 0.99.37
-	* ipkg_cmd.c: ipkg_upgrade_cmd now installs uninstalled packages
+	* opkg_cmd.c: opkg_upgrade_cmd now installs uninstalled packages
   	              instead of getting a segv 
 2002-10-29  Jamey Hicks <jamey.hicks@hp.com>
 	* configure.ac: incremented version number to 0.99.36
 	* changed verbose_get to verbose_wget as documented
 2002-08-08  Jamey Hicks <jamey.hicks@hp.com>
 	* configure.ac: incremented version number to 0.99.34
-	* ipkg_cmd.c: fixed problem stringifying HOST_CPU
+	* opkg_cmd.c: fixed problem stringifying HOST_CPU
 	* Makefile.am: helped fix problem stringifying HOST_CPU
 2002-08-08  Jamey Hicks <jamey.hicks@hp.com>
 	* configure.ac: incremented version number to 0.99.33
-	* ipkg_cmd.c, args.c: added print-architecture and print-installation-architecture commands
+	* opkg_cmd.c, args.c: added print-architecture and print-installation-architecture commands
 	* Makefile.am: added defines for HOST_CPU and BUILD_CPU to CFLAGS and package: target
 2002-08-08  Jamey Hicks <jamey.hicks@hp.com>
 	* configure.ac: incremented version number to 0.99.32
@@ -790,10 +790,10 @@
 2002-08-07  Jamey Hicks <jamey.hicks@hp.com>
 	* configure.ac: incremented version number to 0.99.31
 	* other: applied multiple providers patch from philip blundell
-	* ipkg_cmd.c: implemented compare_versions cmd
+	* opkg_cmd.c: implemented compare_versions cmd
 2002-07-25  Jamey Hicks <jamey.hicks@hp.com>
 	* configure.ac: incremented version number to 0.99.30
-	* ipkg_conf.c: added offline_root_pre_script_cmd and offline_root_post_script_cmd
+	* opkg_conf.c: added offline_root_pre_script_cmd and offline_root_post_script_cmd
 	* pkg.c: execute scripts in chroot'ed environment running
 	pre_script_cmd and post_script_cmd before and after the pkg script. 
 2002-07-24  Jamey Hicks <jamey.hicks@hp.com>
@@ -801,11 +801,11 @@
 	* pkg.c: fixed a segv when printing Replaces field
 2002-07-24  Jamey Hicks <jamey.hicks@hp.com>
 	* configure.ac: incremented version number to 0.99.28
-	* ipkg_cmd.c: merged functionality from ipkg_install_cmd into
-	ipkg_upgrade_cmd with an eye towards unifying these two commands. 
-	* ipkg_install.c: installing a package that replaces other
+	* opkg_cmd.c: merged functionality from opkg_install_cmd into
+	opkg_upgrade_cmd with an eye towards unifying these two commands. 
+	* opkg_install.c: installing a package that replaces other
 	packages removes them first.  (Upgrade does not do replacements automatically).
-	* ipkg_remove.c: ipkg_remove_pkg will remove a package with
+	* opkg_remove.c: opkg_remove_pkg will remove a package with
 	installed dependents if state_flag == SF_REPLACE.
 2002-07-24  Jamey Hicks <jamey.hicks@hp.com>
 	* configure.ac: incremented version number to 0.99.27
@@ -821,17 +821,17 @@
 	* various files: trying to stomp a segv in conflicts checking.  
 2002-07-17  Jamey Hicks <jamey.hicks@hp.com>
 	* configure.ac: incremented version number to 0.99.23
-	* ipkg_remove.c: do not do recursive removal if force-depends is
+	* opkg_remove.c: do not do recursive removal if force-depends is
 	  specified
 	* other-files: other cleanups to reduce code clutter
 2002-07-16  Jamey Hicks <jamey.hicks@hp.com>
 	* configure.ac: incremented version number to 0.99.22
 	* user.[ch]: moved user interaction procedure here
-	* args.[ch], ipkg_conf.[ch]: added force_removal_of_dependent_packages
+	* args.[ch], opkg_conf.[ch]: added force_removal_of_dependent_packages
 	* pkg.h: added state_status to abstract_pkg_t
-	* ipkg_remove.c: If package has installed dependents, then only
+	* opkg_remove.c: If package has installed dependents, then only
 	remove if force_removal_of_dependent_packages is asserted in
-	ipkg.conf or on command line.  Will add user interaction option later.
+	opkg.conf or on command line.  Will add user interaction option later.
 2002-07-16  Jamey Hicks <jamey.hicks@hp.com>
 	* configure.ac: incremented version number to 0.99.21 after
 	applying dependent removal and conflicts patch.
@@ -839,15 +839,15 @@
 2002-07-14  Jamey Hicks <jamey.hicks@hp.com>
 	
 	* configure.ac: incremented version number to 0.99.20
-	* ipkg_download.c: removed useless -N flag from wget 
+	* opkg_download.c: removed useless -N flag from wget 
 	* update-alternatives: 'head -1' -> 'head -n 1', no sort -k 2 for busybox
 	
 2002-07-15  Karthikeyan K  <karthik@innvo.com>
 	
-	* ipkg_remove.c (ipkg_remove_dependant_pkgs): removed setting the 
+	* opkg_remove.c (opkg_remove_dependant_pkgs): removed setting the 
 	dependencies_checked variable in the while loop b4 actually checking
 	the dependencies of that package.
-	* ipkg_cmd.c (ipkg_multiple_files_scan): added check for ".ipk" and
+	* opkg_cmd.c (opkg_multiple_files_scan): added check for ".ipk" and
 	".deb" extension, so that no caching is attempted on  arguments that
 	are not local files
 	* pkg_depends.c (pkg_hash_fetch_conflicts): while returning NULL,
@@ -875,9 +875,9 @@
 	found before returning
 
 2002-07-04  Abhaya Shenoy  <abhaya@innvo.com>
-	* ipkg_install.c (check_conflicts_for): new function to call
+	* opkg_install.c (check_conflicts_for): new function to call
 	pkg_hash_fetch_conflicts and print offending packages
-	(ipkg_install_pkg): added call to check_conflicts_for
+	(opkg_install_pkg): added call to check_conflicts_for
 	* pkg.c (pkg_merge): provides from oldpkg should be given
 	priority
 	(pkg_init): init of conflicts, conflicts_count fields
@@ -893,25 +893,25 @@
 
 2002-07-04  Karthikeyan K  <karthik@innvo.com>
 	
-	* ipkg_cmd.c (ipkg_multiple_files_scan): new function to handle installation
+	* opkg_cmd.c (opkg_multiple_files_scan): new function to handle installation
 	of already downloaded files
-	(ipkg_install_cmd): added call to ipkg_multiple_files_scan
-	(ipkg_remove_cmd): added call to possible_broken_removal_of_packages
-	* ipkg_install.c (ipkg_install_pkg): added check to remove redundant upgrade
+	(opkg_install_cmd): added call to opkg_multiple_files_scan
+	(opkg_remove_cmd): added call to possible_broken_removal_of_packages
+	* opkg_install.c (opkg_install_pkg): added check to remove redundant upgrade
 	when a package to be installed is already installed as a dependancy of
 	another
-	* ipkg_remove.c (possible_broken_removal_of_packages): new fnuction 
+	* opkg_remove.c (possible_broken_removal_of_packages): new fnuction 
 	to check that all packages can be removed, before actually starting to
 	remove them
-	(ipkg_remove_dependant_pkgs): new function to remove dependant packages
-	(ipkg_remove_pkg): added call to ipkg_remove_dependant_pkgs
+	(opkg_remove_dependant_pkgs): new function to remove dependant packages
+	(opkg_remove_pkg): added call to opkg_remove_dependant_pkgs
 	* pkg.c (abstract_pkg_init): initialized dependencies_checked
 	* pkg_hash.c (pkg_hash_dump): added more information to hash dump
 	
 2002-07-03  Jamey Hicks <jamey.hicks@hp.com>
 	
 	* configure.ac: incremented version number to 0.99.16
-	* ipkg_install.c: defensive programming in case pkg contains no Size: clause
+	* opkg_install.c: defensive programming in case pkg contains no Size: clause
 	
 2002-07-02  Jamey Hicks <jamey.hicks@hp.com>
 	
@@ -926,10 +926,10 @@
 2002-06-17  Jamey Hicks	<jamey.hicks@hp.com>
 	
 	* configure.ac: incremented version number to 0.99.12
-	* args.h, ipkg_conf.h, ipkg_install.c: Added force_overwrite
-	option.  When this is asserted, ipkg will overwrite files that
+	* args.h, opkg_conf.h, opkg_install.c: Added force_overwrite
+	option.  When this is asserted, opkg will overwrite files that
 	have no owner or that belong to other packages.
-	* ipkg_conf.c, ipkg_dest.c: Update status file atomically, keeping
+	* opkg_conf.c, opkg_dest.c: Update status file atomically, keeping
 	old copy of status file if cannot update new status file.  Applied
 	patch from Jukka Santala for this fix.
 	
@@ -956,48 +956,48 @@
 	* familiar/rules (binary-arch): Fixed to use "make install-strip"
 	rather than "make install" and a strip command.
 
-	* ipkg_cmd.c (ipkg_install_cmd): Moved an error message up from
-	ipkg_install_by_name, (eventually all error messages should come
-	up out of what will become libipkg, (pkg.c, ipkg_install.c, etc.)
-	and into ipkg_cmd.c and friends).
-	(ipkg_upgrade_pkg): Pushed downgrade check down into
-	ipkg_install_by_name so that "ipkg install foo" will do the
+	* opkg_cmd.c (opkg_install_cmd): Moved an error message up from
+	opkg_install_by_name, (eventually all error messages should come
+	up out of what will become libopkg, (pkg.c, opkg_install.c, etc.)
+	and into opkg_cmd.c and friends).
+	(opkg_upgrade_pkg): Pushed downgrade check down into
+	opkg_install_by_name so that "opkg install foo" will do the
 	downgrade check.
 
-	* ipkg.h: Rename some ipkg_error_t error codes to be more
+	* opkg.h: Rename some opkg_error_t error codes to be more
 	consistent.
 
-	* ipkg_install.c (resolve_conffiles): Added missing removal of
+	* opkg_install.c (resolve_conffiles): Added missing removal of
 	backed-up modified conffiles, (which led to bizarre, bogus
 	conffile prompting the next time the package was upgraded).
 	(user_prefers_old_conffile): Fixed reversed arguments to diff in
 	interactive conffiles prompting.
-	(ipkg_install_by_name): Fixed "ipkg install foo" to never
-	downgrade foo, (just like "ipkg upgrade foo").
+	(opkg_install_by_name): Fixed "opkg install foo" to never
+	downgrade foo, (just like "opkg upgrade foo").
 
 	* familiar/rules: Added installation of
-	/usr/share/doc/ipkg/copyright file. Fixed so that ipkg.conf goes
+	/usr/share/doc/opkg/copyright file. Fixed so that opkg.conf goes
 	to /etc, not /usr/etc, (but still keep binary in /usr/bin not
-	/bin). Changed name of installed binary from ipkg-unstable to
-	ipkg.
+	/bin). Changed name of installed binary from opkg-unstable to
+	opkg.
 
 	* familiar/control.in (Package): Changed package name from
-	ipkg-unstable to ipkg.
+	opkg-unstable to opkg.
 
 	* pkg_parse.c (parseVersion): Fixed to ignore whitespace at
 	beginning of version string.
 	(pkg_parse_raw): Fixed segfault if a package record list ends with
 	a package paragraph without a final blank line.
 
-	* ipkg_install.c (check_data_file_clashes): Improved wording of
+	* opkg_install.c (check_data_file_clashes): Improved wording of
 	file clash error message.
 
-	* ipkg_download.c (ipkg_download_pkg): Fixed segfault if package
+	* opkg_download.c (opkg_download_pkg): Fixed segfault if package
 	has no src, (occurs if package had benn installed locally, then
 	was removed (but not purged), then tried to reinstall eithout it
-	existing in any /usr/lib/ipkg/lists/* file).
+	existing in any /usr/lib/opkg/lists/* file).
 
-	* etc/ipkg.conf: Added a default ipkg.conf to the distribution.
+	* etc/opkg.conf: Added a default opkg.conf to the distribution.
 
 2002-03-13  Carl Worth  <cworth@east.isi.edu>
 
@@ -1006,14 +1006,14 @@
 	* RELEASE_NOTES: Added release notes for 0.99.7.
 
 	* pkg.c (pkg_run_script): Added support to export
-	IPKG_OFFLINE_ROOT. This is really a nasty hack as it means scripts
-	need to be modified to check IPKG_OFFLINE_ROOT. I'd really prefer
+	OPKG_OFFLINE_ROOT. This is really a nasty hack as it means scripts
+	need to be modified to check OPKG_OFFLINE_ROOT. I'd really prefer
 	coming up with a good, reliable chroot system. But for now this
 	will let update-alternatives work, (which already does examine
-	IPKG_OFFLINE_ROOT).
+	OPKG_OFFLINE_ROOT).
 	(pkg_run_script): Added missing brace.
 
-	* ipkg_conf.c (ipkg_conf_init): Reworked significantly to properly
+	* opkg_conf.c (opkg_conf_init): Reworked significantly to properly
 	set up the pkg_dest_list stuff to account for offline_root.
 
 	* args.c (args_parse): Added support for -force_defaults in
@@ -1026,12 +1026,12 @@
 
 	* RELEASE_NOTES: Added release notes for 0.99.6.
 
-	* ipkg_download.c (ipkg_download): Fixed bug in handling of
+	* opkg_download.c (opkg_download): Fixed bug in handling of
 	"file://" URLs.
 
-	* ipkg.c (main): Fixed to abort if ipkg_conf_init fails.
+	* opkg.c (main): Fixed to abort if opkg_conf_init fails.
 
-	* ipkg_conf.c (ipkg_conf_init): Fixed to complain if given an
+	* opkg_conf.c (opkg_conf_init): Fixed to complain if given an
 	unknown dest.
 
 	* pkg.c (pkg_print_field): Fixed several fields to not print if
@@ -1045,33 +1045,33 @@
 	* RELEASE_NOTES: Added release notes for 0.99.5.
 
 	* familiar/rules (binary-arch): Added strip back in in preparation
-	of non-unstable release of ipkg.
+	of non-unstable release of opkg.
 
 	* str_util.c (str_starts_with): Added convenience function.
 
 	* pkg_extract.c (pkg_extract_data_file_names_to_file): Fixed
 	filenames in *.list files to be compatible with dpkg and the old
-	ipkg, (no prefix of "." for example).
+	opkg, (no prefix of "." for example).
 
 	* pkg.c (pkg_run_script): Added export of PKG_ROOT for the benefit
 	of maintainer scripts.
 
-	* ipkg_remove.c (ipkg_remove_pkg): Complain and abort if user
+	* opkg_remove.c (opkg_remove_pkg): Complain and abort if user
 	attempts to remove an essential package, (also inform them of the
 	force option if they insist).
 
-	* ipkg_install.c (ipkg_install_pkg): Added message about whether
+	* opkg_install.c (opkg_install_pkg): Added message about whether
 	installing or upgrading.
 
-	* ipkg_download.c (ipkg_download): Added support for "file://"
+	* opkg_download.c (opkg_download): Added support for "file://"
 	URLs, (untested).
-	(ipkg_download): Added support for wget proxy options.
+	(opkg_download): Added support for wget proxy options.
 
-	* ipkg_conf.c (ipkg_conf_init): Added proxy support to ipkg_conf,
+	* opkg_conf.c (opkg_conf_init): Added proxy support to opkg_conf,
 	(http_proxy, ftp_proxy, no_proxy, proxy_user, and proxy_passwd).
 
-	* ipkg_cmd.c (ipkg_upgrade_pkg): Moved Upgrading message from
-	ipkg_upgrade_cmd to ipkg_install_pkg.
+	* opkg_cmd.c (opkg_upgrade_pkg): Moved Upgrading message from
+	opkg_upgrade_cmd to opkg_install_pkg.
 
 	* args.c (args_parse): Added new option
 	-force-removal-of-essential-packages, (which is intentionally
@@ -1100,7 +1100,7 @@
 	* pkg.c (pkg_merge): Made pkg_merge a NOP if oldpkg == newpkg.
 	(pkg_print_field): Don't print MD5sum field if NULL.
 
-	* ipkg_install.c (satisfy_dependencies_for): Now returns error
+	* opkg_install.c (satisfy_dependencies_for): Now returns error
 	status if one or more of the dependencies fail to install cleanly.
 	(unpack_pkg_control_files): Fixed to not tack on a bunch of
 	NULL-valued conffiles entries if non-NULL conffiles already
@@ -1109,15 +1109,15 @@
 	(unpack_pkg_control_files): Cleaned up conffile filenames to not
 	have ugly things like "///" inside them.
 
-	* ipkg_download.c (ipkg_download): Cleaned up error message.
-	(ipkg_download): Now uses new file_move function.
-	(ipkg_download_pkg): Created new function, (from old code in ipkg_install).
+	* opkg_download.c (opkg_download): Cleaned up error message.
+	(opkg_download): Now uses new file_move function.
+	(opkg_download_pkg): Created new function, (from old code in opkg_install).
 
-	* ipkg_cmd.c (ipkg_download_cmd): Added new "ipkg download"
+	* opkg_cmd.c (opkg_download_cmd): Added new "opkg download"
 	command.
 
 	* file_util.c (file_move): Created file_move, (from code that had
-	been in ipkg_download).
+	been in opkg_download).
 	(file_copy): Added error message on failure.
 
 	* conffile.c (conffile_has_been_modified): Eliminated crash if
@@ -1139,25 +1139,25 @@
 
 	* pkg_hash.c (pkg_hash_pkg_owning_file): Moved this function in
 	from pkg_dest.c. Also, updated it to use pkg_get_installed rather
-	than mucking around inside /usr/lib/ipkg and globbing for *.list
+	than mucking around inside /usr/lib/opkg and globbing for *.list
 	files.
 	(pkg_hash_fetch_best_installation_candidate): Fixed to only return
 	a package that actually could be installed, (ie. it must have
 	either a local_filename or a non-NULL src from which it could be
-	downloaded). This prevents a segfault during "ipkg upgrade".
+	downloaded). This prevents a segfault during "opkg upgrade".
 
 	* pkg.c (pkg_get_installed_files): Fixed to not do strange things
 	to filenames such as: "//./bin/sh"
 
-	* ipkg_cmd.c (ipkg_files_cmd): Added pkg_free_installed_files to
+	* opkg_cmd.c (opkg_files_cmd): Added pkg_free_installed_files to
 	conserve a bit of memory.
-	(ipkg_search_cmd): Updated to use pkg_get_installed rather than
-	mucking around inside /usr/lib/ipkg and globbing for *.list files.
+	(opkg_search_cmd): Updated to use pkg_get_installed rather than
+	mucking around inside /usr/lib/opkg and globbing for *.list files.
 
 	* pkg.c (pkg_free_installed_files): Added this function to free up
 	memory from pkg_get_installed_files.
 
-	* ipkg_conf.c (ipkg_conf_set_option): Added force_reinstall option
+	* opkg_conf.c (opkg_conf_set_option): Added force_reinstall option
 	to allow reinstallation of an installed package.
 
 	* args.c (args_parse): Added -force-reinstall option to enable
@@ -1169,7 +1169,7 @@
 	* busybox-0.60.2/libbb/unarchive.c (free_header_ar): Added
 	function to plug memory leak.
 
-	* ipkg_install.c (check_data_file_clashes): Fixed crash if no
+	* opkg_install.c (check_data_file_clashes): Fixed crash if no
 	package can be found owning the pre-existing file.
 
 	* pkg_dest.c (pkg_dest_deinit): Fixed bug that pkg_dest was
@@ -1225,13 +1225,13 @@
 	(pkg_print_status): Fixed pkg_print_status to work whether or not
 	the package is installed.
 
-	* ipkg_utils.c (read_raw_pkgs_from_file): Moved fclose out of
+	* opkg_utils.c (read_raw_pkgs_from_file): Moved fclose out of
 	read_raw_pkgs_from_stream and into this function where it belongs,
 	(since the fopen occurs here).
 	(trim_alloc): Fixed trim to not free data passed in. Changed the
 	name to make it obvious that it is allocating memory.
 
-	* ipkg_install.c (ipkg_install_from_file): Fixed to be more robust
+	* opkg_install.c (opkg_install_from_file): Fixed to be more robust
 	to the fact that hash_insert_pkg sometimes frees the data that I
 	pass into it (!).
 	(satisfy_dependencies_for): Cosmetic change to messages.
@@ -1240,7 +1240,7 @@
 	file if necessary.
 	(satisfy_dependencies_for): Added pkg_vec_deinit to plug memory
 	leak.
-	(ipkg_install_pkg): Added "run ipkg update?" hint to error
+	(opkg_install_pkg): Added "run opkg update?" hint to error
 	message.
 	(backup_modified_conffiles): Made more robust to the case that a
 	conffile has disappeared.
@@ -1251,50 +1251,50 @@
 	(cleanup_temporary_files): Added missing closedir to plug a memory
 	leak.
 
-	* ipkg_download.c (ipkg_download): Cosmetic change to error
+	* opkg_download.c (opkg_download): Cosmetic change to error
 	messages.
 
-	* ipkg_conf.c (ipkg_conf_parse_file): Plugged some small memory
+	* opkg_conf.c (opkg_conf_parse_file): Plugged some small memory
 	leaks.
-	(ipkg_conf_set_option): Changed configuration options from
+	(opkg_conf_set_option): Changed configuration options from
 	force-depends, force-defaults to force_depdends, force_defaults to
-	be compatible with old ipkg.conf files.
-	(ipkg_conf_set_option): Fixed bug in parsing options.
-	(ipkg_conf_write_status_files): Fixed to list all interesting
+	be compatible with old opkg.conf files.
+	(opkg_conf_set_option): Fixed bug in parsing options.
+	(opkg_conf_write_status_files): Fixed to list all interesting
 	packages, (any with non-default state), in status file rather than
 	just installed files.
-	(ipkg_conf_write_status_files): Plugged a memory leak.
+	(opkg_conf_write_status_files): Plugged a memory leak.
 
-	* ipkg_cmd.c (ipkg_status_cmd): Changed "ipkg status" to use
+	* opkg_cmd.c (opkg_status_cmd): Changed "opkg status" to use
 	pkg_print_info so it is much more verbose, (includes fields such
 	as Maintainer, etc. that are merged in from the lists files).
 
-	* ipkg.h (IPKG_DEBUG_NO_TMP_CLEANUP): Added compile-time option to
+	* opkg.h (OPKG_DEBUG_NO_TMP_CLEANUP): Added compile-time option to
 	preserve temporary files for easier debugging.
 
 	* file_util.c (file_md5sum_alloc): cosmetic changes to variable
 	names.
 	
-	* ipkg_conf.c (ipkg_conf_init): Added support for offline_root
+	* opkg_conf.c (opkg_conf_init): Added support for offline_root
 	configuration file option.
 
 	* args.c (args_init): Added support for -o, -offline,
 	-offline-root command-line arguments. (Although they don't really
 	have any effect yet).
 
-	* ipkg_install.c (ipkg_install_pkg): Changed back to marking
+	* opkg_install.c (opkg_install_pkg): Changed back to marking
 	package as installed before postinst, (the pkg_run_script wanted
-	to find the scripts in /usr/lib/ipkg/info). Actually, it could
+	to find the scripts in /usr/lib/opkg/info). Actually, it could
 	probably find the script in either place at this point so maybe it
 	doesn't really matter.
 
 2002-03-07  Carl Worth  <cworth@east.isi.edu>
 
-	* ipkg_install.c (ipkg_install_pkg): Changed to only mark package
-	as installed after running ipkg_configure, (to run the postinst
+	* opkg_install.c (opkg_install_pkg): Changed to only mark package
+	as installed after running opkg_configure, (to run the postinst
 	script).
 
-	* RELEASED ipkg-unstable 0.99.0
+	* RELEASED opkg-unstable 0.99.0
 
 	* Updated all instances of "XXX" in the code to indicate one of
 	the following categories:
@@ -1304,43 +1304,43 @@
 	XXX: FEATURE: Comment describes a useful feature request.
 	
 	* pkg.c (pkg_print_status): Added the Depends field to package
-	paragraphs in the status file, ("ipkg remove" will need this).
+	paragraphs in the status file, ("opkg remove" will need this).
 
-	* ipkg_install.c (satisfy_dependencies_for): Fixed "ipkg install"
+	* opkg_install.c (satisfy_dependencies_for): Fixed "opkg install"
 	to not complain several times about "Package foo already
 	installed" when doing large recursive installs.
-	(ipkg_install_pkg): "ipkg install foo" for an installed package
+	(opkg_install_pkg): "opkg install foo" for an installed package
 	will now check and install any missing dependencies before exiting
 	with "Package foo is alrady installed."
 
 2002-03-06  Carl Worth  <cworth@east.isi.edu>
 
 	* pkg_dest.c (pkg_dest_pkg_owning_file_alloc): Moved this function
-	here from ipkg_install.c. Also plugged a memory leak in it with
+	here from opkg_install.c. Also plugged a memory leak in it with
 	globfree.
 
 	* pkg.c (pkg_remove_installed_files_list): Fixed bug that
-	prevented package.list file from ever being removed during "ipkg
+	prevented package.list file from ever being removed during "opkg
 	remove".
 
-	* ipkg_remove.c (remove_data_files_and_list): Fixed noisy and
-	spurious warnings about non-empty directories. "ipkg remove"
+	* opkg_remove.c (remove_data_files_and_list): Fixed noisy and
+	spurious warnings about non-empty directories. "opkg remove"
 	should now only say anything if a directory that was solely
 	provided by that package is non-empty.
 
-	* ipkg_cmd.c (ipkg_install_pending_cmd): Plugged memory leak with
+	* opkg_cmd.c (opkg_install_pending_cmd): Plugged memory leak with
 	globfree.
 
-	* ipkg_install.c: *Many* fixes to enable "ipkg upgrade" to more or
+	* opkg_install.c: *Many* fixes to enable "opkg upgrade" to more or
 	less work. Primarily fixing file clash identification and conffile
-	handling/resolution. "ipkg upgrade" has now worked correctly on
+	handling/resolution. "opkg upgrade" has now worked correctly on
 	several test cases!
 
-	* ipkg_install.c (unpack_pkg_control_files): Now initializes
+	* opkg_install.c (unpack_pkg_control_files): Now initializes
 	conffiles list from the contents of conffiles control file,
 	(leaves md5sum calculation until the actual conffiles are
 	extracted later).
-	(ipkg_install_pkg): Separated backup_modified_conffiles and
+	(opkg_install_pkg): Separated backup_modified_conffiles and
 	check_data_file_clashes into separate functions.
 	(preinst_configure): Simplified this function pushing its old
 	logic into pkg.c:pkg_run_script.
@@ -1394,10 +1394,10 @@
 	* pkg.c (pkg_print_field): Added support for printing Conffiles
 	field.
 
-	* ipkg_install.c (remove_obsolesced_files): With the fixed
+	* opkg_install.c (remove_obsolesced_files): With the fixed
 	pkg_get_installed_files_list from below, this function now seems
 	to work!
-	(ipkg_install_pkg): Fixed to mark old package as uninstalled after
+	(opkg_install_pkg): Fixed to mark old package as uninstalled after
 	upgrading.
 
 	* pkg.c (pkg_get_installed_files_list): Fixed so that it's
@@ -1405,9 +1405,9 @@
 	package, (it pulls the list of data files straight out of the
 	package).
 
-	* ipkg_cmd.c (ipkg_upgrade_cmd): Fixed ipkg_upgrade to not choke
+	* opkg_cmd.c (opkg_upgrade_cmd): Fixed opkg_upgrade to not choke
 	if asked to upgrade an un-installed package.
-	(ipkg_upgrade_pkg): Fixed printing of version numbers.
+	(opkg_upgrade_pkg): Fixed printing of version numbers.
 
 	* file_util.c (file_mkdir_hier): Abstracted call to libbb
 	make_directory into new file_mkdir_hier. At this point, the only
@@ -1420,12 +1420,12 @@
 
 2002-03-04  Carl Worth  <cworth@east.isi.edu>
 
-	* ipkg_conf.c (ipkg_conf_init): Added support to ipkg_conf to
+	* opkg_conf.c (opkg_conf_init): Added support to opkg_conf to
 	pickup command-line arguments for "force-defaults" and
 	"force-depends". Things set on the command-line should take
 	precedence over things found in the configuration file.
 
-	* ipkg_cmd.c (ipkg_search_cmd): Fixed formatting of "ipkg search"
+	* opkg_cmd.c (opkg_search_cmd): Fixed formatting of "opkg search"
 	output.
 
 	* pkg_depends.c (pkg_hash_fetch_unsatisfied_dependencies):
@@ -1434,37 +1434,37 @@
 	* xregex.c (xregexec): Removed useless error messages from NOMATCH
 	calls to regexec.
 
-	* ipkg_install.c (satisfy_dependencies_for): Added support for new
+	* opkg_install.c (satisfy_dependencies_for): Added support for new
 	"unresolved" argument in
 	pkg_hash_fetch_unsatisfied_dependencies. Cleaned up warning/error
 	messages.
 
-	* ipkg_cmd.c (ipkg_search_cmd): Implemented first-cut of "ipkg search".
+	* opkg_cmd.c (opkg_search_cmd): Implemented first-cut of "opkg search".
 
 	* pkg_depends.c (pkg_hash_fetch_unsatisfied_dependencies): Fixed
 	to set *unresolved to NULL if depends is NULL.
 
 2002-03-01  Carl Worth  <cworth@east.isi.edu>
 
-	* RELEASED ipkg-unstable 0.98.0
+	* RELEASED opkg-unstable 0.98.0
 
-	* ipkg_configure.c (ipkg_configure): Added flushing of stdout,
+	* opkg_configure.c (opkg_configure): Added flushing of stdout,
 	(here and in a few other modules).
 
 	* file_util.c (file_copy): Implemented this function here as one
 	step toward isolating the calls into libbb functions. Updated old
-	copy_file calls to file_copy in both ipkg_download.c and
-	ipkg_install.c.
+	copy_file calls to file_copy in both opkg_download.c and
+	opkg_install.c.
 
-	* ipkg_install.c, ipkg_remove.c: Demoted several "XXX" comments to
+	* opkg_install.c, opkg_remove.c: Demoted several "XXX" comments to
 	DPKG_INCOMPATIBILITY as I really don't intend on addressing them
 	any time soon, (if ever).
 
-	* ipkg_cmd.c (ipkg_files_cmd): Fixed "ipkg files" from crashing on
+	* opkg_cmd.c (opkg_files_cmd): Fixed "opkg files" from crashing on
 	uninstalled packages.
 
 	* familiar/rules: Added support for easy building of an
-	ipkg.ipk. The version number and the architecture are
+	opkg.ipk. The version number and the architecture are
 	automatically sucked in correctly from autoconf magic, (even when
 	cross-compiling). Maybe autoconf will start paying off with
 	benefits rather than pain, (finally!).
@@ -1472,28 +1472,28 @@
 	* configure.ac: Removed MEMCMP and STAT checks which were breaking
 	cross-compilation.
 
-	* ipkg_cmd.c (ipkg_upgrade_pkg): BIG bugfix: Package version
+	* opkg_cmd.c (opkg_upgrade_pkg): BIG bugfix: Package version
 	comparison was sign-reversed, (hence it would never upgrade).
 
 2002-02-28  Carl Worth  <cworth@east.isi.edu>
 
-	* ipkg_download.c (ipkg_download): Changed from
+	* opkg_download.c (opkg_download): Changed from
 	system("/bin/cp",...) to copy_file(...)
 
 	* replace/strndup.c: Implemented an (untested) replacement for
 	strndup.
 
 	* configure.ac: Added AC_CANONICAL_HOST to automatically set the
-	correct architecture type in the ipkg control file.
+	correct architecture type in the opkg control file.
 
 	* configure.ac: Changed version number to 0.98.0 in preparation
 	for alpha release.
 
-	* familiar/rules: Added support for easy building of an ipkg.ipk.
+	* familiar/rules: Added support for easy building of an opkg.ipk.
 
 2002-02-27  Carl Worth  <cworth@east.isi.edu>
 
-	* ipkg_install.c (ipkg_install_pkg): Fixed to abort on failed
+	* opkg_install.c (opkg_install_pkg): Fixed to abort on failed
 	download.
 
 	* pkg.c (pkg_run_script): Fixed bug that was preventing any
@@ -1505,7 +1505,7 @@
 	schedule.
 
 	* pkg_parse.c (pkg_parse_raw): Added parsing of "MD5Sum" in
-	addition to "MD5sum" to accomodate bug in old ipkg.
+	addition to "MD5sum" to accomodate bug in old opkg.
 
 	* void_list.c (void_list_remove): Added new remove function, (also
 	adjusts a forward iterator). Required new list->pre_head member
@@ -1514,26 +1514,26 @@
 	* pkg.c (pkg_init): Changed pkg->conffiles to be of the new
 	conffile_list_t datatype.
 	(pkg_remove_installed_files_list): Pulled this function into
-	pkg.c, (from ipkg_remove.c), so the mallocs and frees would be in
+	pkg.c, (from opkg_remove.c), so the mallocs and frees would be in
 	the same C file.
 	(pkg_get_conffile): Added this convenience function.
 
-	* ipkg_remove.c: Fixed several bugs. ipkg_remove now actually
+	* opkg_remove.c: Fixed several bugs. opkg_remove now actually
 	works for simple packages!
 
-	* ipkg_install.c (ipkg_install_pkg): Don't re-install if a package
+	* opkg_install.c (opkg_install_pkg): Don't re-install if a package
 	is already installed.
-	(ipkg_install_pkg): Fixed major bug that all of ipkg_install's
+	(opkg_install_pkg): Fixed major bug that all of opkg_install's
 	work was always being unwound even when successful.
 
-	* ipkg_cmd.c (ipkg_files_cmd): Fixed to use
+	* opkg_cmd.c (opkg_files_cmd): Fixed to use
 	pkg_get_installed_files_list rather than a private implementation
 	that sifted through the file lists on disk.
 
 	* str_util.c (str_ends_with): Added this convenient function.
 	(str_chomp): Another convenience.
 
-	* ipkg_conf.c: Moved chomp to str_util.c (str_chomp), since
+	* opkg_conf.c: Moved chomp to str_util.c (str_chomp), since
 	someone else wanted it too.
 
 2002-02-26  Carl Worth  <cworth@east.isi.edu>
@@ -1555,42 +1555,42 @@
 	* pkg.c (pkg_run_script): Changed to return return value of
 	script.
 
-	* ipkg_remove.c: Fleshed out initial version of all ipkg_remove.c
+	* opkg_remove.c: Fleshed out initial version of all opkg_remove.c
 	functions.
 
-	* ipkg_configure.c (ipkg_configure): Added check on return value
+	* opkg_configure.c (opkg_configure): Added check on return value
 	of pkg_run script. Added comments about dpkg compliance.
 
-	* ipkg_cmd.c (ipkg_purge_cmd): Added ipkg_purge_cmd
+	* opkg_cmd.c (opkg_purge_cmd): Added opkg_purge_cmd
 
 2002-02-20  Carl Worth  <cworth@east.isi.edu>
 
 	* Added USC copyright statements, (and Compaq stubs as necessary)
 
-	* ipkg_install.c: At this point "ipkg install" on a simple
+	* opkg_install.c: At this point "opkg install" on a simple
 	package, (no scripts and no dependencies), works just fine. It
 	might even do some of the script and dependency handling correctly
-	too, but I haven't tested that yet. "ipkg install libc6" is a nice
+	too, but I haven't tested that yet. "opkg install libc6" is a nice
 	little test that should complete without any errors or
-	warnings. Follow that up with "ipkg status" to see that it worked.
+	warnings. Follow that up with "opkg status" to see that it worked.
 
 	* pkg.c (pkg_run_script): Added convenience method for running
 	package scripts.
 
-	* ipkg_install.c: Fixed several bugs:
+	* opkg_install.c: Fixed several bugs:
 	(unpack_pkg_control_files): control files now extract to the
 	correct temporary directory.
-	(ipkg_install_pkg): pkg->state_want is now properly set to SW_INSTALL
-	(ipkg_install_pkg): status file now gets written after installation
+	(opkg_install_pkg): pkg->state_want is now properly set to SW_INSTALL
+	(opkg_install_pkg): status file now gets written after installation
 	(cleanup_temporary_files): All temporary files are cleaned up.
 
-	* ipkg_configure.c (ipkg_configure): Fleshed out a very simple
-	ipkg_configure, (simply runs "postinst configure"). Maybe it will
+	* opkg_configure.c (opkg_configure): Fleshed out a very simple
+	opkg_configure, (simply runs "postinst configure"). Maybe it will
 	need to be smarter at some point. Moved unwritten conffiles stuff
-	back to ipkg_install.c.
+	back to opkg_install.c.
 
-	* ipkg_conf.c (ipkg_conf_write_status_files): Moved this function
-	from ipkg_utils to ipkg_conf since it needs access to the
+	* opkg_conf.c (opkg_conf_write_status_files): Moved this function
+	from opkg_utils to opkg_conf since it needs access to the
 	pkg_dest_list.
 
 	* pkg_vec.c (marry_two_packages): Added several missing fields,
@@ -1600,29 +1600,29 @@
 
 2002-02-19  Carl Worth  <cworth@east.isi.edu>
 
-	* ipkg_install.c: several little bug fixes. "ipkg install" will
+	* opkg_install.c: several little bug fixes. "opkg install" will
 	now actually install files from a package! There are still some
 	bugs, (eg. postinst scripts are not called -- probably other
 	things as well). But, it's coming together now.
 
 	* pkg_dest.c (pkg_dest_init): now creates all necessary directories
 
-	* ipkg_download.c (ipkg_download): Fixed misleading parameter name.
+	* opkg_download.c (opkg_download): Fixed misleading parameter name.
 
-	* ipkg_conf.c (ipkg_conf_deinit): Now cleans up tmd_dir on deinit
-	ipkg.c: now calls ipkg_conf_deinit before exiting.
-	(ipkg_conf_add_nv): Fixed to set default_dest when parsing first
-	dest in ipkg.conf
+	* opkg_conf.c (opkg_conf_deinit): Now cleans up tmd_dir on deinit
+	opkg.c: now calls opkg_conf_deinit before exiting.
+	(opkg_conf_add_nv): Fixed to set default_dest when parsing first
+	dest in opkg.conf
 
-	* ipkg_cmd.c (ipkg_list_cmd): Fixed ugly bug in ipkg_list that led
+	* opkg_cmd.c (opkg_list_cmd): Fixed ugly bug in opkg_list that led
 	to infinite loops, segfaults, string corruption, and other bizarre
 	behavior.
 
-	* Added many files as we are approaching the first functional ipkg
+	* Added many files as we are approaching the first functional opkg
 	implementation in C:
 	file_util.c: convenience for testing if file_exists, reading files, etc.
-	ipkg_configure.c: mostly just a stub so far
-	ipkg_download.c: convenient function to download a file
+	opkg_configure.c: mostly just a stub so far
+	opkg_download.c: convenient function to download a file
 	nv_pair.c: data structure to hold a name-value pair
 	nv_pair_list.c: data structure to hold a list of nv_pair_t
 	pkg_dest.c: data structure for everything a pkg destination wants
@@ -1636,36 +1636,36 @@
 	void_list.c: generic linked-list data structure and functions
 	xsystem.c: wrapper around system() with error checking
 
-	* ipkg_remove.c: Just added some stubs. Nothing really works at
+	* opkg_remove.c: Just added some stubs. Nothing really works at
 	all yet.
 
-	* ipkg_install.c: Large rework of ipkg_install. It's now close to
+	* opkg_install.c: Large rework of opkg_install. It's now close to
 	actually being usable, (but it's not quite there yet). Revamped to
 	match dpkg install order more closely, (with all the stubs in case
 	we ever want to call all the scripts that dpkg does). Also updated
 	to use a more recent deb_extract from libbb.
 
-	* ipkg_extract_test.c (main): Added support for a third arg, (the
+	* opkg_extract_test.c (main): Added support for a third arg, (the
 	filename to extract to the buffer).
 
-	* ipkg_conf.c (ipkg_conf_init): Added several fields to
-	ipkg_conf_t: pkg_src_list, pkg_dest_list ,
+	* opkg_conf.c (opkg_conf_init): Added several fields to
+	opkg_conf_t: pkg_src_list, pkg_dest_list ,
 	restrict_to_default_dest, default_dest, tmp_dir, lists_dir,
 	pending_dir, force_depends, and pkg_hash. There's still a bit of
-	tension between options stored in the config file, (ipkg_conf_t),
+	tension between options stored in the config file, (opkg_conf_t),
 	and command-line arguments, (args_t).
 
-	* ipkg_cmd.c: First version that is approaching usability. The
-	following commands are more-or-less in place: "ipkg update", "ipkg
-	list", "ipkg info", "ipkg status". While the rest are in various
+	* opkg_cmd.c: First version that is approaching usability. The
+	following commands are more-or-less in place: "opkg update", "opkg
+	list", "opkg info", "opkg status". While the rest are in various
 	states of being partiallyy written or written but untested.
-	(ipkg_upgrade_cmd): Added support for restricting to a dest.  Many
+	(opkg_upgrade_cmd): Added support for restricting to a dest.  Many
 	other changes, largely involving plugging into the pkg_hash for
 	real for the first time, and adding multiple dest support.
 
-	* ipkg.c: Added support for setting the dest on the command-line.
+	* opkg.c: Added support for setting the dest on the command-line.
 
-	* args.c: Added support for IPKG_CONF_DIR environment variable and
+	* args.c: Added support for OPKG_CONF_DIR environment variable and
 	-f, -conf, and -conf-file options.
 
 	* configure.ac: Added lots of little bits suggested by autoscan.
@@ -1729,13 +1729,13 @@
 	(pkg_hash_fetch_installed_by_name_dest): Added this function to
 	support pkg_dest
 
-	* ipkg_utils.h: Added GPL blurb
-	(IPKG_UTILS_H): Added multiple include protection
+	* opkg_utils.h: Added GPL blurb
+	(OPKG_UTILS_H): Added multiple include protection
 
-	* ipkg_utils.c:
+	* opkg_utils.c:
 	(read_raw_pkgs_from_file): broke read_raw_pkgs into
 	read_raw_pkgs_from_file and read_raw-pkgs_from_stream
-	(ipkg_write_status_file): Fixed return value
+	(opkg_write_status_file): Fixed return value
 	(print_pkg_status): Moved this function to pkg.c:pkg_print_status
 	(line_is_blank): Fixed const char handling
 
@@ -1750,12 +1750,12 @@
 
 2001-12-11  Carl Worth  <cworth@east.isi.edu>
 
-	* ipkg_conf.c: Now parses /etc/ipkg.conf, (and doesn't do anything
+	* opkg_conf.c: Now parses /etc/opkg.conf, (and doesn't do anything
 	with it).
 
-	* ipkg.c: Started work on ipkg main, (not much here yet).
+	* opkg.c: Started work on opkg main, (not much here yet).
 
-	* ipkg_cmd.h: Added a tiny thing to abstract top-level ipkg
+	* opkg_cmd.h: Added a tiny thing to abstract top-level opkg
 	commands, (not finished).
 
 	* Set up autoconf and friends

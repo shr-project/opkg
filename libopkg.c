@@ -1,4 +1,4 @@
-/* ipkglib.c - the itsy package management system
+/* opkglib.c - the itsy package management system
 
    Florina Boor
 
@@ -15,32 +15,32 @@
    General Public License for more details.
 */
 
-#ifdef IPKG_LIB
+#ifdef OPKG_LIB
 
-#include "ipkg.h"
+#include "opkg.h"
 #include "includes.h"
-#include "libipkg.h"
+#include "libopkg.h"
 
 #include "args.h"
-#include "ipkg_conf.h"
-#include "ipkg_cmd.h"
+#include "opkg_conf.h"
+#include "opkg_cmd.h"
 #include "file_util.h"
 
 
 
-ipkg_message_callback ipkg_cb_message = NULL;
-ipkg_response_callback ipkg_cb_response = NULL;
-ipkg_status_callback ipkg_cb_status = NULL;
-ipkg_list_callback ipkg_cb_list = NULL;
+opkg_message_callback opkg_cb_message = NULL;
+opkg_response_callback opkg_cb_response = NULL;
+opkg_status_callback opkg_cb_status = NULL;
+opkg_list_callback opkg_cb_list = NULL;
 
 
 int
-ipkg_init (ipkg_message_callback mcall, 
-           ipkg_response_callback rcall,
+opkg_init (opkg_message_callback mcall, 
+           opkg_response_callback rcall,
            args_t * args)
 {
-	ipkg_cb_message = mcall;
-	ipkg_cb_response = rcall;
+	opkg_cb_message = mcall;
+	opkg_cb_response = rcall;
 
 	args_init (args);
 
@@ -49,11 +49,11 @@ ipkg_init (ipkg_message_callback mcall,
 
 
 int
-ipkg_deinit (args_t * args)
+opkg_deinit (args_t * args)
 {
 	args_deinit (args);
-	ipkg_cb_message = NULL;
-	ipkg_cb_response = NULL;
+	opkg_cb_message = NULL;
+	opkg_cb_response = NULL;
 
 	/* place other cleanup stuff here */
 
@@ -62,111 +62,111 @@ ipkg_deinit (args_t * args)
 
 
 int
-ipkg_packages_list(args_t *args, 
+opkg_packages_list(args_t *args, 
                    const char *packages, 
-                   ipkg_list_callback cblist,
+                   opkg_list_callback cblist,
                    void *userdata)
 {
-	ipkg_cmd_t *cmd;
-	ipkg_conf_t ipkg_conf;
+	opkg_cmd_t *cmd;
+	opkg_conf_t opkg_conf;
 	int err;
 
-	err = ipkg_conf_init (&ipkg_conf, args);
+	err = opkg_conf_init (&opkg_conf, args);
 	if (err)
 	{
 		return err;
 	}
 
-	ipkg_cb_list = cblist;
+	opkg_cb_list = cblist;
 	/* we need to do this because of static declarations, 
 	 * maybe a good idea to change */
-	cmd = ipkg_cmd_find ("list");
+	cmd = opkg_cmd_find ("list");
 	if (packages)
-		err = ipkg_cmd_exec (cmd, &ipkg_conf, 1, &packages, userdata);
+		err = opkg_cmd_exec (cmd, &opkg_conf, 1, &packages, userdata);
 	else
-		err = ipkg_cmd_exec (cmd, &ipkg_conf, 0, NULL, userdata);
-	ipkg_cb_list = NULL;
-	ipkg_conf_deinit (&ipkg_conf);
+		err = opkg_cmd_exec (cmd, &opkg_conf, 0, NULL, userdata);
+	opkg_cb_list = NULL;
+	opkg_conf_deinit (&opkg_conf);
 	return (err);
 }
 
 
 int
-ipkg_packages_status(args_t *args,
+opkg_packages_status(args_t *args,
                      const char *packages,
-                     ipkg_status_callback cbstatus,
+                     opkg_status_callback cbstatus,
                      void *userdata)
 {
-	ipkg_cmd_t *cmd;
-	ipkg_conf_t ipkg_conf;
+	opkg_cmd_t *cmd;
+	opkg_conf_t opkg_conf;
 	int err;
 
-	err = ipkg_conf_init (&ipkg_conf, args);
+	err = opkg_conf_init (&opkg_conf, args);
 	if (err)
 	{
 		return err;
 	}
 
-	ipkg_cb_status = cbstatus;
+	opkg_cb_status = cbstatus;
 
 	/* we need to do this because of static declarations,
 	 * maybe a good idea to change */
-	cmd = ipkg_cmd_find ("status");
+	cmd = opkg_cmd_find ("status");
 	if (packages)
-		err = ipkg_cmd_exec (cmd, &ipkg_conf, 1, &packages, userdata);
+		err = opkg_cmd_exec (cmd, &opkg_conf, 1, &packages, userdata);
 	else
-		err = ipkg_cmd_exec (cmd, &ipkg_conf, 0, NULL, userdata);
+		err = opkg_cmd_exec (cmd, &opkg_conf, 0, NULL, userdata);
 
-	ipkg_cb_status = NULL;
-	ipkg_conf_deinit (&ipkg_conf);
+	opkg_cb_status = NULL;
+	opkg_conf_deinit (&opkg_conf);
 	return (err);
 }
 
 
 int
-ipkg_packages_info(args_t *args,
+opkg_packages_info(args_t *args,
                    const char *packages,
-                   ipkg_status_callback cbstatus,
+                   opkg_status_callback cbstatus,
                    void *userdata)
 {
-	ipkg_cmd_t *cmd;
-	ipkg_conf_t ipkg_conf;
+	opkg_cmd_t *cmd;
+	opkg_conf_t opkg_conf;
 	int err;
 
-	err = ipkg_conf_init (&ipkg_conf, args);
+	err = opkg_conf_init (&opkg_conf, args);
 	if (err)
 	{
 		return err;
 	}
 
-	ipkg_cb_status = cbstatus;
+	opkg_cb_status = cbstatus;
 
 	/* we need to do this because of static declarations,
 	 * maybe a good idea to change */
-	cmd = ipkg_cmd_find ("info");
+	cmd = opkg_cmd_find ("info");
 	if (packages)
-		err = ipkg_cmd_exec (cmd, &ipkg_conf, 1, &packages, userdata);
+		err = opkg_cmd_exec (cmd, &opkg_conf, 1, &packages, userdata);
 	else
-		err = ipkg_cmd_exec (cmd, &ipkg_conf, 0, NULL, userdata);
+		err = opkg_cmd_exec (cmd, &opkg_conf, 0, NULL, userdata);
 
-	ipkg_cb_status = NULL;
-	ipkg_conf_deinit (&ipkg_conf);
+	opkg_cb_status = NULL;
+	opkg_conf_deinit (&opkg_conf);
 	return (err);
 }
 
 
 int
-ipkg_packages_install (args_t * args, const char *name)
+opkg_packages_install (args_t * args, const char *name)
 {
-	ipkg_cmd_t *cmd;
-	ipkg_conf_t ipkg_conf;
+	opkg_cmd_t *cmd;
+	opkg_conf_t opkg_conf;
 	int err;
 
 	/* this error should be handled in application */
 	if (!name || !strlen (name))
 		return (-1);
 
-	err = ipkg_conf_init (&ipkg_conf, args);
+	err = opkg_conf_init (&opkg_conf, args);
 	if (err)
 	{
 		return err;
@@ -174,26 +174,26 @@ ipkg_packages_install (args_t * args, const char *name)
 
 	/* we need to do this because of static declarations,
 	 * maybe a good idea to change */
-	cmd = ipkg_cmd_find ("install");
-	err = ipkg_cmd_exec (cmd, &ipkg_conf, 1, &name, NULL);
+	cmd = opkg_cmd_find ("install");
+	err = opkg_cmd_exec (cmd, &opkg_conf, 1, &name, NULL);
 
-	ipkg_conf_deinit(&ipkg_conf);
+	opkg_conf_deinit(&opkg_conf);
 	return (err);
 }
 
 
 int
-ipkg_packages_remove(args_t *args, const char *name, int purge)
+opkg_packages_remove(args_t *args, const char *name, int purge)
 {
-	ipkg_cmd_t *cmd;
-	ipkg_conf_t ipkg_conf;
+	opkg_cmd_t *cmd;
+	opkg_conf_t opkg_conf;
 	int err;
 
 	/* this error should be handled in application */
 	if (!name || !strlen (name))
 		return (-1);
 
-	err = ipkg_conf_init (&ipkg_conf, args);
+	err = opkg_conf_init (&opkg_conf, args);
 	if (err)
 	{
 		return err;
@@ -202,25 +202,25 @@ ipkg_packages_remove(args_t *args, const char *name, int purge)
 	/* we need to do this because of static declarations, 
 	 * maybe a good idea to change */
 	if (purge)
-		cmd = ipkg_cmd_find ("purge");
+		cmd = opkg_cmd_find ("purge");
 	else
-		cmd = ipkg_cmd_find ("remove");
+		cmd = opkg_cmd_find ("remove");
 
-	err = ipkg_cmd_exec (cmd, &ipkg_conf, 1, &name, NULL);
+	err = opkg_cmd_exec (cmd, &opkg_conf, 1, &name, NULL);
 	
-	ipkg_conf_deinit(&ipkg_conf);
+	opkg_conf_deinit(&opkg_conf);
 	return (err);
 }
 
 
 int 
-ipkg_lists_update(args_t *args)
+opkg_lists_update(args_t *args)
 {
-	ipkg_cmd_t *cmd;
-	ipkg_conf_t ipkg_conf;
+	opkg_cmd_t *cmd;
+	opkg_conf_t opkg_conf;
 	int err;
 
-	err = ipkg_conf_init (&ipkg_conf, args);
+	err = opkg_conf_init (&opkg_conf, args);
 	if (err)
 	{
 		return err;
@@ -228,23 +228,23 @@ ipkg_lists_update(args_t *args)
 
 	/* we need to do this because of static declarations, 
 	 * maybe a good idea to change */
-	cmd = ipkg_cmd_find ("update");
+	cmd = opkg_cmd_find ("update");
 
-	err = ipkg_cmd_exec (cmd, &ipkg_conf, 0, NULL, NULL);
+	err = opkg_cmd_exec (cmd, &opkg_conf, 0, NULL, NULL);
 	
-	ipkg_conf_deinit(&ipkg_conf);
+	opkg_conf_deinit(&opkg_conf);
 	return (err);
 }
 
 
 int 
-ipkg_packages_upgrade(args_t *args)
+opkg_packages_upgrade(args_t *args)
 {
-	ipkg_cmd_t *cmd;
-	ipkg_conf_t ipkg_conf;
+	opkg_cmd_t *cmd;
+	opkg_conf_t opkg_conf;
 	int err;
 
-	err = ipkg_conf_init (&ipkg_conf, args);
+	err = opkg_conf_init (&opkg_conf, args);
 	if (err)
 	{
 		return err;
@@ -252,27 +252,27 @@ ipkg_packages_upgrade(args_t *args)
 
 	/* we need to do this because of static declarations, 
 	 * maybe a good idea to change */
-	cmd = ipkg_cmd_find ("upgrade");
+	cmd = opkg_cmd_find ("upgrade");
 
-	err = ipkg_cmd_exec (cmd, &ipkg_conf, 0, NULL, NULL);
+	err = opkg_cmd_exec (cmd, &opkg_conf, 0, NULL, NULL);
 	
-	ipkg_conf_deinit(&ipkg_conf);
+	opkg_conf_deinit(&opkg_conf);
 	return (err);
 }
 
 
 int
-ipkg_packages_download (args_t * args, const char *name)
+opkg_packages_download (args_t * args, const char *name)
 {
-	ipkg_cmd_t *cmd;
-	ipkg_conf_t ipkg_conf;
+	opkg_cmd_t *cmd;
+	opkg_conf_t opkg_conf;
 	int err;
 
 	/* this error should be handled in application */
 	if (!name || !strlen (name))
 		return (-1);
 
-	err = ipkg_conf_init (&ipkg_conf, args);
+	err = opkg_conf_init (&opkg_conf, args);
 	if (err)
 	{
 		return err;
@@ -280,93 +280,93 @@ ipkg_packages_download (args_t * args, const char *name)
 
 	/* we need to do this because of static declarations,
 	 * maybe a good idea to change */
-	cmd = ipkg_cmd_find ("download");
-	err = ipkg_cmd_exec (cmd, &ipkg_conf, 1, &name, NULL);
+	cmd = opkg_cmd_find ("download");
+	err = opkg_cmd_exec (cmd, &opkg_conf, 1, &name, NULL);
 
-	ipkg_conf_deinit(&ipkg_conf);
+	opkg_conf_deinit(&opkg_conf);
 	return (err);
 }
 
 
 int
-ipkg_package_files(args_t *args, 
+opkg_package_files(args_t *args, 
                    const char *name, 
-                   ipkg_list_callback cblist,
+                   opkg_list_callback cblist,
                    void *userdata)
 {
-	ipkg_cmd_t *cmd;
-	ipkg_conf_t ipkg_conf;
+	opkg_cmd_t *cmd;
+	opkg_conf_t opkg_conf;
 	int err;
 
 	/* this error should be handled in application */
 	if (!name || !strlen (name))
 		return (-1);
 
-	err = ipkg_conf_init (&ipkg_conf, args);
+	err = opkg_conf_init (&opkg_conf, args);
 	if (err)
 	{
 		return err;
 	}
 
-	ipkg_cb_list = cblist;
+	opkg_cb_list = cblist;
 	
 	/* we need to do this because of static declarations, 
 	 * maybe a good idea to change */
-	cmd = ipkg_cmd_find ("files");
+	cmd = opkg_cmd_find ("files");
 
-	err = ipkg_cmd_exec (cmd, &ipkg_conf, 1, &name, userdata);
+	err = opkg_cmd_exec (cmd, &opkg_conf, 1, &name, userdata);
 	
-	ipkg_cb_list = NULL;
-	ipkg_conf_deinit(&ipkg_conf);
+	opkg_cb_list = NULL;
+	opkg_conf_deinit(&opkg_conf);
 	return (err);
 }
 
 
 int 
-ipkg_file_search(args_t *args, 
+opkg_file_search(args_t *args, 
                 const char *file,
-				ipkg_list_callback cblist,
+				opkg_list_callback cblist,
                 void *userdata)
 {
-	ipkg_cmd_t *cmd;
-	ipkg_conf_t ipkg_conf;
+	opkg_cmd_t *cmd;
+	opkg_conf_t opkg_conf;
 	int err;
 	
 	/* this error should be handled in application */
 	if (!file || !strlen (file))
 		return (-1);
 
-	err = ipkg_conf_init (&ipkg_conf, args);
+	err = opkg_conf_init (&opkg_conf, args);
 	if (err)
 	{
 		return err;
 	}
 
-	ipkg_cb_list = cblist;
+	opkg_cb_list = cblist;
 
 	/* we need to do this because of static declarations, 
 	 * maybe a good idea to change */
-	cmd = ipkg_cmd_find ("search");
-	err = ipkg_cmd_exec (cmd, &ipkg_conf, 1, &file, userdata);
+	cmd = opkg_cmd_find ("search");
+	err = opkg_cmd_exec (cmd, &opkg_conf, 1, &file, userdata);
 	
-	ipkg_cb_list = NULL;
-	ipkg_conf_deinit(&ipkg_conf);
+	opkg_cb_list = NULL;
+	opkg_conf_deinit(&opkg_conf);
 	return(err);
 }
 
 
 int 
-ipkg_file_what(args_t *args, const char *file, const char* command)
+opkg_file_what(args_t *args, const char *file, const char* command)
 {
-	ipkg_cmd_t *cmd;
-	ipkg_conf_t ipkg_conf;
+	opkg_cmd_t *cmd;
+	opkg_conf_t opkg_conf;
 	int err;
 	
 	/* this error should be handled in application */
 	if (!file || !strlen (file))
 		return (-1);
 
-	err = ipkg_conf_init (&ipkg_conf, args);
+	err = opkg_conf_init (&opkg_conf, args);
 	if (err)
 	{
 		return err;
@@ -374,28 +374,28 @@ ipkg_file_what(args_t *args, const char *file, const char* command)
 
 	/* we need to do this because of static declarations, 
 	 * maybe a good idea to change */
-	cmd = ipkg_cmd_find (command);
-	err = ipkg_cmd_exec (cmd, &ipkg_conf, 1, &file, NULL);
+	cmd = opkg_cmd_find (command);
+	err = opkg_cmd_exec (cmd, &opkg_conf, 1, &file, NULL);
 	
-	ipkg_conf_deinit(&ipkg_conf);
+	opkg_conf_deinit(&opkg_conf);
 	return(err);
 }
 
-#define ipkg_package_whatdepends(args,file) ipkg_file_what(args,file,"whatdepends")
-#define ipkg_package_whatrecommends(args, file) ipkg_file_what(args,file,"whatrecommends")
-#define ipkg_package_whatprovides(args, file) ipkg_file_what(args,file,"whatprovides")
-#define ipkg_package_whatconflicts(args, file) ipkg_file_what(args,file,"whatconflicts")
-#define ipkg_package_whatreplaces(args, file) ipkg_file_what(args,file,"whatreplaces")
+#define opkg_package_whatdepends(args,file) opkg_file_what(args,file,"whatdepends")
+#define opkg_package_whatrecommends(args, file) opkg_file_what(args,file,"whatrecommends")
+#define opkg_package_whatprovides(args, file) opkg_file_what(args,file,"whatprovides")
+#define opkg_package_whatconflicts(args, file) opkg_file_what(args,file,"whatconflicts")
+#define opkg_package_whatreplaces(args, file) opkg_file_what(args,file,"whatreplaces")
 
 
-int default_ipkg_message_callback(ipkg_conf_t *conf, message_level_t level, 
+int default_opkg_message_callback(opkg_conf_t *conf, message_level_t level, 
 				  char *msg)
 {
      if (conf && (conf->verbosity < level)) {
 	  return 0;
      } else {
-#ifdef IPKG_LIB
-          if ( level == IPKG_ERROR ){
+#ifdef OPKG_LIB
+          if ( level == OPKG_ERROR ){
              push_error_list(&error_list, msg); 
 //	     printf(msg);
           } else
@@ -405,7 +405,7 @@ int default_ipkg_message_callback(ipkg_conf_t *conf, message_level_t level,
      return 0;
 }
 
-int default_ipkg_list_callback(char *name, char *desc, char *version, 
+int default_opkg_list_callback(char *name, char *desc, char *version, 
 			       pkg_state_status_t status, void *userdata)
 {
      if (desc)
@@ -415,7 +415,7 @@ int default_ipkg_list_callback(char *name, char *desc, char *version,
      return 0;
 }
 
-int default_ipkg_files_callback(char *name, char *desc, char *version,
+int default_opkg_files_callback(char *name, char *desc, char *version,
                    pkg_state_status_t status, void *userdata)
 {
      if (desc)
@@ -423,14 +423,14 @@ int default_ipkg_files_callback(char *name, char *desc, char *version,
      return 0;
 }
 
-int default_ipkg_status_callback(char *name, int istatus, char *desc,
+int default_opkg_status_callback(char *name, int istatus, char *desc,
 				 void *userdata)
 {
      printf("%s\n", desc);
      return 0;
 }
 
-char* default_ipkg_response_callback(char *question)
+char* default_opkg_response_callback(char *question)
 {
      char *response = NULL;
      printf(question);
@@ -443,20 +443,20 @@ char* default_ipkg_response_callback(char *question)
 
 /* This is used for backward compatibility */
 int
-ipkg_op (int argc, char *argv[])
+opkg_op (int argc, char *argv[])
 {
 	int err, optind;
 	args_t args;
 	char *cmd_name;
-	ipkg_cmd_t *cmd;
-	ipkg_conf_t ipkg_conf;
+	opkg_cmd_t *cmd;
+	opkg_conf_t opkg_conf;
 
 	args_init (&args);
 
 	optind = args_parse (&args, argc, argv);
 	if (optind == argc || optind < 0)
 	{
-		args_usage ("ipkg must have one sub-command argument");
+		args_usage ("opkg must have one sub-command argument");
 	}
 
 	cmd_name = argv[optind++];
@@ -485,7 +485,7 @@ ipkg_op (int argc, char *argv[])
            args.noreadfeedsfile = 1;
 
 
-	err = ipkg_conf_init (&ipkg_conf, &args);
+	err = opkg_conf_init (&opkg_conf, &args);
 	if (err)
 	{
 		return err;
@@ -493,15 +493,15 @@ ipkg_op (int argc, char *argv[])
 
 	args_deinit (&args);
 
-	ipkg_cb_message = default_ipkg_message_callback;
-	ipkg_cb_response = default_ipkg_response_callback;
-	ipkg_cb_status = default_ipkg_status_callback;
+	opkg_cb_message = default_opkg_message_callback;
+	opkg_cb_response = default_opkg_response_callback;
+	opkg_cb_status = default_opkg_status_callback;
  	if ( strcmp(cmd_name, "files")==0)
-	     ipkg_cb_list = default_ipkg_files_callback;
+	     opkg_cb_list = default_opkg_files_callback;
  	else
-	     ipkg_cb_list = default_ipkg_list_callback;
+	     opkg_cb_list = default_opkg_list_callback;
 
-	cmd = ipkg_cmd_find (cmd_name);
+	cmd = opkg_cmd_find (cmd_name);
 	if (cmd == NULL)
 	{
 		fprintf (stderr, "%s: unknown sub-command %s\n", argv[0],
@@ -517,11 +517,11 @@ ipkg_op (int argc, char *argv[])
 		args_usage (NULL);
 	}
 
-	err = ipkg_cmd_exec (cmd, &ipkg_conf, argc - optind, (const char **) (argv + optind), NULL);
+	err = opkg_cmd_exec (cmd, &opkg_conf, argc - optind, (const char **) (argv + optind), NULL);
 
-	ipkg_conf_deinit (&ipkg_conf);
+	opkg_conf_deinit (&opkg_conf);
 
 	return err;
 }
 
-#endif /* IPKG_LIB */
+#endif /* OPKG_LIB */

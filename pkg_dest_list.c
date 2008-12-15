@@ -15,7 +15,7 @@
    General Public License for more details.
 */
 
-#include "ipkg.h"
+#include "opkg.h"
 
 #include "pkg_dest.h"
 #include "void_list.h"

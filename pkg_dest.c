@@ -15,7 +15,7 @@
    General Public License for more details.
 */
 
-#include "ipkg.h"
+#include "opkg.h"
 
 #include "pkg_dest.h"
 #include "file_util.h"
@@ -34,9 +34,9 @@ int pkg_dest_init(pkg_dest_t *dest, const char *name, const char *root_dir,const
     }
     file_mkdir_hier(dest->root_dir, 0755);
 
-    sprintf_alloc(&dest->ipkg_dir, "%s%s",
-		  dest->root_dir, IPKG_STATE_DIR_PREFIX);
-    file_mkdir_hier(dest->ipkg_dir, 0755);
+    sprintf_alloc(&dest->opkg_dir, "%s%s",
+		  dest->root_dir, OPKG_STATE_DIR_PREFIX);
+    file_mkdir_hier(dest->opkg_dir, 0755);
 
     if (str_starts_with (lists_dir, "/")) 
         sprintf_alloc(&dest->lists_dir, "%s", lists_dir);
@@ -46,14 +46,14 @@ int pkg_dest_init(pkg_dest_t *dest, const char *name, const char *root_dir,const
     file_mkdir_hier(dest->lists_dir, 0755);
 
     sprintf_alloc(&dest->info_dir, "%s/%s",
-		  dest->ipkg_dir, IPKG_INFO_DIR_SUFFIX);
+		  dest->opkg_dir, OPKG_INFO_DIR_SUFFIX);
     file_mkdir_hier(dest->info_dir, 0755);
 
     sprintf_alloc(&dest->status_file_name, "%s/%s",
-		  dest->ipkg_dir, IPKG_STATUS_FILE_SUFFIX);
+		  dest->opkg_dir, OPKG_STATUS_FILE_SUFFIX);
 
     sprintf_alloc(&dest->status_file_tmp_name, "%s/%s.tmp",
-		  dest->ipkg_dir, IPKG_STATUS_FILE_SUFFIX);
+		  dest->opkg_dir, OPKG_STATUS_FILE_SUFFIX);
 
     dest->status_file = NULL;
 
@@ -68,8 +68,8 @@ void pkg_dest_deinit(pkg_dest_t *dest)
     free(dest->root_dir);
     dest->root_dir = NULL;
 
-    free(dest->ipkg_dir);
-    dest->ipkg_dir = NULL;
+    free(dest->opkg_dir);
+    dest->opkg_dir = NULL;
 
     free(dest->lists_dir);
     dest->lists_dir = NULL;

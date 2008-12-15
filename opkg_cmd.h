@@ -1,4 +1,4 @@
-/* ipkg_cmd.h - the itsy package management system
+/* opkg_cmd.h - the itsy package management system
 
    Carl D. Worth
 
@@ -15,31 +15,31 @@
    General Public License for more details.
 */
 
-#ifndef IPKG_CMD_H
-#define IPKG_CMD_H
+#ifndef OPKG_CMD_H
+#define OPKG_CMD_H
 
-typedef int (*ipkg_cmd_fun_t)(ipkg_conf_t *conf, int argc, const char **argv);
+typedef int (*opkg_cmd_fun_t)(opkg_conf_t *conf, int argc, const char **argv);
 
-struct ipkg_cmd
+struct opkg_cmd
 {
     char *name;
     int requires_args;
-    ipkg_cmd_fun_t fun;
+    opkg_cmd_fun_t fun;
 };
-typedef struct ipkg_cmd ipkg_cmd_t;
+typedef struct opkg_cmd opkg_cmd_t;
 
-ipkg_cmd_t *ipkg_cmd_find(const char *name);
-#ifdef IPKG_LIB
-int ipkg_cmd_exec(ipkg_cmd_t *cmd, ipkg_conf_t *conf, int argc, 
+opkg_cmd_t *opkg_cmd_find(const char *name);
+#ifdef OPKG_LIB
+int opkg_cmd_exec(opkg_cmd_t *cmd, opkg_conf_t *conf, int argc, 
                   const char **argv, void *userdata);
 #else
-int ipkg_cmd_exec(ipkg_cmd_t *cmd, ipkg_conf_t *conf, int argc, const char **argv);
+int opkg_cmd_exec(opkg_cmd_t *cmd, opkg_conf_t *conf, int argc, const char **argv);
 #endif
-int ipkg_multiple_files_scan (ipkg_conf_t *conf, int argc, char *argv[]);
+int opkg_multiple_files_scan (opkg_conf_t *conf, int argc, char *argv[]);
 /* install any packges with state_want == SW_INSTALL */
-int ipkg_install_wanted_packages(ipkg_conf_t *conf);
+int opkg_install_wanted_packages(opkg_conf_t *conf);
 /* ensure that all dependences are satisfied */
-int ipkg_configure_packages(ipkg_conf_t *conf, char *pkg_name);
+int opkg_configure_packages(opkg_conf_t *conf, char *pkg_name);
 
 int pkg_mark_provides(pkg_t *pkg);
 

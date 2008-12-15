@@ -1,12 +1,12 @@
 
-Things to do for ipkg, in a partial order:
+Things to do for opkg, in a partial order:
 
 0) Play with configure to check for strdup/strndup ( to works with replace/replace.h stuffs )
 
-1) Fix incompatibilities between current C-based ipkg and original
-sh-based ipkg.
+1) Fix incompatibilities between current C-based opkg and original
+sh-based opkg.
 
-1.a) Fix ipkg.conf options for http_proxy and friends. DONE:
+1.a) Fix opkg.conf options for http_proxy and friends. DONE:
      http_proxy tested, (ftp_proxy, no_proxy, proxy_user, and
      proxy_passwd have not been tested).
 
@@ -18,7 +18,7 @@ sh-based ipkg.
 
 1.e) Fix offline_root mode. DONE: tested.
 
-2) Release ipkg as ipkg, (no longer as ipkg-unstable). This depends on
+2) Release opkg as opkg, (no longer as opkg-unstable). This depends on
    all of (1) being DONE. Although I might let this release proceed
    without offline_root --- only Jamey will complain. ;-)
 
@@ -26,7 +26,7 @@ sh-based ipkg.
 
 3.a) fix all code marked "XXX: BUG"
 
-3.b) fix all outstanding ipkg bugzilla bugs
+3.b) fix all outstanding opkg bugzilla bugs
 
 3.c) conffiles support seems broken again. It's prompting on just
      about every file. It might be because of file names beginning
@@ -47,34 +47,34 @@ sh-based ipkg.
 
 3.g) Audit all dpkg package fields for both parsing and printing support.
 
-3.h) "ipkg status" and "ipkg info" need to complain about unknown
+3.h) "opkg status" and "opkg info" need to complain about unknown
   packages. For that matter, these two commands should probably just
   become aliases to the same functionality.
 
-  Jamey thinks ipkg status should be brief give one line per package, while
-  ipkg info can continue to be verbose. 7/23/2002.
+  Jamey thinks opkg status should be brief give one line per package, while
+  opkg info can continue to be verbose. 7/23/2002.
 
-3.i) Currently "ipkg install foo" will upgrade foo if possible. The
+3.i) Currently "opkg install foo" will upgrade foo if possible. The
   "Package foo is already installed" check needs to be moved up to
   avoid this.
 
-  Jamey thinkgs that "ipkg install foo" should upgrade foo.  7/23/2002.
+  Jamey thinkgs that "opkg install foo" should upgrade foo.  7/23/2002.
 
 4) Implement new features
 
 4.a) start with all "XXX: FEATURE" comments
 
-4.b) implement all accepted ipkg bugzilla feature requests, (also
-     check old post "Subject: Reinventing ipkg" to see if we forgot
+4.b) implement all accepted opkg bugzilla feature requests, (also
+     check old post "Subject: Reinventing opkg" to see if we forgot
      any of the good ideas we had once upon a time)
 
-4.c) ipkg remove needs to (prompt first) then remove packages for
+4.c) opkg remove needs to (prompt first) then remove packages for
      which the dependencies will no longer be met. DONE. 7/19/2002.
 
 4.d) Add support for:
-	ipkg install foo from some-feed
-	ipkg install foo-0.4.3
-	ipkg install foo-latest # Only needed if we add a feed-order-priority option
+	opkg install foo from some-feed
+	opkg install foo-0.4.3
+	opkg install foo-latest # Only needed if we add a feed-order-priority option
      or something like that.
 
 4.e) Orphaned dependency management (what is this -Jamey 7/23/2002)
@@ -89,7 +89,7 @@ sh-based ipkg.
      eliminate some library calls, (glob, regcomp)? Can we get
      something like uclibc to work well?
 
-4.h) Add support for a deb-src in /etc/ipkg.conf. (ARGH! Name clash
+4.h) Add support for a deb-src in /etc/opkg.conf. (ARGH! Name clash
      alert! In apt-land, deb-src means something very different than
      what I would mean here. Hrm... Maybe src-deb would be cleaner? )
 
@@ -98,10 +98,10 @@ sh-based ipkg.
 4.i) Figure out a clever chroot mechanism for running maintainer scripts in
      offline_root mode.
 
-4.j) Implement ipkg history mechanism, with undo and redo?  Keep track of
-     packages removed/installed by each call to ipkg.
+4.j) Implement opkg history mechanism, with undo and redo?  Keep track of
+     packages removed/installed by each call to opkg.
 
-5) release ipkg-1.0.0
+5) release opkg-1.0.0
 
 6) Cleanup the code
 

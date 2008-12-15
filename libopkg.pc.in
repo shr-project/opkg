@@ -3,9 +3,9 @@ exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
 
-Name: libipkg
-Description: ipkg package manager library
+Name: libopkg
+Description: opkg package manager library
 Version: @VERSION@
-Libs: -L${libdir} -lipkg
-Cflags: -I${includedir}/libipkg
+Libs: -L${libdir} -lopkg
+Cflags: -I${includedir}/libopkg
 

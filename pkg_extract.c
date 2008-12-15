@@ -15,7 +15,7 @@
    General Public License for more details.
 */
 
-#include "ipkg.h"
+#include "opkg.h"
 #include <errno.h>
 
 #include "pkg_extract.h"
@@ -25,7 +25,7 @@
 #include "sprintf_alloc.h"
 
 /* assuage libb functions */
-const char *applet_name = "ipkg";
+const char *applet_name = "opkg";
 
 int pkg_extract_control_file_to_stream(pkg_t *pkg, FILE *stream)
 {
@@ -148,10 +148,10 @@ int pkg_extract_data_file_names_to_stream(pkg_t *pkg, FILE *file)
 {
     /* XXX: DPKG_INCOMPATIBILITY: deb_extract will extract all of the
        data file names with a '.' as the first character. I've taught
-       ipkg how to cope with the presence or absence of the '.', but
+       opkg how to cope with the presence or absence of the '.', but
        this may trip up dpkg.
 
-       For all I know, this could actually be a bug in ipkg-build. So,
+       For all I know, this could actually be a bug in opkg-build. So,
        I'll have to try installing some .debs and comparing the *.list
        files.
 

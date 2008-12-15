@@ -15,7 +15,7 @@
    General Public License for more details.
 */
 
-#include "ipkg.h"
+#include "opkg.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -107,7 +107,7 @@ int file_move(const char *src, const char *dest)
 }
 
 /* I put these here to keep libbb dependencies from creeping all over
-   the ipkg code */
+   the opkg code */
 int file_copy(const char *src, const char *dest)
 {
     int err;

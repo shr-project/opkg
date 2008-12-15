@@ -1,4 +1,4 @@
-/* ipkg_configure.h - the itsy package management system
+/* opkg_download.h - the itsy package management system
 
    Carl D. Worth
 
@@ -15,11 +15,16 @@
    General Public License for more details.
 */
 
-#ifndef IPKG_CONFIGURE_H
-#define IPKG_CONFIGURE_H
+#ifndef OPKG_DOWNLOAD_H
+#define OPKG_DOWNLOAD_H
 
-#include "ipkg_conf.h"
+#include "opkg_conf.h"
 
-int ipkg_configure(ipkg_conf_t *ipkg_conf, pkg_t *pkg);
+int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name);
+int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir);
+/*
+ * Downloads file from url, installs in package database, return package name. 
+ */
+int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **namep);
 
 #endif

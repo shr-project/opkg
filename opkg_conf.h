@@ -1,4 +1,4 @@
-/* ipkg_conf.h - the itsy package management system
+/* opkg_conf.h - the itsy package management system
 
    Carl D. Worth
 
@@ -15,13 +15,13 @@
    General Public License for more details.
 */
 
-#ifndef IPKG_CONF_H
-#define IPKG_CONF_H
+#ifndef OPKG_CONF_H
+#define OPKG_CONF_H
 
-typedef struct ipkg_conf ipkg_conf_t;
+typedef struct opkg_conf opkg_conf_t;
 
 #include "hash_table.h"
-#include "ipkg.h"
+#include "opkg.h"
 #include "args.h"
 #include "pkg.h"
 #include "pkg_hash.h"
@@ -29,18 +29,18 @@ typedef struct ipkg_conf ipkg_conf_t;
 #include "pkg_dest_list.h"
 #include "nv_pair_list.h"
 
-#define IPKG_CONF_DEFAULT_TMP_DIR_BASE "/tmp"
-#define IPKG_CONF_TMP_DIR_SUFFIX "ipkg-XXXXXX"
-#define IPKG_CONF_LISTS_DIR  IPKG_STATE_DIR_PREFIX "/lists"
-#define IPKG_CONF_PENDING_DIR IPKG_STATE_DIR_PREFIX "/pending"
+#define OPKG_CONF_DEFAULT_TMP_DIR_BASE "/tmp"
+#define OPKG_CONF_TMP_DIR_SUFFIX "opkg-XXXXXX"
+#define OPKG_CONF_LISTS_DIR  OPKG_STATE_DIR_PREFIX "/lists"
+#define OPKG_CONF_PENDING_DIR OPKG_STATE_DIR_PREFIX "/pending"
 
 /* In case the config file defines no dest */
-#define IPKG_CONF_DEFAULT_DEST_NAME "root"
-#define IPKG_CONF_DEFAULT_DEST_ROOT_DIR "/"
+#define OPKG_CONF_DEFAULT_DEST_NAME "root"
+#define OPKG_CONF_DEFAULT_DEST_ROOT_DIR "/"
 
-#define IPKG_CONF_DEFAULT_HASH_LEN 1024
+#define OPKG_CONF_DEFAULT_HASH_LEN 1024
 
-struct ipkg_conf
+struct opkg_conf
 {
      pkg_src_list_t pkg_src_list;
      pkg_dest_list_t pkg_dest_list;
@@ -84,24 +84,24 @@ struct ipkg_conf
      hash_table_t obs_file_hash;
 };
 
-enum ipkg_option_type {
-     IPKG_OPT_TYPE_BOOL,
-     IPKG_OPT_TYPE_INT,
-     IPKG_OPT_TYPE_STRING
+enum opkg_option_type {
+     OPKG_OPT_TYPE_BOOL,
+     OPKG_OPT_TYPE_INT,
+     OPKG_OPT_TYPE_STRING
 };
-typedef enum ipkg_option_type ipkg_option_type_t;
+typedef enum opkg_option_type opkg_option_type_t;
 
-typedef struct ipkg_option ipkg_option_t;
-struct ipkg_option {
+typedef struct opkg_option opkg_option_t;
+struct opkg_option {
      const char *name;
-     const ipkg_option_type_t type;
+     const opkg_option_type_t type;
      const void *value;
 };
 
-int ipkg_conf_init(ipkg_conf_t *conf, const args_t *args);
-void ipkg_conf_deinit(ipkg_conf_t *conf);
+int opkg_conf_init(opkg_conf_t *conf, const args_t *args);
+void opkg_conf_deinit(opkg_conf_t *conf);
 
-int ipkg_conf_write_status_files(ipkg_conf_t *conf);
-char *root_filename_alloc(ipkg_conf_t *conf, char *filename);
+int opkg_conf_write_status_files(opkg_conf_t *conf);
+char *root_filename_alloc(opkg_conf_t *conf, char *filename);
 
 #endif

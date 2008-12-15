@@ -1,4 +1,4 @@
-/* ipkg_message.h - the itsy package management system
+/* opkg_message.h - the itsy package management system
 
    Copyright (C) 2003 Daniele Nicolodi <daniele@grinta.net>
 
@@ -13,20 +13,20 @@
    General Public License for more details.
 */
 
-#ifndef _IPKG_MESSAGE_H_
-#define _IPKG_MESSAGE_H_
+#ifndef _OPKG_MESSAGE_H_
+#define _OPKG_MESSAGE_H_
 
-#include "ipkg.h"
-#include "ipkg_conf.h"
+#include "opkg.h"
+#include "opkg_conf.h"
 
 typedef enum {
-     IPKG_ERROR,	/* error conditions */
-     IPKG_NOTICE,	/* normal but significant condition */
-     IPKG_INFO,		/* informational message */
-     IPKG_DEBUG,	/* debug level message */
-     IPKG_DEBUG2,	/* more debug level message */
+     OPKG_ERROR,	/* error conditions */
+     OPKG_NOTICE,	/* normal but significant condition */
+     OPKG_INFO,		/* informational message */
+     OPKG_DEBUG,	/* debug level message */
+     OPKG_DEBUG2,	/* more debug level message */
 } message_level_t;
 
-extern void ipkg_message(ipkg_conf_t *conf, message_level_t level, char *fmt, ...);
+extern void opkg_message(opkg_conf_t *conf, message_level_t level, char *fmt, ...);
 
-#endif /* _IPKG_MESSAGE_H_ */
+#endif /* _OPKG_MESSAGE_H_ */

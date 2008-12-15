@@ -1,4 +1,4 @@
-/* ipkg_remove.c - the itsy package management system
+/* opkg_remove.c - the itsy package management system
 
    Carl D. Worth
 
@@ -15,24 +15,24 @@
    General Public License for more details.
 */
 
-#include "ipkg.h"
-#include "ipkg_message.h"
+#include "opkg.h"
+#include "opkg_message.h"
 
 #include <glob.h>
 
-#include "ipkg_remove.h"
+#include "opkg_remove.h"
 
 #include "file_util.h"
 #include "sprintf_alloc.h"
 #include "str_util.h"
 
-#include "ipkg_cmd.h"
+#include "opkg_cmd.h"
 
 /*
  * Returns number of the number of packages depending on the packages provided by this package.
  * Every package implicitly provides itself.
  */
-int pkg_has_installed_dependents(ipkg_conf_t *conf, abstract_pkg_t *parent_apkg, pkg_t *pkg, abstract_pkg_t *** pdependents)
+int pkg_has_installed_dependents(opkg_conf_t *conf, abstract_pkg_t *parent_apkg, pkg_t *pkg, abstract_pkg_t *** pdependents)
 {
      int nprovides = pkg->provides_count;
      abstract_pkg_t **provides = pkg->provides;
@@ -85,7 +85,7 @@ int pkg_has_installed_dependents(ipkg_conf_t *conf, abstract_pkg_t *parent_apkg,
      return n_installed_dependents;
 }
 
-int ipkg_remove_dependent_pkgs (ipkg_conf_t *conf, pkg_t *pkg, abstract_pkg_t **dependents)
+int opkg_remove_dependent_pkgs (opkg_conf_t *conf, pkg_t *pkg, abstract_pkg_t **dependents)
 {
     int i;
     int a;
@@ -136,32 +136,32 @@ int ipkg_remove_dependent_pkgs (ipkg_conf_t *conf, pkg_t *pkg, abstract_pkg_t **
     
     
     for (i = 0; i < dependent_pkgs->len; i++) {
-        int err = ipkg_remove_pkg(conf, dependent_pkgs->pkgs[i],0);
+        int err = opkg_remove_pkg(conf, dependent_pkgs->pkgs[i],0);
         if (err)
             return err;
     }
     return 0;
 }
 
-static int user_prefers_removing_dependents(ipkg_conf_t *conf, abstract_pkg_t *abpkg, pkg_t *pkg, abstract_pkg_t **dependents)
+static int user_prefers_removing_dependents(opkg_conf_t *conf, abstract_pkg_t *abpkg, pkg_t *pkg, abstract_pkg_t **dependents)
 {
     abstract_pkg_t *dep_ab_pkg;
-    ipkg_message(conf, IPKG_ERROR, "Package %s is depended upon by packages:\n", pkg->name);
+    opkg_message(conf, OPKG_ERROR, "Package %s is depended upon by packages:\n", pkg->name);
     while ((dep_ab_pkg = *dependents++) != NULL) {
 	 if (dep_ab_pkg->state_status == SS_INSTALLED)
-	      ipkg_message(conf, IPKG_ERROR, "\t%s\n", dep_ab_pkg->name);
+	      opkg_message(conf, OPKG_ERROR, "\t%s\n", dep_ab_pkg->name);
     }
-    ipkg_message(conf, IPKG_ERROR, "These might cease to work if package %s is removed.\n\n", pkg->name);
-    ipkg_message(conf, IPKG_ERROR, "");
-    ipkg_message(conf, IPKG_ERROR, "You can force removal of this package with -force-depends.\n");
-    ipkg_message(conf, IPKG_ERROR, "You can force removal of this package and its dependents\n");
-    ipkg_message(conf, IPKG_ERROR, "with -force-removal-of-dependent-packages or -recursive\n");
-    ipkg_message(conf, IPKG_ERROR, "or by setting option force_removal_of_dependent_packages\n");
-    ipkg_message(conf, IPKG_ERROR, "in ipkg.conf.\n");
+    opkg_message(conf, OPKG_ERROR, "These might cease to work if package %s is removed.\n\n", pkg->name);
+    opkg_message(conf, OPKG_ERROR, "");
+    opkg_message(conf, OPKG_ERROR, "You can force removal of this package with -force-depends.\n");
+    opkg_message(conf, OPKG_ERROR, "You can force removal of this package and its dependents\n");
+    opkg_message(conf, OPKG_ERROR, "with -force-removal-of-dependent-packages or -recursive\n");
+    opkg_message(conf, OPKG_ERROR, "or by setting option force_removal_of_dependent_packages\n");
+    opkg_message(conf, OPKG_ERROR, "in opkg.conf.\n");
     return 0;
 }
 
-int ipkg_remove_pkg(ipkg_conf_t *conf, pkg_t *pkg,int message)
+int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)
 {
 /* Actually, when "message == 1" I have been called from an upgrade, and not from a normal remove
    thus I wan't check for essential, as I'm upgrading.
@@ -178,10 +178,10 @@ int ipkg_remove_pkg(ipkg_conf_t *conf, pkg_t *pkg,int message)
 	  } else {
 	       fprintf(stderr, "ERROR: Refusing to remove essential package %s.\n"
 		       "\tRemoving an essential package may lead to an unusable system, but if\n"
-		       "\tyou enjoy that kind of pain, you can force ipkg to proceed against\n"
+		       "\tyou enjoy that kind of pain, you can force opkg to proceed against\n"
 		       "\tits will with the option: -force-removal-of-essential-packages\n",
 		       pkg->name);
-	       return IPKG_PKG_IS_ESSENTIAL;
+	       return OPKG_PKG_IS_ESSENTIAL;
 	  }
      }
 
@@ -206,11 +206,11 @@ int ipkg_remove_pkg(ipkg_conf_t *conf, pkg_t *pkg,int message)
 
 	       if (!conf->force_removal_of_dependent_packages
 		   && !user_prefers_removing_dependents(conf, parent_pkg, pkg, dependents)) {
-		    return IPKG_PKG_HAS_DEPENDENTS;
+		    return OPKG_PKG_HAS_DEPENDENTS;
 	       }
 
 	       /* remove packages depending on this package - Karthik */
-	       err = ipkg_remove_dependent_pkgs (conf, pkg, dependents);
+	       err = opkg_remove_dependent_pkgs (conf, pkg, dependents);
 	       free(dependents);
 	       if (err) return err;
 	  }
@@ -223,7 +223,7 @@ int ipkg_remove_pkg(ipkg_conf_t *conf, pkg_t *pkg,int message)
      pkg->state_flag |= SF_FILELIST_CHANGED;
 
      pkg->state_want = SW_DEINSTALL;
-     ipkg_state_changed++;
+     opkg_state_changed++;
 
      pkg_run_script(conf, pkg, "prerm", "remove");
 
@@ -238,7 +238,7 @@ int ipkg_remove_pkg(ipkg_conf_t *conf, pkg_t *pkg,int message)
 
      remove_maintainer_scripts_except_postrm(conf, pkg);
 
-     /* Aman Gupta - Since ipkg is made for handheld devices with limited
+     /* Aman Gupta - Since opkg is made for handheld devices with limited
       * space, it doesn't make sense to leave extra configurations, files, 
       * and maintainer scripts left around. So, we make remove like purge, 
       * and take out all the crap :) */
@@ -252,13 +252,13 @@ int ipkg_remove_pkg(ipkg_conf_t *conf, pkg_t *pkg,int message)
      return 0;
 }
 
-int ipkg_purge_pkg(ipkg_conf_t *conf, pkg_t *pkg)
+int opkg_purge_pkg(opkg_conf_t *conf, pkg_t *pkg)
 {
-    ipkg_remove_pkg(conf, pkg,0);
+    opkg_remove_pkg(conf, pkg,0);
     return 0;
 }
 
-int remove_data_files_and_list(ipkg_conf_t *conf, pkg_t *pkg)
+int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
 {
      str_list_t installed_dirs;
      str_list_t *installed_files;
@@ -293,7 +293,7 @@ int remove_data_files_and_list(ipkg_conf_t *conf, pkg_t *pkg)
 	       }
 	  }
 
-	  ipkg_message(conf, IPKG_INFO, "  deleting %s (noaction=%d)\n", file_name, conf->noaction);
+	  opkg_message(conf, OPKG_INFO, "  deleting %s (noaction=%d)\n", file_name, conf->noaction);
 	  if (!conf->noaction)
 	       unlink(file_name);
      }
@@ -305,7 +305,7 @@ int remove_data_files_and_list(ipkg_conf_t *conf, pkg_t *pkg)
 		    file_name = iter->data;
 	    
 		    if (rmdir(file_name) == 0) {
-			 ipkg_message(conf, IPKG_INFO, "  deleting %s\n", file_name);
+			 opkg_message(conf, OPKG_INFO, "  deleting %s\n", file_name);
 			 removed_a_dir = 1;
 			 str_list_remove(&installed_dirs, &iter);
 		    }
@@ -340,7 +340,7 @@ int remove_data_files_and_list(ipkg_conf_t *conf, pkg_t *pkg)
      return 0;
 }
 
-int remove_maintainer_scripts_except_postrm(ipkg_conf_t *conf, pkg_t *pkg)
+int remove_maintainer_scripts_except_postrm(opkg_conf_t *conf, pkg_t *pkg)
 {
     int i, err;
     char *globpattern;
@@ -360,7 +360,7 @@ int remove_maintainer_scripts_except_postrm(ipkg_conf_t *conf, pkg_t *pkg)
 	if (str_ends_with(globbuf.gl_pathv[i], ".postrm")) {
 	    continue;
 	}
-        ipkg_message(conf, IPKG_INFO, "  deleting %s\n", globbuf.gl_pathv[i]);
+        opkg_message(conf, OPKG_INFO, "  deleting %s\n", globbuf.gl_pathv[i]);
 	unlink(globbuf.gl_pathv[i]);
     }
     globfree(&globbuf);
@@ -368,7 +368,7 @@ int remove_maintainer_scripts_except_postrm(ipkg_conf_t *conf, pkg_t *pkg)
     return 0;
 }
 
-int remove_postrm(ipkg_conf_t *conf, pkg_t *pkg)
+int remove_postrm(opkg_conf_t *conf, pkg_t *pkg)
 {
     char *postrm_file_name;
 

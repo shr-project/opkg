@@ -1,4 +1,4 @@
-/* ipkg_hash.c - the itsy package management system
+/* opkg_hash.c - the itsy package management system
 
    Steven M. Ayer
    
@@ -15,7 +15,7 @@
    General Public License for more details.
 */
 
-#include "ipkg.h"
+#include "opkg.h"
 #include <errno.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -23,11 +23,11 @@
 
 #include "hash_table.h"
 #include "pkg.h"
-#include "ipkg_message.h"
+#include "opkg_message.h"
 #include "pkg_vec.h"
 #include "pkg_hash.h"
 #include "pkg_parse.h"
-#include "ipkg_utils.h"
+#include "opkg_utils.h"
 
 static abstract_pkg_t * add_new_abstract_pkg_by_name(hash_table_t * hash, const char * pkg_name);
 
@@ -60,7 +60,7 @@ void pkg_hash_deinit(hash_table_t *hash)
 
 
 /* Find the default arch for a given package status file if none is given. */
-static char *pkg_get_default_arch(ipkg_conf_t *conf)
+static char *pkg_get_default_arch(opkg_conf_t *conf)
 {
      nv_pair_list_elt_t *l;
      char *def_arch = HOST_CPU_STR;		/* Default arch */
@@ -85,7 +85,7 @@ static char *pkg_get_default_arch(ipkg_conf_t *conf)
      return strdup(def_arch);
 }
 
-int pkg_hash_add_from_file(ipkg_conf_t *conf, const char *file_name,
+int pkg_hash_add_from_file(opkg_conf_t *conf, const char *file_name,
 			   pkg_src_t *src, pkg_dest_t *dest, int is_status_file)
 {
      hash_table_t *hash = &conf->pkg_hash;
@@ -106,7 +106,7 @@ int pkg_hash_add_from_file(ipkg_conf_t *conf, const char *file_name,
 	       if (!pkg->architecture) {
 		    char *version_str = pkg_version_str_alloc(pkg);
 		    pkg->architecture = pkg_get_default_arch(conf);
-		    ipkg_message(conf, IPKG_ERROR, "Package %s version %s has no architecture specified, defaulting to %s.\n",
+		    opkg_message(conf, OPKG_ERROR, "Package %s version %s has no architecture specified, defaulting to %s.\n",
 				 pkg->name, version_str, pkg->architecture);
 		    free(version_str);
 	       }
@@ -140,7 +140,7 @@ abstract_pkg_vec_t *pkg_hash_fetch_all_installation_candidates(hash_table_t *has
 }
 
 
-pkg_t *pkg_hash_fetch_best_installation_candidate(ipkg_conf_t *conf, abstract_pkg_t *apkg, 
+pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pkg_t *apkg, 
 						  int (*constraint_fcn)(pkg_t *pkg, void *cdata), void *cdata, int quiet)
 {
      int i; 
@@ -160,18 +160,18 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(ipkg_conf_t *conf, abstract_pk
          apkg == NULL || apkg->provided_by == NULL || (apkg->provided_by->len == 0))
 	  return NULL;
 
-     ipkg_message(conf, IPKG_DEBUG, "best installation candidate for %s\n", apkg->name);
+     opkg_message(conf, OPKG_DEBUG, "best installation candidate for %s\n", apkg->name);
 
      provided_apkg_vec = apkg->provided_by;
      nprovides = provided_apkg_vec->len;
      provided_apkgs = provided_apkg_vec->pkgs;
      if (nprovides > 1)
-	  ipkg_message(conf, IPKG_DEBUG, " apkg=%s nprovides=%d\n", apkg->name, nprovides);
+	  opkg_message(conf, OPKG_DEBUG, " apkg=%s nprovides=%d\n", apkg->name, nprovides);
 
      /* accumulate all the providers */
      for (i = 0; i < nprovides; i++) {
 	  abstract_pkg_t *provider_apkg = provided_apkgs[i];
-	  ipkg_message(conf, IPKG_DEBUG, " adding %s to providers\n", provider_apkg->name);
+	  opkg_message(conf, OPKG_DEBUG, " adding %s to providers\n", provider_apkg->name);
 	  abstract_pkg_vec_insert(providers, provider_apkg);
      }
      nprovides = providers->len;
@@ -184,13 +184,13 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(ipkg_conf_t *conf, abstract_pk
 	  if (provider_apkg->replaced_by && provider_apkg->replaced_by->len) {
 	       replacement_apkg = provider_apkg->replaced_by->pkgs[0];
 	       if (provider_apkg->replaced_by->len > 1) {
-		    ipkg_message(conf, IPKG_NOTICE, "Multiple replacers for %s, using first one (%s)\n", 
+		    opkg_message(conf, OPKG_NOTICE, "Multiple replacers for %s, using first one (%s)\n", 
 				 provider_apkg->name, replacement_apkg->name);
 	       }
 	  }
 
 	  if (replacement_apkg)
-	       ipkg_message(conf, IPKG_DEBUG, "   replacement_apkg=%s for provider_apkg=%s\n", 
+	       opkg_message(conf, OPKG_DEBUG, "   replacement_apkg=%s for provider_apkg=%s\n", 
 			    replacement_apkg->name, provider_apkg->name);
 
 	  if (replacement_apkg && (replacement_apkg != provider_apkg)) {
@@ -201,7 +201,7 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(ipkg_conf_t *conf, abstract_pk
 	  }
 
 	  if (!(vec = provider_apkg->pkgs)) {
-	       ipkg_message(conf, IPKG_DEBUG, "   no pkgs for provider_apkg %s\n", provider_apkg->name);
+	       opkg_message(conf, OPKG_DEBUG, "   no pkgs for provider_apkg %s\n", provider_apkg->name);
 	       continue;
 	  }
     
@@ -214,7 +214,7 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(ipkg_conf_t *conf, abstract_pk
 	       /* count packages matching max arch priority and keep track of last one */
 	       for (i = 0; i < vec->len; i++) {
 		    pkg_t *maybe = vec->pkgs[i];
-		    ipkg_message(conf, IPKG_DEBUG, "  %s arch=%s arch_priority=%d version=%s  \n",
+		    opkg_message(conf, OPKG_DEBUG, "  %s arch=%s arch_priority=%d version=%s  \n",
 				 maybe->name, maybe->architecture, maybe->arch_priority, maybe->version);
 		    if (maybe->arch_priority > 0)  {
 			 max_count++;
@@ -243,7 +243,7 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(ipkg_conf_t *conf, abstract_pk
      for (i = 0; i < matching_pkgs->len; i++) {
 	  pkg_t *matching = matching_pkgs->pkgs[i];
           if (constraint_fcn(matching, cdata)) {  /* We found it */
-             ipkg_message(conf, IPKG_DEBUG, " Found a valid candidate for the install: %s %s  \n", matching->name, matching->version) ;
+             opkg_message(conf, OPKG_DEBUG, " Found a valid candidate for the install: %s %s  \n", matching->name, matching->version) ;
              good_pkg_by_name = matching;
              if ( matching->provided_by_hand == 1 )    /* It has been provided by hand, so it is what user want */
                 break;                                 
@@ -258,28 +258,28 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(ipkg_conf_t *conf, abstract_pk
 	       latest_installed_parent = matching;
 	  if (matching->state_flag & (SF_HOLD|SF_PREFER)) {
 	       if (held_pkg)
-		    ipkg_message(conf, IPKG_ERROR, "Multiple packages (%s and %s) providing same name marked HOLD or PREFER.  Using latest.\n",
+		    opkg_message(conf, OPKG_ERROR, "Multiple packages (%s and %s) providing same name marked HOLD or PREFER.  Using latest.\n",
 				 held_pkg->name, matching->name);
 	       held_pkg = matching;
 	  }
      }
 
      if (!good_pkg_by_name && !held_pkg && !latest_installed_parent && matching_apkgs->len > 1 && !quiet) {
-	  ipkg_message(conf, IPKG_ERROR, "Package=%s, %d matching providers\n",
+	  opkg_message(conf, OPKG_ERROR, "Package=%s, %d matching providers\n",
 		       apkg->name, matching_apkgs->len);
 	  for (i = 0; i < matching_apkgs->len; i++) {
               abstract_pkg_t *matching = matching_apkgs->pkgs[i];
-              ipkg_message(conf, IPKG_ERROR, "    %s\n", matching->name);
+              opkg_message(conf, OPKG_ERROR, "    %s\n", matching->name);
 	  }
-	  ipkg_message(conf, IPKG_ERROR, "Please select one with ipkg install or ipkg flag prefer\n");
+	  opkg_message(conf, OPKG_ERROR, "Please select one with opkg install or opkg flag prefer\n");
      }
 
      if (matching_apkgs->len > 1 && conf->verbosity > 1) {
-	  ipkg_message(conf, IPKG_NOTICE, "%s: for apkg=%s, %d matching pkgs\n",
+	  opkg_message(conf, OPKG_NOTICE, "%s: for apkg=%s, %d matching pkgs\n",
 		       __FUNCTION__, apkg->name, matching_pkgs->len);
 	  for (i = 0; i < matching_pkgs->len; i++) {
 	       pkg_t *matching = matching_pkgs->pkgs[i];
-	       ipkg_message(conf, IPKG_INFO, "    %s %s %s\n",
+	       opkg_message(conf, OPKG_INFO, "    %s %s %s\n",
 			    matching->name, matching->version, matching->architecture);
 	  }
      }
@@ -294,19 +294,19 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(ipkg_conf_t *conf, abstract_pk
 	  return good_pkg_by_name;
      }
      if (held_pkg) {
-	  ipkg_message(conf, IPKG_INFO, "  using held package %s\n", held_pkg->name);
+	  opkg_message(conf, OPKG_INFO, "  using held package %s\n", held_pkg->name);
 	  return held_pkg;
      }
      if (latest_installed_parent) {
-	  ipkg_message(conf, IPKG_INFO, "  using latest version of installed package %s\n", latest_installed_parent->name);
+	  opkg_message(conf, OPKG_INFO, "  using latest version of installed package %s\n", latest_installed_parent->name);
 	  return latest_installed_parent;
      }
      if (nmatching > 1) {
-	  ipkg_message(conf, IPKG_INFO, "  no matching pkg out of matching_apkgs=%d\n", nmatching);
+	  opkg_message(conf, OPKG_INFO, "  no matching pkg out of matching_apkgs=%d\n", nmatching);
 	  return NULL;
      }
      if (latest_matching) {
-	  ipkg_message(conf, IPKG_INFO, "  using latest matching %s %s %s\n",
+	  opkg_message(conf, OPKG_INFO, "  using latest matching %s %s %s\n",
 		       latest_matching->name, latest_matching->version, latest_matching->architecture);
 	  return latest_matching;
      }
@@ -322,7 +322,7 @@ static int pkg_name_constraint_fcn(pkg_t *pkg, void *cdata)
 	  return 0;   
 }
 
-pkg_t *pkg_hash_fetch_best_installation_candidate_by_name(ipkg_conf_t *conf, const char *name)
+pkg_t *pkg_hash_fetch_best_installation_candidate_by_name(opkg_conf_t *conf, const char *name)
 {
      hash_table_t *hash = &conf->pkg_hash;
      abstract_pkg_t *apkg = NULL;
@@ -476,7 +476,7 @@ static void pkg_hash_dump_helper(const char *pkg_name, void *entry, void *data)
   int i;
   pkg_t *pkg;
   abstract_pkg_t *ab_pkg = (abstract_pkg_t *)entry;
-  ipkg_conf_t *conf = (ipkg_conf_t *)data;
+  opkg_conf_t *conf = (opkg_conf_t *)data;
   abstract_pkg_t ** dependents = ab_pkg->depended_upon_by;
   fprintf(stdout, "%s\n", ab_pkg->name);
   i = 0;
@@ -513,7 +513,7 @@ abstract_pkg_t * ensure_abstract_pkg_by_name(hash_table_t * hash, const char * p
   return ab_pkg;
 }
 
-pkg_t *hash_insert_pkg(hash_table_t *hash, pkg_t *pkg, int set_status,ipkg_conf_t *conf)
+pkg_t *hash_insert_pkg(hash_table_t *hash, pkg_t *pkg, int set_status,opkg_conf_t *conf)
 {
      abstract_pkg_t * ab_pkg;
      int arch_priority;
@@ -580,14 +580,14 @@ static abstract_pkg_t * add_new_abstract_pkg_by_name(hash_table_t * hash, const 
 }
 
 
-pkg_t *file_hash_get_file_owner(ipkg_conf_t *conf, const char *file_name)
+pkg_t *file_hash_get_file_owner(opkg_conf_t *conf, const char *file_name)
 {
      hash_table_t *file_hash = &conf->file_hash;
 
      return hash_table_get(file_hash, file_name); 
 }
 
-int file_hash_set_file_owner(ipkg_conf_t *conf, const char *file_name, pkg_t *owning_pkg)
+int file_hash_set_file_owner(opkg_conf_t *conf, const char *file_name, pkg_t *owning_pkg)
 {
      hash_table_t *file_hash = &conf->file_hash;
      pkg_t *old_owning_pkg = hash_table_get(file_hash, file_name);
@@ -603,7 +603,7 @@ int file_hash_set_file_owner(ipkg_conf_t *conf, const char *file_name, pkg_t *ow
 	  }
      }
 
-     // ipkg_message(conf, IPKG_DEBUG2, "owning_pkg=%s filename=%s\n", owning_pkg->name, file_name);
+     // opkg_message(conf, OPKG_DEBUG2, "owning_pkg=%s filename=%s\n", owning_pkg->name, file_name);
      hash_table_insert(file_hash, file_name, owning_pkg); 
      if (old_owning_pkg) {
 	  str_list_remove_elt(old_owning_pkg->installed_files, file_name);

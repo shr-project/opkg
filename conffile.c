@@ -18,8 +18,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "ipkg.h"
-#include "ipkg_message.h"
+#include "opkg.h"
+#include "opkg_message.h"
 
 #include "conffile.h"
 #include "file_util.h"
@@ -35,7 +35,7 @@ void conffile_deinit(conffile_t *conffile)
     nv_pair_deinit(conffile);
 }
 
-int conffile_has_been_modified(ipkg_conf_t *conf, conffile_t *conffile)
+int conffile_has_been_modified(opkg_conf_t *conf, conffile_t *conffile)
 {
     char *md5sum;
     char *filename = conffile->name;
@@ -43,7 +43,7 @@ int conffile_has_been_modified(ipkg_conf_t *conf, conffile_t *conffile)
     int ret;
 
     if (conffile->value == NULL) {
-	 ipkg_message(conf, IPKG_NOTICE, "%s: conffile %s has no md5sum\n", __FUNCTION__, conffile->name);
+	 opkg_message(conf, OPKG_NOTICE, "%s: conffile %s has no md5sum\n", __FUNCTION__, conffile->name);
 	 return 1;
     }
 
@@ -53,7 +53,7 @@ int conffile_has_been_modified(ipkg_conf_t *conf, conffile_t *conffile)
 
     ret = strcmp(md5sum, conffile->value);
     if (ret) {
-      ipkg_message(conf, IPKG_NOTICE, "%s: conffile %s: \t\nold md5=%s \t\nnew md5=%s\n", __FUNCTION__,
+      opkg_message(conf, OPKG_NOTICE, "%s: conffile %s: \t\nold md5=%s \t\nnew md5=%s\n", __FUNCTION__,
               conffile->name, md5sum, conffile->value);
     }
 

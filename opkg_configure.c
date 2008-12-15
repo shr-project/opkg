@@ -1,4 +1,4 @@
-/* ipkg_configure.c - the itsy package management system
+/* opkg_configure.c - the itsy package management system
 
    Carl D. Worth
 
@@ -15,17 +15,17 @@
    General Public License for more details.
 */
 
-#include "ipkg.h"
+#include "opkg.h"
 
-#include "ipkg_configure.h"
+#include "opkg_configure.h"
 
-int ipkg_configure(ipkg_conf_t *conf, pkg_t *pkg)
+int opkg_configure(opkg_conf_t *conf, pkg_t *pkg)
 {
     int err;
 
     /* DPKG_INCOMPATIBILITY:
        dpkg actually does some conffile handling here, rather than at the
-       end of ipkg_install(). Do we care? */
+       end of opkg_install(). Do we care? */
     /* DPKG_INCOMPATIBILITY:
        dpkg actually includes a version number to this script call */
     err = pkg_run_script(conf, pkg, "postinst", "configure");
@@ -34,7 +34,7 @@ int ipkg_configure(ipkg_conf_t *conf, pkg_t *pkg)
 	return err;
     }
 
-    ipkg_state_changed++;
+    opkg_state_changed++;
     return 0;
 }
 

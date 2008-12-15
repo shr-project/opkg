@@ -20,7 +20,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "ipkg.h"
+#include "opkg.h"
 
 #include "config.h"
 #include "args.h"
@@ -53,7 +53,7 @@ int args_init(args_t *args)
 
      args->dest = ARGS_DEFAULT_DEST;
 
-     conf_file_dir = getenv("IPKG_CONF_DIR");
+     conf_file_dir = getenv("OPKG_CONF_DIR");
      if (conf_file_dir == NULL || conf_file_dir[0] == '\0') {
 	  conf_file_dir = ARGS_DEFAULT_CONF_FILE_DIR;
      }
@@ -226,10 +226,10 @@ int args_parse(args_t *args, int argc, char *argv[])
 void args_usage(char *complaint)
 {
      if (complaint) {
-	  fprintf(stderr, "ipkg: %s\n", complaint);
+	  fprintf(stderr, "opkg: %s\n", complaint);
      }
      print_version();
-     fprintf(stderr, "usage: ipkg [options...] sub-command [arguments...]\n");
+     fprintf(stderr, "usage: opkg [options...] sub-command [arguments...]\n");
      fprintf(stderr, "where sub-command is one of:\n");
     
      fprintf(stderr, "\nPackage Manipulation:\n");
@@ -247,7 +247,7 @@ void args_usage(char *complaint)
      fprintf(stderr, "\tlist_installed		List all and only the installed packages and description \n");
      fprintf(stderr, "\tfiles <pkg>		List all files belonging to <pkg>\n");
      fprintf(stderr, "\tsearch <file|regexp>		Search for a package providing <file>\n");
-#ifndef IPKG_LIB
+#ifndef OPKG_LIB
      fprintf(stderr, "\tinfo [pkg|regexp [<field>]]	Display all/some info fields for <pkg> or all\n");
      fprintf(stderr, "\tstatus [pkg|regexp [<field>]]	Display all/some status fields for <pkg> or all\n");
 #else
@@ -273,7 +273,7 @@ void args_usage(char *complaint)
      fprintf(stderr, "\t                         1 normal messages (default)\n");
      fprintf(stderr, "\t                         2 informative messages\n");
      fprintf(stderr, "\t                         3 debug output\n");
-     fprintf(stderr, "\t-f <conf_file>		Use <conf_file> as the ipkg configuration file\n");
+     fprintf(stderr, "\t-f <conf_file>		Use <conf_file> as the opkg configuration file\n");
      fprintf(stderr, "\t-conf <conf_file>	Default configuration file location\n");
      fprintf(stderr, "				is %s/%s\n", ARGS_DEFAULT_CONF_FILE_DIR, ARGS_DEFAULT_CONF_FILE_NAME);
      fprintf(stderr, "\t-d <dest_name>		Use <dest_name> as the the root directory for\n");
@@ -285,27 +285,27 @@ void args_usage(char *complaint)
      fprintf(stderr, "\t-offline <offline_root>	offline installation of packages.\n");
      fprintf(stderr, "\t-verbose_wget		more wget messages\n");
     
-     fprintf(stderr, "\tForce Options (use when ipkg is too smart for its own good):\n");
+     fprintf(stderr, "\tForce Options (use when opkg is too smart for its own good):\n");
      fprintf(stderr, "\t-force-depends		Make dependency checks warnings instead of errors\n");
      fprintf(stderr, "\t				Install/remove package in spite of failed dependences\n");
-     fprintf(stderr, "\t-force-defaults		Use default options for questions asked by ipkg.\n");
+     fprintf(stderr, "\t-force-defaults		Use default options for questions asked by opkg.\n");
      fprintf(stderr, "				(no prompts). Note that this will not prevent\n");
      fprintf(stderr, "				package installation scripts from prompting.\n");
-     fprintf(stderr, "\t-force-reinstall 	Allow ipkg to reinstall a package.\n");
-     fprintf(stderr, "\t-force-overwrite 	Allow ipkg to overwrite files from another package during an install.\n");
-     fprintf(stderr, "\t-force-downgrade 	Allow ipkg to downgrade packages.\n");
+     fprintf(stderr, "\t-force-reinstall 	Allow opkg to reinstall a package.\n");
+     fprintf(stderr, "\t-force-overwrite 	Allow opkg to overwrite files from another package during an install.\n");
+     fprintf(stderr, "\t-force-downgrade 	Allow opkg to downgrade packages.\n");
      fprintf(stderr, "\t-force_space            Install even if there does not seem to be enough space.\n");
      fprintf(stderr, "\t-noaction               No action -- test only\n");
      fprintf(stderr, "\t-nodeps                 Do not follow dependences\n");
      fprintf(stderr, "\t-force-removal-of-dependent-packages\n");
-     fprintf(stderr, "\t-recursive	 	Allow ipkg to remove package and all that depend on it.\n");
+     fprintf(stderr, "\t-recursive	 	Allow opkg to remove package and all that depend on it.\n");
      fprintf(stderr, "\t-test                   No action -- test only\n");
      fprintf(stderr, "\t-t	 	        Specify tmp-dir.\n");
      fprintf(stderr, "\t--tmp-dir 	        Specify tmp-dir.\n");
      fprintf(stderr, "\n");
      fprintf(stderr, "\tregexp could be something like 'pkgname*' '*file*' or similar\n");
-     fprintf(stderr, "\teg: ipkg info 'libstd*'  or ipkg search '*libop*' or ipkg remove 'libncur*'\n");
-     /* -force-removal-of-essential-packages	Let ipkg remove essential packages. 
+     fprintf(stderr, "\teg: opkg info 'libstd*'  or opkg search '*libop*' or opkg remove 'libncur*'\n");
+     /* -force-removal-of-essential-packages	Let opkg remove essential packages. 
 	Using this option is almost guaranteed to break your system, hence this option
 	is not even advertised in the usage statement. */
      exit(1);
@@ -313,5 +313,5 @@ void args_usage(char *complaint)
 
 static void print_version(void)
 {
-     fprintf(stderr, "ipkg version %s\n", VERSION);
+     fprintf(stderr, "opkg version %s\n", VERSION);
 }

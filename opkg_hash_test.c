@@ -1,4 +1,4 @@
-/* ipkg_hash_test.c - the itsy package management system
+/* opkg_hash_test.c - the itsy package management system
 
    Carl D. Worth
 
@@ -15,15 +15,15 @@
    General Public License for more details.
 */
 
-#include "ipkg.h"
+#include "opkg.h"
 
 #include "hash_table.h"
-#include "ipkg_utils.h"
+#include "opkg_utils.h"
 #include "pkg_hash.h"
 
 int main(int argc, char *argv[])
 {
-     ipkg_conf_t conf;
+     opkg_conf_t conf;
      hash_table_t *hash = &conf.pkg_hash;
      pkg_vec_t * pkg_vec;
 

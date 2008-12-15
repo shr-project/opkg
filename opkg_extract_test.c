@@ -5,7 +5,7 @@
 /*
  * build thus: 
 
- * gcc -o ipkg_extract_test ipkg_extract_test.c -I./busybox-0.60.2/libbb -L./busybox-0.60.2 -lbb
+ * gcc -o opkg_extract_test opkg_extract_test.c -I./busybox-0.60.2/libbb -L./busybox-0.60.2 -lbb
  *
  */
 const char * applet_name;
@@ -25,7 +25,7 @@ int main(int argc, char * argv[])
   char * filename;
   
   if(argc < 2){
-    fprintf(stderr, "syntax: %s <ipkg file> [<file_to_extract>]\n", argv[0]);
+    fprintf(stderr, "syntax: %s <opkg file> [<file_to_extract>]\n", argv[0]);
     exit(0);
   }
   

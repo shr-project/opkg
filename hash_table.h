@@ -1,4 +1,4 @@
-/* hash.h - hash tables for ipkg
+/* hash.h - hash tables for opkg
 
    Steven M. Ayer, Jamey Hicks
    

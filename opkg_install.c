@@ -1,4 +1,4 @@
-/* ipkg_install.c - the itsy package management system
+/* opkg_install.c - the itsy package management system
 
    Carl D. Worth
 
@@ -15,7 +15,7 @@
    General Public License for more details.
 */
 
-#include "ipkg.h"
+#include "opkg.h"
 #include <errno.h>
 #include <dirent.h>
 #include <glob.h>
@@ -27,13 +27,13 @@ typedef void (*sighandler_t)(int);
 #include "pkg_hash.h"
 #include "pkg_extract.h"
 
-#include "ipkg_install.h"
-#include "ipkg_configure.h"
-#include "ipkg_download.h"
-#include "ipkg_remove.h"
+#include "opkg_install.h"
+#include "opkg_configure.h"
+#include "opkg_download.h"
+#include "opkg_remove.h"
 
-#include "ipkg_utils.h"
-#include "ipkg_message.h"
+#include "opkg_utils.h"
+#include "opkg_message.h"
 
 #include "sprintf_alloc.h"
 #include "file_util.h"
@@ -41,41 +41,41 @@ typedef void (*sighandler_t)(int);
 #include "xsystem.h"
 #include "user.h"
 
-int satisfy_dependencies_for(ipkg_conf_t *conf, pkg_t *pkg);
-static int verify_pkg_installable(ipkg_conf_t *conf, pkg_t *pkg);
-static int unpack_pkg_control_files(ipkg_conf_t *conf, pkg_t *pkg);
+int satisfy_dependencies_for(opkg_conf_t *conf, pkg_t *pkg);
+static int verify_pkg_installable(opkg_conf_t *conf, pkg_t *pkg);
+static int unpack_pkg_control_files(opkg_conf_t *conf, pkg_t *pkg);
 
-static int prerm_upgrade_old_pkg(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
-static int prerm_upgrade_old_pkg_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
-static int prerm_deconfigure_conflictors(ipkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *conflictors);
-static int prerm_deconfigure_conflictors_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *conflictors);
-static int preinst_configure(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
-static int preinst_configure_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
-static int check_data_file_clashes(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
-static int check_data_file_clashes_change(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
-static int check_data_file_clashes_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
-static int backup_modified_conffiles(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
-static int backup_modified_conffiles_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
-static int postrm_upgrade_old_pkg(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
-static int postrm_upgrade_old_pkg_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
+static int prerm_upgrade_old_pkg(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
+static int prerm_upgrade_old_pkg_unwind(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
+static int prerm_deconfigure_conflictors(opkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *conflictors);
+static int prerm_deconfigure_conflictors_unwind(opkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *conflictors);
+static int preinst_configure(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
+static int preinst_configure_unwind(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
+static int check_data_file_clashes(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
+static int check_data_file_clashes_change(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
+static int check_data_file_clashes_unwind(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
+static int backup_modified_conffiles(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
+static int backup_modified_conffiles_unwind(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
+static int postrm_upgrade_old_pkg(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
+static int postrm_upgrade_old_pkg_unwind(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
 
-static int remove_obsolesced_files(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
-static int install_maintainer_scripts(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
-static int remove_disappeared(ipkg_conf_t *conf, pkg_t *pkg);
-static int install_data_files(ipkg_conf_t *conf, pkg_t *pkg);
-static int resolve_conffiles(ipkg_conf_t *conf, pkg_t *pkg);
+static int remove_obsolesced_files(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
+static int install_maintainer_scripts(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg);
+static int remove_disappeared(opkg_conf_t *conf, pkg_t *pkg);
+static int install_data_files(opkg_conf_t *conf, pkg_t *pkg);
+static int resolve_conffiles(opkg_conf_t *conf, pkg_t *pkg);
 
-static int cleanup_temporary_files(ipkg_conf_t *conf, pkg_t *pkg);
+static int cleanup_temporary_files(opkg_conf_t *conf, pkg_t *pkg);
 
 static int user_prefers_old_conffile(const char *file, const char *backup);
 
 static char *backup_filename_alloc(const char *file_name);
-static int backup_make_backup(ipkg_conf_t *conf, const char *file_name);
+static int backup_make_backup(opkg_conf_t *conf, const char *file_name);
 static int backup_exists_for(const char *file_name);
 static int backup_remove(const char *file_name);
 
 
-int ipkg_install_from_file(ipkg_conf_t *conf, const char *filename)
+int opkg_install_from_file(opkg_conf_t *conf, const char *filename)
 {
      int err, cmp;
      pkg_t *pkg, *old;
@@ -92,7 +92,7 @@ int ipkg_install_from_file(ipkg_conf_t *conf, const char *filename)
      }
 
      if (!pkg->architecture) {
-	  ipkg_message(conf, IPKG_ERROR, "Package %s has no Architecture defined.\n", pkg->name);
+	  opkg_message(conf, OPKG_ERROR, "Package %s has no Architecture defined.\n", pkg->name);
 	  return -EINVAL;
      }
 
@@ -110,12 +110,12 @@ int ipkg_install_from_file(ipkg_conf_t *conf, const char *filename)
 
 	  cmp = pkg_compare_versions(old, pkg);
           if ( (conf->force_downgrade==1) && (cmp > 0) ){     /* We've been asked to allow downgrade  and version is precedent */
-             cmp = -1 ;                                       /* then we force ipkg to downgrade */ 
+             cmp = -1 ;                                       /* then we force opkg to downgrade */ 
                                                               /* We need to use a value < 0 because in the 0 case we are asking to */
                                                               /* reinstall, and some check could fail asking the "force-reinstall" option */
           } 
 	  if (cmp > 0) {
-	         ipkg_message(conf, IPKG_NOTICE,
+	         opkg_message(conf, OPKG_NOTICE,
 			      "Not downgrading package %s on %s from %s to %s.\n",
 			      old->name, old->dest->name, old_version, new_version);
 	         pkg->state_want = SW_DEINSTALL;
@@ -129,41 +129,41 @@ int ipkg_install_from_file(ipkg_conf_t *conf, const char *filename)
 	  }
      }
 
-     ipkg_message(conf, IPKG_DEBUG2,"Function: %s calling ipkg_install_pkg \n",__FUNCTION__);
-     return ipkg_install_pkg(conf, pkg,0);
+     opkg_message(conf, OPKG_DEBUG2,"Function: %s calling opkg_install_pkg \n",__FUNCTION__);
+     return opkg_install_pkg(conf, pkg,0);
 }
 
-ipkg_error_t ipkg_install_by_name(ipkg_conf_t *conf, const char *pkg_name)
+opkg_error_t opkg_install_by_name(opkg_conf_t *conf, const char *pkg_name)
 {
      int cmp;
      pkg_t *old, *new;
      char *old_version, *new_version;
 
-     ipkg_message(conf, IPKG_DEBUG2, " Getting old  from pkg_hash_fetch \n" );
+     opkg_message(conf, OPKG_DEBUG2, " Getting old  from pkg_hash_fetch \n" );
      old = pkg_hash_fetch_installed_by_name(&conf->pkg_hash, pkg_name);
      if ( old ) 
-        ipkg_message(conf, IPKG_DEBUG2, " Old versions from pkg_hash_fetch %s \n",  old->version );
+        opkg_message(conf, OPKG_DEBUG2, " Old versions from pkg_hash_fetch %s \n",  old->version );
     
-     ipkg_message(conf, IPKG_DEBUG2, " Getting new  from pkg_hash_fetch \n" );
+     opkg_message(conf, OPKG_DEBUG2, " Getting new  from pkg_hash_fetch \n" );
      new = pkg_hash_fetch_best_installation_candidate_by_name(conf, pkg_name);
      if ( new ) 
-        ipkg_message(conf, IPKG_DEBUG2, " New versions from pkg_hash_fetch %s \n",  new->version );
+        opkg_message(conf, OPKG_DEBUG2, " New versions from pkg_hash_fetch %s \n",  new->version );
 
 /* Pigi Basically here is broken the version stuff.
    What's happening is that nothing provide the version to differents 
    functions, so the returned struct is always the latest.
    That's why the install by name don't work.
 */
-     ipkg_message(conf, IPKG_DEBUG2, " Versions from pkg_hash_fetch in %s ", __FUNCTION__ );
+     opkg_message(conf, OPKG_DEBUG2, " Versions from pkg_hash_fetch in %s ", __FUNCTION__ );
 
      if ( old ) 
-        ipkg_message(conf, IPKG_DEBUG2, " old %s ", old->version );
+        opkg_message(conf, OPKG_DEBUG2, " old %s ", old->version );
      if ( new ) 
-        ipkg_message(conf, IPKG_DEBUG2, " new %s ", new->version );
-     ipkg_message(conf, IPKG_DEBUG2, " \n");
+        opkg_message(conf, OPKG_DEBUG2, " new %s ", new->version );
+     opkg_message(conf, OPKG_DEBUG2, " \n");
 
      if (new == NULL) {
-	  return IPKG_PKG_HAS_NO_CANDIDATE;
+	  return OPKG_PKG_HAS_NO_CANDIDATE;
      }
 
      new->state_flag |= SF_USER;
@@ -173,26 +173,26 @@ ipkg_error_t ipkg_install_by_name(ipkg_conf_t *conf, const char *pkg_name)
 
 	  cmp = pkg_compare_versions(old, new);
           if ( (conf->force_downgrade==1) && (cmp > 0) ){     /* We've been asked to allow downgrade  and version is precedent */
-	     ipkg_message(conf, IPKG_DEBUG, " Forcing downgrade \n");
-             cmp = -1 ;                                       /* then we force ipkg to downgrade */ 
+	     opkg_message(conf, OPKG_DEBUG, " Forcing downgrade \n");
+             cmp = -1 ;                                       /* then we force opkg to downgrade */ 
                                                               /* We need to use a value < 0 because in the 0 case we are asking to */
                                                               /* reinstall, and some check could fail asking the "force-reinstall" option */
           } 
-	  ipkg_message(conf, IPKG_DEBUG, 
+	  opkg_message(conf, OPKG_DEBUG, 
 		       "Comparing visible versions of pkg %s:"
 		       "\n\t%s is installed "
 		       "\n\t%s is available "
 		       "\n\t%d was comparison result\n",
 		       pkg_name, old_version, new_version, cmp);
 	  if (cmp == 0 && !conf->force_reinstall) {
-	       ipkg_message(conf, IPKG_NOTICE,
+	       opkg_message(conf, OPKG_NOTICE,
 			    "Package %s (%s) installed in %s is up to date.\n",
 			    old->name, old_version, old->dest->name);
 	       free(old_version);
 	       free(new_version);
 	       return 0;
 	  } else if (cmp > 0) {
-	       ipkg_message(conf, IPKG_NOTICE,
+	       opkg_message(conf, OPKG_NOTICE,
 			    "Not downgrading package %s on %s from %s to %s.\n",
 			    old->name, old->dest->name, old_version, new_version);
 	       free(old_version);
@@ -204,30 +204,30 @@ ipkg_error_t ipkg_install_by_name(ipkg_conf_t *conf, const char *pkg_name)
 	  }
      }
 
-     /* XXX: CLEANUP: The error code of ipkg_install_by_name is really
-	supposed to be an ipkg_error_t, but ipkg_install_pkg could
+     /* XXX: CLEANUP: The error code of opkg_install_by_name is really
+	supposed to be an opkg_error_t, but opkg_install_pkg could
 	return any kind of integer, (might be errno from a syscall,
 	etc.). This is a real mess and will need to be cleaned up if
-	anyone ever wants to make a nice libipkg. */
+	anyone ever wants to make a nice libopkg. */
 
-     ipkg_message(conf, IPKG_DEBUG2,"Function: %s calling ipkg_install_pkg \n",__FUNCTION__);
-     return ipkg_install_pkg(conf, new,0);
+     opkg_message(conf, OPKG_DEBUG2,"Function: %s calling opkg_install_pkg \n",__FUNCTION__);
+     return opkg_install_pkg(conf, new,0);
 }
 
-ipkg_error_t ipkg_install_multi_by_name(ipkg_conf_t *conf, const char *pkg_name)
+opkg_error_t opkg_install_multi_by_name(opkg_conf_t *conf, const char *pkg_name)
 {
      abstract_pkg_vec_t *providers = pkg_hash_fetch_all_installation_candidates (&conf->pkg_hash, pkg_name);
      int i;
-     ipkg_error_t err;
+     opkg_error_t err;
      abstract_pkg_t *ppkg ;
 
      if (providers == NULL)
-	  return IPKG_PKG_HAS_NO_CANDIDATE;
+	  return OPKG_PKG_HAS_NO_CANDIDATE;
 
      for (i = 0; i < providers->len; i++) {
 	  ppkg = abstract_pkg_vec_get(providers, i);
-          ipkg_message(conf, IPKG_DEBUG2,"Function: %s calling ipkg_install_by_name %d \n",__FUNCTION__, i);
-	  err = ipkg_install_by_name(conf, ppkg->name);
+          opkg_message(conf, OPKG_DEBUG2,"Function: %s calling opkg_install_by_name %d \n",__FUNCTION__, i);
+	  err = opkg_install_by_name(conf, ppkg->name);
 	  if (err)
 	       return err;
 /* XXX Maybe ppkg should be freed ? */
@@ -239,7 +239,7 @@ ipkg_error_t ipkg_install_multi_by_name(ipkg_conf_t *conf, const char *pkg_name)
  * Walk dependence graph starting with pkg, collect packages to be
  * installed into pkgs_needed, in dependence order.
  */
-int pkg_mark_dependencies_for_installation(ipkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *pkgs_needed)
+int pkg_mark_dependencies_for_installation(opkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *pkgs_needed)
 {
      int i, err;
      pkg_vec_t *depends = pkg_vec_alloc();
@@ -251,21 +251,21 @@ int pkg_mark_dependencies_for_installation(ipkg_conf_t *conf, pkg_t *pkg, pkg_ve
 							&unresolved);
 
      if (unresolved) {
-	  ipkg_message(conf, IPKG_ERROR,
+	  opkg_message(conf, OPKG_ERROR,
 		       "%s: Cannot satisfy the following dependencies for %s:\n\t",
 		       conf->force_depends ? "Warning" : "ERROR", pkg->name);
 	  while (*unresolved) {
-	       ipkg_message(conf, IPKG_ERROR, " %s", *unresolved);
+	       opkg_message(conf, OPKG_ERROR, " %s", *unresolved);
 	       unresolved++;
 	  }
-	  ipkg_message(conf, IPKG_ERROR, "\n");
+	  opkg_message(conf, OPKG_ERROR, "\n");
 	  if (! conf->force_depends) {
-	       ipkg_message(conf, IPKG_INFO,
+	       opkg_message(conf, OPKG_INFO,
 			    "This could mean that your package list is out of date or that the packages\n"
-			    "mentioned above do not yet exist (try 'ipkg update'). To proceed in spite\n"
+			    "mentioned above do not yet exist (try 'opkg update'). To proceed in spite\n"
 			    "of this problem try again with the '-force-depends' option.\n");
 	       pkg_vec_free(depends);
-	       return IPKG_PKG_DEPS_UNSATISFIED;
+	       return OPKG_PKG_DEPS_UNSATISFIED;
 	  }
      }
 
@@ -306,7 +306,7 @@ int pkg_mark_dependencies_for_installation(ipkg_conf_t *conf, pkg_t *pkg, pkg_ve
      return 0;
 }
 
-int name_mark_dependencies_for_installation(ipkg_conf_t *conf, const char *pkg_name, pkg_vec_t *pkgs_needed)
+int name_mark_dependencies_for_installation(opkg_conf_t *conf, const char *pkg_name, pkg_vec_t *pkgs_needed)
 {
      int cmp;
      pkg_t *old, *new;
@@ -316,7 +316,7 @@ int name_mark_dependencies_for_installation(ipkg_conf_t *conf, const char *pkg_n
     
      new = pkg_hash_fetch_best_installation_candidate_by_name(conf, pkg_name);
      if (new == NULL) {
-	  return IPKG_PKG_HAS_NO_CANDIDATE;
+	  return OPKG_PKG_HAS_NO_CANDIDATE;
      }
      if (old) {
 	  old_version = pkg_version_str_alloc(old);
@@ -324,26 +324,26 @@ int name_mark_dependencies_for_installation(ipkg_conf_t *conf, const char *pkg_n
 
 	  cmp = pkg_compare_versions(old, new);
           if ( (conf->force_downgrade==1) && (cmp > 0) ){     /* We've been asked to allow downgrade  and version is precedent */
-	    ipkg_message(conf, IPKG_DEBUG, " Forcing downgrade ");
-             cmp = -1 ;                                       /* then we force ipkg to downgrade */ 
+	    opkg_message(conf, OPKG_DEBUG, " Forcing downgrade ");
+             cmp = -1 ;                                       /* then we force opkg to downgrade */ 
                                                               /* We need to use a value < 0 because in the 0 case we are asking to */
                                                               /* reinstall, and some check could fail asking the "force-reinstall" option */
           } 
-	  ipkg_message(conf, IPKG_DEBUG, 
+	  opkg_message(conf, OPKG_DEBUG, 
 		       "comparing visible versions of pkg %s:"
 		       "\n\t%s is installed "
 		       "\n\t%s is available "
 		       "\n\t%d was comparison result\n",
 		       pkg_name, old_version, new_version, cmp);
 	  if (cmp == 0 && !conf->force_reinstall) {
-	       ipkg_message(conf, IPKG_NOTICE,
+	       opkg_message(conf, OPKG_NOTICE,
 			    "Package %s (%s) installed in %s is up to date.\n",
 			    old->name, old_version, old->dest->name);
 	       free(old_version);
 	       free(new_version);
 	       return 0;
 	  } else if (cmp > 0) {
-	       ipkg_message(conf, IPKG_NOTICE,
+	       opkg_message(conf, OPKG_NOTICE,
 			    "Not downgrading package %s on %s from %s to %s.\n",
 			    old->name, old->dest->name, old_version, new_version);
 	       free(old_version);
@@ -360,7 +360,7 @@ int name_mark_dependencies_for_installation(ipkg_conf_t *conf, const char *pkg_n
 
 
 
-int satisfy_dependencies_for(ipkg_conf_t *conf, pkg_t *pkg)
+int satisfy_dependencies_for(opkg_conf_t *conf, pkg_t *pkg)
 {
      int i, err;
      pkg_vec_t *depends = pkg_vec_alloc();
@@ -373,21 +373,21 @@ int satisfy_dependencies_for(ipkg_conf_t *conf, pkg_t *pkg)
 							&unresolved);
 
      if (unresolved) {
-	  ipkg_message(conf, IPKG_ERROR,
+	  opkg_message(conf, OPKG_ERROR,
 		       "%s: Cannot satisfy the following dependencies for %s:\n\t",
 		       conf->force_depends ? "Warning" : "ERROR", pkg->name);
 	  while (*unresolved) {
-	       ipkg_message(conf, IPKG_ERROR, " %s", *unresolved);
+	       opkg_message(conf, OPKG_ERROR, " %s", *unresolved);
 	       unresolved++;
 	  }
-	  ipkg_message(conf, IPKG_ERROR, "\n");
+	  opkg_message(conf, OPKG_ERROR, "\n");
 	  if (! conf->force_depends) {
-	       ipkg_message(conf, IPKG_INFO,
+	       opkg_message(conf, OPKG_INFO,
 			    "This could mean that your package list is out of date or that the packages\n"
-			    "mentioned above do not yet exist (try 'ipkg update'). To proceed in spite\n"
+			    "mentioned above do not yet exist (try 'opkg update'). To proceed in spite\n"
 			    "of this problem try again with the '-force-depends' option.\n");
 	       pkg_vec_free(depends);
-	       return IPKG_PKG_DEPS_UNSATISFIED;
+	       return OPKG_PKG_DEPS_UNSATISFIED;
 	  }
      }
 
@@ -411,8 +411,8 @@ int satisfy_dependencies_for(ipkg_conf_t *conf, pkg_t *pkg)
 	     it in, so check first. */
 	  if ((dep->state_status != SS_INSTALLED)
 	      && (dep->state_status != SS_UNPACKED)) {
-               ipkg_message(conf, IPKG_DEBUG2,"Function: %s calling ipkg_install_pkg \n",__FUNCTION__);
-	       err = ipkg_install_pkg(conf, dep,0);
+               opkg_message(conf, OPKG_DEBUG2,"Function: %s calling opkg_install_pkg \n",__FUNCTION__);
+	       err = opkg_install_pkg(conf, dep,0);
 	       if (err) {
 		    pkg_vec_free(depends);
 		    return err;
@@ -427,7 +427,7 @@ int satisfy_dependencies_for(ipkg_conf_t *conf, pkg_t *pkg)
 
 
 /* check all packages have their dependences satisfied, e.g., in case an upgraded package split */ 
-int ipkg_satisfy_all_dependences(ipkg_conf_t *conf)
+int opkg_satisfy_all_dependences(opkg_conf_t *conf)
 {
      if (conf->nodeps == 0) {
 	  int i;
@@ -444,17 +444,17 @@ int ipkg_satisfy_all_dependences(ipkg_conf_t *conf)
 
 
 
-static int check_conflicts_for(ipkg_conf_t *conf, pkg_t *pkg)
+static int check_conflicts_for(opkg_conf_t *conf, pkg_t *pkg)
 {
      int i;
      pkg_vec_t *conflicts = NULL;
      int level;
      const char *prefix;
      if (conf->force_depends) {
-	  level = IPKG_NOTICE;
+	  level = OPKG_NOTICE;
 	  prefix = "Warning";
      } else {
-	  level = IPKG_ERROR;
+	  level = OPKG_ERROR;
 	  prefix = "ERROR";
      }
 
@@ -462,19 +462,19 @@ static int check_conflicts_for(ipkg_conf_t *conf, pkg_t *pkg)
 	  conflicts = (pkg_vec_t *)pkg_hash_fetch_conflicts(&conf->pkg_hash, pkg);
 
      if (conflicts) {
-	  ipkg_message(conf, level,
+	  opkg_message(conf, level,
 		       "%s: The following packages conflict with %s:\n\t", prefix, pkg->name);
 	  i = 0;
 	  while (i < conflicts->len)
-	       ipkg_message(conf, level, " %s", conflicts->pkgs[i++]->name);
-	  ipkg_message(conf, level, "\n");
+	       opkg_message(conf, level, " %s", conflicts->pkgs[i++]->name);
+	  opkg_message(conf, level, "\n");
 	  pkg_vec_free(conflicts);
-	  return IPKG_PKG_DEPS_UNSATISFIED;
+	  return OPKG_PKG_DEPS_UNSATISFIED;
      }
      return 0;
 }
 
-static int update_file_ownership(ipkg_conf_t *conf, pkg_t *new_pkg, pkg_t *old_pkg)
+static int update_file_ownership(opkg_conf_t *conf, pkg_t *new_pkg, pkg_t *old_pkg)
 {
      str_list_t *new_list = pkg_get_installed_files(new_pkg);
      str_list_elt_t *iter;
@@ -483,7 +483,7 @@ static int update_file_ownership(ipkg_conf_t *conf, pkg_t *new_pkg, pkg_t *old_p
 	  char *new_file = iter->data;
 	  pkg_t *owner = file_hash_get_file_owner(conf, new_file);
 	  if (!new_file)
-	       ipkg_message(conf, IPKG_ERROR, "Null new_file for new_pkg=%s\n", new_pkg->name);
+	       opkg_message(conf, OPKG_ERROR, "Null new_file for new_pkg=%s\n", new_pkg->name);
 	  if (!owner || (owner == old_pkg))
 	       file_hash_set_file_owner(conf, new_file, new_pkg);
      }
@@ -501,7 +501,7 @@ static int update_file_ownership(ipkg_conf_t *conf, pkg_t *new_pkg, pkg_t *old_p
      return 0;
 }
 
-static int verify_pkg_installable(ipkg_conf_t *conf, pkg_t *pkg)
+static int verify_pkg_installable(opkg_conf_t *conf, pkg_t *pkg)
 {
     /* XXX: FEATURE: Anything else needed here? Maybe a check on free space? */
 
@@ -523,7 +523,7 @@ static int verify_pkg_installable(ipkg_conf_t *conf, pkg_t *pkg)
 	  comp_size = (int)((comp_size + 1023) / 1024);
 
 	  if (comp_size >= blocks_available) {
-	       ipkg_message(conf, IPKG_ERROR,
+	       opkg_message(conf, OPKG_ERROR,
 			    "Only have %d available blocks on filesystem %s, pkg %s needs %d\n", 
 			    blocks_available, conf->default_dest->root_dir, pkg->name, comp_size);
 	       return ENOSPC;
@@ -532,7 +532,7 @@ static int verify_pkg_installable(ipkg_conf_t *conf, pkg_t *pkg)
      return 0;
 }
 
-static int unpack_pkg_control_files(ipkg_conf_t *conf, pkg_t *pkg)
+static int unpack_pkg_control_files(opkg_conf_t *conf, pkg_t *pkg)
 {
      int err;
      char *conffiles_file_name;
@@ -543,7 +543,7 @@ static int unpack_pkg_control_files(ipkg_conf_t *conf, pkg_t *pkg)
 
      pkg->tmp_unpack_dir = mkdtemp(pkg->tmp_unpack_dir);
      if (pkg->tmp_unpack_dir == NULL) {
-	  ipkg_message(conf, IPKG_ERROR,
+	  opkg_message(conf, OPKG_ERROR,
 		       "%s: Failed to create temporary directory '%s': %s\n",
 		       __FUNCTION__, pkg->tmp_unpack_dir, strerror(errno));
 	  return errno;
@@ -615,7 +615,7 @@ static int unpack_pkg_control_files(ipkg_conf_t *conf, pkg_t *pkg)
 }
 
 /* returns number of installed replacees */
-int pkg_get_installed_replacees(ipkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *installed_replacees)
+int pkg_get_installed_replacees(opkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *installed_replacees)
 {
      abstract_pkg_t **replaces = pkg->replaces;
      int replaces_count = pkg->replaces_count;
@@ -637,7 +637,7 @@ int pkg_get_installed_replacees(ipkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *instal
      return installed_replacees->len;
 }
 
-int pkg_remove_installed_replacees(ipkg_conf_t *conf, pkg_vec_t *replacees)
+int pkg_remove_installed_replacees(opkg_conf_t *conf, pkg_vec_t *replacees)
 {
      int i;
      int replaces_count = replacees->len;
@@ -645,7 +645,7 @@ int pkg_remove_installed_replacees(ipkg_conf_t *conf, pkg_vec_t *replacees)
 	  pkg_t *replacee = replacees->pkgs[i];
 	  int err;
 	  replacee->state_flag |= SF_REPLACE; /* flag it so remove won't complain */
-	  err = ipkg_remove_pkg(conf, replacee,0);
+	  err = opkg_remove_pkg(conf, replacee,0);
 	  if (err)
 	       return err;
      }
@@ -653,15 +653,15 @@ int pkg_remove_installed_replacees(ipkg_conf_t *conf, pkg_vec_t *replacees)
 }
 
 /* to unwind the removal: make sure they are installed */
-int pkg_remove_installed_replacees_unwind(ipkg_conf_t *conf, pkg_vec_t *replacees)
+int pkg_remove_installed_replacees_unwind(opkg_conf_t *conf, pkg_vec_t *replacees)
 {
      int i, err;
      int replaces_count = replacees->len;
      for (i = 0; i < replaces_count; i++) {
 	  pkg_t *replacee = replacees->pkgs[i];
 	  if (replacee->state_status != SS_INSTALLED) {
-               ipkg_message(conf, IPKG_DEBUG2,"Function: %s calling ipkg_install_pkg \n",__FUNCTION__);
-	       err = ipkg_install_pkg(conf, replacee,0);
+               opkg_message(conf, OPKG_DEBUG2,"Function: %s calling opkg_install_pkg \n",__FUNCTION__);
+	       err = opkg_install_pkg(conf, replacee,0);
 	       if (err)
 		    return err;
 	  }
@@ -670,13 +670,13 @@ int pkg_remove_installed_replacees_unwind(ipkg_conf_t *conf, pkg_vec_t *replacee
 }
 
 int caught_sigint = 0;
-static void ipkg_install_pkg_sigint_handler(int sig)
+static void opkg_install_pkg_sigint_handler(int sig)
 {
      caught_sigint = sig;
 }
 
 /* compares versions of pkg and old_pkg, returns 0 if OK to proceed with installation of pkg, 1 otherwise */
-static int ipkg_install_check_downgrade(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg, int message)
+static int opkg_install_check_downgrade(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg, int message)
 {	  
      if (old_pkg) {
           char message_out[15];
@@ -688,31 +688,31 @@ static int ipkg_install_check_downgrade(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *ol
           memset(message_out,'\x0',15);
           strncpy (message_out,"Upgrading ",strlen("Upgrading ")); 
           if ( (conf->force_downgrade==1) && (cmp > 0) ){     /* We've been asked to allow downgrade  and version is precedent */
-             cmp = -1 ;                                       /* then we force ipkg to downgrade */ 
+             cmp = -1 ;                                       /* then we force opkg to downgrade */ 
              strncpy (message_out,"Downgrading ",strlen("Downgrading "));         /* We need to use a value < 0 because in the 0 case we are asking to */
                                                               /* reinstall, and some check could fail asking the "force-reinstall" option */
           } 
 
 	  if (cmp > 0) {
-	       ipkg_message(conf, IPKG_NOTICE,
+	       opkg_message(conf, OPKG_NOTICE,
 			    "Not downgrading package %s on %s from %s to %s.\n",
 			    old_pkg->name, old_pkg->dest->name, old_version, new_version);
 	       rc = 1;
 	  } else if (cmp < 0) {
-	       ipkg_message(conf, IPKG_NOTICE,
+	       opkg_message(conf, OPKG_NOTICE,
 			    "%s%s on %s from %s to %s...\n",
 			    message_out, pkg->name, old_pkg->dest->name, old_version, new_version);
 	       pkg->dest = old_pkg->dest;
 	       rc = 0;
 	  } else /* cmp == 0 */ {
 	       if (conf->force_reinstall) {
-		    ipkg_message(conf, IPKG_NOTICE,
+		    opkg_message(conf, OPKG_NOTICE,
 				 "Reinstalling %s (%s) on %s...\n",
 				 pkg->name, new_version, old_pkg->dest->name);
 		    pkg->dest = old_pkg->dest;
 		    rc = 0;
 	       } else {
-		    ipkg_message(conf, IPKG_NOTICE,
+		    opkg_message(conf, OPKG_NOTICE,
 				 "Not installing %s (%s) on %s -- already installed.\n",
 				 pkg->name, new_version, old_pkg->dest->name);
 		    rc = 1;
@@ -730,7 +730,7 @@ static int ipkg_install_check_downgrade(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *ol
           strncpy( message_out,"Installing ",strlen("Installing ") );
 	  char *version = pkg_version_str_alloc(pkg);
       
-	  ipkg_message(conf, IPKG_NOTICE,
+	  opkg_message(conf, OPKG_NOTICE,
 		       "%s%s (%s) to %s...\n", message_out,
 		       pkg->name, version, pkg->dest->name);
 	  free(version);
@@ -739,7 +739,7 @@ static int ipkg_install_check_downgrade(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *ol
 }
 
 /* and now the meat... */
-int ipkg_install_pkg(ipkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
+int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 {
      int err = 0;
      int message = 0;
@@ -754,15 +754,15 @@ int ipkg_install_pkg(ipkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
         message = 1;            /* Coming from an upgrade, and should change the output message */
 
      if (!pkg) {
-	  ipkg_message(conf, IPKG_ERROR,
-		       "INTERNAL ERROR: null pkg passed to ipkg_install_pkg\n");
+	  opkg_message(conf, OPKG_ERROR,
+		       "INTERNAL ERROR: null pkg passed to opkg_install_pkg\n");
 	  return -EINVAL;
      }
 
-     ipkg_message(conf, IPKG_DEBUG2, "Function: %s calling pkg_arch_supported %s \n", __FUNCTION__, __FUNCTION__);
+     opkg_message(conf, OPKG_DEBUG2, "Function: %s calling pkg_arch_supported %s \n", __FUNCTION__, __FUNCTION__);
 
      if (!pkg_arch_supported(conf, pkg)) {
-	  ipkg_message(conf, IPKG_ERROR, "INTERNAL ERROR: architecture %s for pkg %s is unsupported.\n",
+	  opkg_message(conf, OPKG_ERROR, "INTERNAL ERROR: architecture %s for pkg %s is unsupported.\n",
 		       pkg->architecture, pkg->name);
 	  return -EINVAL;
      }
@@ -770,7 +770,7 @@ int ipkg_install_pkg(ipkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 	  err = satisfy_dependencies_for(conf, pkg);
 	  if (err) { return err; }
 
-	  ipkg_message(conf, IPKG_NOTICE,
+	  opkg_message(conf, OPKG_NOTICE,
 		       "Package %s is already installed in %s.\n", 
 		       pkg->name, pkg->dest->name);
 	  return 0;
@@ -782,7 +782,7 @@ int ipkg_install_pkg(ipkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 
      old_pkg = pkg_hash_fetch_installed_by_name(&conf->pkg_hash, pkg->name);
 
-     err = ipkg_install_check_downgrade(conf, pkg, old_pkg, message);
+     err = opkg_install_check_downgrade(conf, pkg, old_pkg, message);
      if (err) { return err; }
 
      pkg->state_want = SW_INSTALL;
@@ -806,10 +806,10 @@ int ipkg_install_pkg(ipkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      if (err) { return err; }
 
      if (pkg->local_filename == NULL) {
-	  err = ipkg_download_pkg(conf, pkg, conf->tmp_dir);
+	  err = opkg_download_pkg(conf, pkg, conf->tmp_dir);
 	  if (err) {
-	       ipkg_message(conf, IPKG_ERROR,
-			    "Failed to download %s. Perhaps you need to run 'ipkg update'?\n",
+	       opkg_message(conf, OPKG_ERROR,
+			    "Failed to download %s. Perhaps you need to run 'opkg update'?\n",
 			    pkg->name);
 	       return err;
 	  }
@@ -821,8 +821,8 @@ int ipkg_install_pkg(ipkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
          file_md5 = file_md5sum_alloc(pkg->local_filename);
          if (strcmp(file_md5, pkg->md5sum))
          {
-              ipkg_message(conf, IPKG_ERROR,
-                           "Package %s md5sum mismatch. Either the ipkg or the package index are corrupt. Try 'ipkg update'.\n",
+              opkg_message(conf, OPKG_ERROR,
+                           "Package %s md5sum mismatch. Either the opkg or the package index are corrupt. Try 'opkg update'.\n",
                            pkg->name);
               free(file_md5);
               return err;
@@ -848,21 +848,21 @@ int ipkg_install_pkg(ipkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      replacees = pkg_vec_alloc();
      pkg_get_installed_replacees(conf, pkg, replacees);
 
-     /* this next section we do with SIGINT blocked to prevent inconsistency between ipkg database and filesystem */
+     /* this next section we do with SIGINT blocked to prevent inconsistency between opkg database and filesystem */
      {
 	  sigset_t newset, oldset;
 	  sighandler_t old_handler = NULL;
 	  int use_signal = 0;
 	  caught_sigint = 0;
 	  if (use_signal) {
-	       old_handler = signal(SIGINT, ipkg_install_pkg_sigint_handler);
+	       old_handler = signal(SIGINT, opkg_install_pkg_sigint_handler);
 	  } else {
 	       sigemptyset(&newset);
 	       sigaddset(&newset, SIGINT);
 	       sigprocmask(SIG_BLOCK, &newset, &oldset);
 	  }
 
-	  ipkg_state_changed++;
+	  opkg_state_changed++;
 	  pkg->state_flag |= SF_FILELIST_CHANGED;
 
 	  /* XXX: BUG: we really should treat replacement more like an upgrade
@@ -896,10 +896,10 @@ int ipkg_install_pkg(ipkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 	       old_pkg->state_want = SW_DEINSTALL;
 
 	       if (old_pkg->state_flag & SF_NOPRUNE) {
-		    ipkg_message(conf, IPKG_INFO,
+		    opkg_message(conf, OPKG_INFO,
 				 "  not removing obsolesced files because package marked noprune\n");
 	       } else {
-		    ipkg_message(conf, IPKG_INFO,
+		    opkg_message(conf, OPKG_INFO,
 				 "  removing obsolesced files\n");
 		    remove_obsolesced_files(conf, pkg, old_pkg);
 	       }
@@ -913,28 +913,28 @@ int ipkg_install_pkg(ipkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 	  }
 
 
-	  ipkg_message(conf, IPKG_INFO,
+	  opkg_message(conf, OPKG_INFO,
 		       "  installing maintainer scripts\n");
 	  install_maintainer_scripts(conf, pkg, old_pkg);
 
 	  /* the following just returns 0 */
 	  remove_disappeared(conf, pkg);
 
-	  ipkg_message(conf, IPKG_INFO,
+	  opkg_message(conf, OPKG_INFO,
 		       "  installing data files\n");
 	  install_data_files(conf, pkg);
 
 /* read comments from function for detail but I will execute this here as all other tests are ok.*/
 	  err = check_data_file_clashes_change(conf, pkg, old_pkg);
 
-	  ipkg_message(conf, IPKG_INFO,
+	  opkg_message(conf, OPKG_INFO,
 		       "  resolving conf files\n");
 	  resolve_conffiles(conf, pkg);
 
 	  pkg->state_status = SS_UNPACKED;
 	  old_state_flag = pkg->state_flag;
 	  pkg->state_flag &= ~SF_PREFER;
-	  ipkg_message(conf, IPKG_DEBUG, "   pkg=%s old_state_flag=%x state_flag=%x\n", pkg->name, old_state_flag, pkg->state_flag);
+	  opkg_message(conf, OPKG_DEBUG, "   pkg=%s old_state_flag=%x state_flag=%x\n", pkg->name, old_state_flag, pkg->state_flag);
 
 	  if (old_pkg && !conf->force_reinstall) {
 	       old_pkg->state_status = SS_NOT_INSTALLED;
@@ -942,7 +942,7 @@ int ipkg_install_pkg(ipkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 
 	  time(&pkg->installed_time);
 
-	  ipkg_message(conf, IPKG_INFO,
+	  opkg_message(conf, OPKG_INFO,
 		       "  cleanup temp files\n");
 	  cleanup_temporary_files(conf, pkg);
 
@@ -950,7 +950,7 @@ int ipkg_install_pkg(ipkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 	  if (ab_pkg)
 	       ab_pkg->state_status = pkg->state_status;
 
-	  ipkg_message(conf, IPKG_INFO, "Done.\n");
+	  opkg_message(conf, OPKG_INFO, "Done.\n");
 
 	  if (use_signal)
 	       signal(SIGINT, old_handler);
@@ -975,11 +975,11 @@ int ipkg_install_pkg(ipkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      UNWIND_REMOVE_INSTALLED_REPLACEES:
 	  pkg_remove_installed_replacees_unwind(conf, replacees);
 
-	  ipkg_message(conf, IPKG_INFO,
+	  opkg_message(conf, OPKG_INFO,
 		       "  cleanup temp files\n");
 	  cleanup_temporary_files(conf, pkg);
 
-	  ipkg_message(conf, IPKG_INFO,
+	  opkg_message(conf, OPKG_INFO,
 		       "Failed.\n");
 	  if (use_signal)
 	       signal(SIGINT, old_handler);
@@ -990,7 +990,7 @@ int ipkg_install_pkg(ipkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      }
 }
 
-static int prerm_upgrade_old_pkg(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
+static int prerm_upgrade_old_pkg(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
      /* DPKG_INCOMPATIBILITY:
 	dpkg does some things here that we don't do yet. Do we care?
@@ -1005,7 +1005,7 @@ static int prerm_upgrade_old_pkg(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
      return 0;
 }
 
-static int prerm_upgrade_old_pkg_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
+static int prerm_upgrade_old_pkg_unwind(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
      /* DPKG_INCOMPATIBILITY:
 	dpkg does some things here that we don't do yet. Do we care?
@@ -1014,7 +1014,7 @@ static int prerm_upgrade_old_pkg_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *ol
      return 0;
 }
 
-static int prerm_deconfigure_conflictors(ipkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *conflictors)
+static int prerm_deconfigure_conflictors(opkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *conflictors)
 {
      /* DPKG_INCOMPATIBILITY:
 	dpkg does some things here that we don't do yet. Do we care?
@@ -1040,7 +1040,7 @@ static int prerm_deconfigure_conflictors(ipkg_conf_t *conf, pkg_t *pkg, pkg_vec_
      return 0;
 }
 
-static int prerm_deconfigure_conflictors_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *conflictors)
+static int prerm_deconfigure_conflictors_unwind(opkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *conflictors)
 {
      /* DPKG_INCOMPATIBILITY: dpkg does some things here that we don't
 	do yet. Do we care?  (See prerm_deconfigure_conflictors for
@@ -1048,7 +1048,7 @@ static int prerm_deconfigure_conflictors_unwind(ipkg_conf_t *conf, pkg_t *pkg, p
      return 0;
 }
 
-static int preinst_configure(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
+static int preinst_configure(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
      int err;
      char *preinst_args;
@@ -1067,7 +1067,7 @@ static int preinst_configure(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 
      err = pkg_run_script(conf, pkg, "preinst", preinst_args);
      if (err) {
-	  ipkg_message(conf, IPKG_ERROR,
+	  opkg_message(conf, OPKG_ERROR,
 		       "Aborting installation of %s\n", pkg->name);
 	  return 1;
      }
@@ -1077,7 +1077,7 @@ static int preinst_configure(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
      return 0;
 }
 
-static int preinst_configure_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
+static int preinst_configure_unwind(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
      /* DPKG_INCOMPATIBILITY:
 	dpkg does the following error unwind, should we?
@@ -1088,7 +1088,7 @@ static int preinst_configure_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pk
      return 0;
 }
 
-static int backup_modified_conffiles(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
+static int backup_modified_conffiles(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
      int err;
      conffile_list_elt_t *iter;
@@ -1137,7 +1137,7 @@ static int backup_modified_conffiles(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_p
      return 0;
 }
 
-static int backup_modified_conffiles_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
+static int backup_modified_conffiles_unwind(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
      conffile_list_elt_t *iter;
 
@@ -1155,14 +1155,14 @@ static int backup_modified_conffiles_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_t
 }
 
 
-static int check_data_file_clashes(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
+static int check_data_file_clashes(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
      /* DPKG_INCOMPATIBILITY:
-	ipkg takes a slightly different approach than dpkg at this
+	opkg takes a slightly different approach than dpkg at this
 	point.  dpkg installs each file in the new package while
 	creating a backup for any file that is replaced, (so that it
 	can unwind if necessary).  To avoid complexity and redundant
-	storage, ipkg doesn't do any installation until later, (at the
+	storage, opkg doesn't do any installation until later, (at the
 	point at which dpkg removes the backups.
 	
 	But, we do have to check for data file clashes, since after
@@ -1207,14 +1207,14 @@ static int check_data_file_clashes(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg
 
 	       /* Pre-existing files are OK if owned by a package replaced by new pkg. */
 	       if (owner) {
-                    ipkg_message(conf, IPKG_DEBUG2, "Checking for replaces for %s in package %s\n", filename, owner->name);
+                    opkg_message(conf, OPKG_DEBUG2, "Checking for replaces for %s in package %s\n", filename, owner->name);
 		    if (pkg_replaces(pkg, owner)) {
 			 continue;
 		    }
 /* If the file that would be installed is owned by the same package, ( as per a reinstall or similar )
    then it's ok to overwrite. */
                     if (strcmp(owner->name,pkg->name)==0){
-			 ipkg_message(conf, IPKG_INFO, "Replacing pre-existing file %s owned by package %s\n", filename, owner->name);
+			 opkg_message(conf, OPKG_INFO, "Replacing pre-existing file %s owned by package %s\n", filename, owner->name);
 			 continue;
                     }
 	       }
@@ -1222,20 +1222,20 @@ static int check_data_file_clashes(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg
 	       /* Pre-existing files are OK if they are obsolete */
 	       obs = hash_table_get(&conf->obs_file_hash, filename);
 	       if (obs) {
-		    ipkg_message(conf, IPKG_INFO, "Pre-exiting file %s is obsolete.  obs_pkg=%s\n", filename, obs->name);
+		    opkg_message(conf, OPKG_INFO, "Pre-exiting file %s is obsolete.  obs_pkg=%s\n", filename, obs->name);
 		    continue;
 	       }
 
 	       /* We have found a clash. */
-	       ipkg_message(conf, IPKG_ERROR,
+	       opkg_message(conf, OPKG_ERROR,
 			    "Package %s wants to install file %s\n"
 			    "\tBut that file is already provided by package ",
 			    pkg->name, filename);
 	       if (owner) {
-		    ipkg_message(conf, IPKG_ERROR,
+		    opkg_message(conf, OPKG_ERROR,
 				 "%s\n", owner->name);
 	       } else {
-		    ipkg_message(conf, IPKG_ERROR,
+		    opkg_message(conf, OPKG_ERROR,
 				 "<no package>\nPlease move this file out of the way and try again.\n");
 	       }
 	       clashes++;
@@ -1247,7 +1247,7 @@ static int check_data_file_clashes(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg
      return clashes;
 }
 
-static int check_data_file_clashes_change(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
+static int check_data_file_clashes_change(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
     /* Basically that's the worst hack I could do to be able to change ownership of
        file list, but, being that we have no way to unwind the mods, due to structure
@@ -1283,7 +1283,7 @@ static int check_data_file_clashes_change(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *
 		    if (pkg_replaces(pkg, owner)) {
 /* It's now time to change the owner of that file. 
    It has been "replaced" from the new "Replaces", then I need to inform lists file about that.  */
-			 ipkg_message(conf, IPKG_INFO, "Replacing pre-existing file %s owned by package %s\n", filename, owner->name);
+			 opkg_message(conf, OPKG_INFO, "Replacing pre-existing file %s owned by package %s\n", filename, owner->name);
 		         file_hash_set_file_owner(conf, filename, pkg);
 			 continue;
 		    }
@@ -1297,13 +1297,13 @@ static int check_data_file_clashes_change(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *
      return clashes;
 }
 
-static int check_data_file_clashes_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
+static int check_data_file_clashes_unwind(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
      /* Nothing to do since check_data_file_clashes doesn't change state */
      return 0;
 }
 
-static int postrm_upgrade_old_pkg(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
+static int postrm_upgrade_old_pkg(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
      /* DPKG_INCOMPATIBILITY: dpkg does the following here, should we?
 	1. If the package is being upgraded, call
@@ -1315,7 +1315,7 @@ static int postrm_upgrade_old_pkg(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
      return 0;
 }
 
-static int postrm_upgrade_old_pkg_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
+static int postrm_upgrade_old_pkg_unwind(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
      /* DPKG_INCOMPATIBILITY:
 	dpkg does some things here that we don't do yet. Do we care?
@@ -1324,7 +1324,7 @@ static int postrm_upgrade_old_pkg_unwind(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *o
     return 0;
 }
 
-static int remove_obsolesced_files(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
+static int remove_obsolesced_files(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
      int err;
      str_list_t *old_files;
@@ -1359,12 +1359,12 @@ static int remove_obsolesced_files(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg
 	  }
  
 	  /* old file is obsolete */
-	  ipkg_message(conf, IPKG_INFO,
+	  opkg_message(conf, OPKG_INFO,
 		       "    removing obsolete file %s\n", old);
 	  if (!conf->noaction) {
 	       err = unlink(old);
 	       if (err) {
-		    ipkg_message(conf, IPKG_ERROR, "    Warning: remove %s failed: %s\n", old,
+		    opkg_message(conf, OPKG_ERROR, "    Warning: remove %s failed: %s\n", old,
 				 strerror(errno));
 	       }
 	  }
@@ -1379,7 +1379,7 @@ static int remove_obsolesced_files(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg
      return 0;
 }
 
-static int remove_obsolete_maintainer_scripts(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
+static int remove_obsolete_maintainer_scripts(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
      int i;
      int err = 0;
@@ -1387,7 +1387,7 @@ static int remove_obsolete_maintainer_scripts(ipkg_conf_t *conf, pkg_t *pkg, pkg
      glob_t globbuf;
      if (0) {
 	  if (!pkg->dest) {
-	       ipkg_message(conf, IPKG_ERROR, "%s: no dest for package %s\n", __FUNCTION__, pkg->name);
+	       opkg_message(conf, OPKG_ERROR, "%s: no dest for package %s\n", __FUNCTION__, pkg->name);
 	       return -1;
 	  }
 	  sprintf_alloc(&globpattern, "%s/%s.*", pkg->dest->info_dir, pkg->name);
@@ -1398,7 +1398,7 @@ static int remove_obsolete_maintainer_scripts(ipkg_conf_t *conf, pkg_t *pkg, pkg
 	  }
 	  /* XXXX this should perhaps only remove the ones that are not overwritten in new package.  Jamey 11/11/2003 */
 	  for (i = 0; i < globbuf.gl_pathc; i++) {
-	       ipkg_message(conf, IPKG_DEBUG, "Removing control file %s from old_pkg %s\n",
+	       opkg_message(conf, OPKG_DEBUG, "Removing control file %s from old_pkg %s\n",
 			    globbuf.gl_pathv[i], old_pkg->name);
 	       if (!conf->noaction)
 		    unlink(globbuf.gl_pathv[i]);
@@ -1408,7 +1408,7 @@ static int remove_obsolete_maintainer_scripts(ipkg_conf_t *conf, pkg_t *pkg, pkg
      return err;
 }
 
-static int install_maintainer_scripts(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
+static int install_maintainer_scripts(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
      int ret;
      char *prefix;
@@ -1423,7 +1423,7 @@ static int install_maintainer_scripts(ipkg_conf_t *conf, pkg_t *pkg, pkg_t *old_
      return ret;
 }
 
-static int remove_disappeared(ipkg_conf_t *conf, pkg_t *pkg)
+static int remove_disappeared(opkg_conf_t *conf, pkg_t *pkg)
 {
      /* DPKG_INCOMPATIBILITY:
 	This is a fairly sophisticated dpkg operation. Shall we
@@ -1443,16 +1443,16 @@ static int remove_disappeared(ipkg_conf_t *conf, pkg_t *pkg)
      return 0;
 }
 
-static int install_data_files(ipkg_conf_t *conf, pkg_t *pkg)
+static int install_data_files(opkg_conf_t *conf, pkg_t *pkg)
 {
      int err;
 
-     /* ipkg takes a slightly different approach to data file backups
+     /* opkg takes a slightly different approach to data file backups
 	than dpkg. Rather than removing backups at this point, we
 	actually do the data file installation now. See comments in
 	check_data_file_clashes() for more details. */
     
-     ipkg_message(conf, IPKG_INFO,
+     opkg_message(conf, OPKG_INFO,
 		  "    extracting data files to %s\n", pkg->dest->root_dir);
      err = pkg_extract_data_files_to_dir(pkg, pkg->dest->root_dir);
      if (err) {
@@ -1473,12 +1473,12 @@ static int install_data_files(ipkg_conf_t *conf, pkg_t *pkg)
         Pigi: 16/03/2004 */
      set_flags_from_control(conf, pkg) ;
      
-     ipkg_message(conf, IPKG_DEBUG, "    Calling pkg_write_filelist from %s\n", __FUNCTION__);
+     opkg_message(conf, OPKG_DEBUG, "    Calling pkg_write_filelist from %s\n", __FUNCTION__);
      err = pkg_write_filelist(conf, pkg);
      if (err)
 	  return err;
 
-     /* XXX: FEATURE: ipkg should identify any files which existed
+     /* XXX: FEATURE: opkg should identify any files which existed
 	before installation and which were overwritten, (see
 	check_data_file_clashes()). What it must do is remove any such
 	files from the filelist of the old package which provided the
@@ -1486,13 +1486,13 @@ static int install_data_files(ipkg_conf_t *conf, pkg_t *pkg)
 	it would break the new package. Removing the new package will
 	also break the old one, but this cannot be helped since the old
 	package's file has already been deleted. This is the importance
-	of check_data_file_clashes(), and only allowing ipkg to install
+	of check_data_file_clashes(), and only allowing opkg to install
 	a clashing package with a user force. */
 
      return 0;
 }
 
-static int resolve_conffiles(ipkg_conf_t *conf, pkg_t *pkg)
+static int resolve_conffiles(opkg_conf_t *conf, pkg_t *pkg)
 {
      conffile_list_elt_t *iter;
      conffile_t *cf;
@@ -1593,16 +1593,16 @@ static int user_prefers_old_conffile(const char *file_name, const char *backup)
    creating/cleaning pkg->tmp_unpack_dir directly into pkg.c. (Then,
    it would make sense to cleanup pkg->tmp_unpack_dir directly from
    pkg_deinit for example). */
-static int cleanup_temporary_files(ipkg_conf_t *conf, pkg_t *pkg)
+static int cleanup_temporary_files(opkg_conf_t *conf, pkg_t *pkg)
 {
      DIR *tmp_dir;
      struct dirent *dirent;
      char *tmp_file;
 
-#ifdef IPKG_DEBUG_NO_TMP_CLEANUP
+#ifdef OPKG_DEBUG_NO_TMP_CLEANUP
 #error
-     ipkg_message(conf, IPKG_DEBUG,
-		  "%s: Not cleaning up %s since ipkg compiled with IPKG_DEBUG_NO_TMP_CLEANUP\n",
+     opkg_message(conf, OPKG_DEBUG,
+		  "%s: Not cleaning up %s since opkg compiled with OPKG_DEBUG_NO_TMP_CLEANUP\n",
 		  __FUNCTION__, pkg->tmp_unpack_dir);
      return 0;
 #endif
@@ -1629,7 +1629,7 @@ static int cleanup_temporary_files(ipkg_conf_t *conf, pkg_t *pkg)
 	  }
      }
 
-     ipkg_message(conf, IPKG_INFO, "cleanup_temporary_files: pkg=%s local_filename=%s tmp_dir=%s\n",
+     opkg_message(conf, OPKG_INFO, "cleanup_temporary_files: pkg=%s local_filename=%s tmp_dir=%s\n",
 		  pkg->name, pkg->local_filename, conf->tmp_dir);
      if (pkg->local_filename && strncmp(pkg->local_filename, conf->tmp_dir, strlen(conf->tmp_dir)) == 0) {
 	  unlink(pkg->local_filename);
@@ -1644,12 +1644,12 @@ static char *backup_filename_alloc(const char *file_name)
 {
      char *backup;
 
-     sprintf_alloc(&backup, "%s%s", file_name, IPKG_BACKUP_SUFFIX);
+     sprintf_alloc(&backup, "%s%s", file_name, OPKG_BACKUP_SUFFIX);
 
      return backup;
 }
 
-int backup_make_backup(ipkg_conf_t *conf, const char *file_name)
+int backup_make_backup(opkg_conf_t *conf, const char *file_name)
 {
      int err;
      char *backup;
@@ -1657,7 +1657,7 @@ int backup_make_backup(ipkg_conf_t *conf, const char *file_name)
      backup = backup_filename_alloc(file_name);
      err = file_copy(file_name, backup);
      if (err) {
-	  ipkg_message(conf, IPKG_ERROR,
+	  opkg_message(conf, OPKG_ERROR,
 		       "%s: Failed to copy %s to %s\n",
 		       __FUNCTION__, file_name, backup);
      }
@@ -1694,20 +1694,20 @@ static int backup_remove(const char *file_name)
 
 
 
-#ifdef CONFIG_IPKG_PROCESS_ACTIONS
+#ifdef CONFIG_OPKG_PROCESS_ACTIONS
 
-int ipkg_remove_packages(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_remove) 
+int opkg_remove_packages(opkg_conf_t *conf, pkg_vec_t *pkgs_to_remove) 
 {
      /* first, remove the packages that need removing */
      for (i = 0 ; i < pkgs_to_remove->len; i++ ) {
 	  pkg_t *pkg = pkgs_to_remove->pkgs[i];
-	  err = ipkg_remove_pkg(conf, pkg,0);
+	  err = opkg_remove_pkg(conf, pkg,0);
 	  if (err) return err;
      }
      return 0;
 }
 
-int ipkg_process_actions_sanity_check(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_remove, pkg_vec_t *pkgs_superseded, pkg_vec_t *pkgs_to_install)
+int opkg_process_actions_sanity_check(opkg_conf_t *conf, pkg_vec_t *pkgs_to_remove, pkg_vec_t *pkgs_superseded, pkg_vec_t *pkgs_to_install)
 {
      int i;
      /* now one more pass checking on the ones that need to be installed */
@@ -1725,7 +1725,7 @@ int ipkg_process_actions_sanity_check(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_remo
      return 0;
 }
 
-int ipkg_process_actions_unpack_packages(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_remove, pkg_vec_t *pkgs_to_install)
+int opkg_process_actions_unpack_packages(opkg_conf_t *conf, pkg_vec_t *pkgs_to_remove, pkg_vec_t *pkgs_to_install)
 {
      int i;
      /* now one more pass checking on the ones that need to be installed */
@@ -1746,17 +1746,17 @@ int ipkg_process_actions_unpack_packages(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_r
      return 0;
 }
 
-int ipkg_process_actions_unpack_packages(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_remove, pkg_vec_t *pkgs_to_install)
+int opkg_process_actions_unpack_packages(opkg_conf_t *conf, pkg_vec_t *pkgs_to_remove, pkg_vec_t *pkgs_to_install)
 {
      int i;
      /* now one more pass checking on the ones that need to be installed */
      for (i = 0 ; i < pkgs_to_install->len; i++ ) {
 	  pkg_t *pkg = pkgs_to_install->pkgs[i];
 	  if (pkg->local_filename == NULL) {
-	       err = ipkg_download_pkg(conf, pkg, conf->tmp_dir);
+	       err = opkg_download_pkg(conf, pkg, conf->tmp_dir);
 	       if (err) {
-		    ipkg_message(conf, IPKG_ERROR,
-				 "Failed to download %s. Perhaps you need to run 'ipkg update'?\n",
+		    opkg_message(conf, OPKG_ERROR,
+				 "Failed to download %s. Perhaps you need to run 'opkg update'?\n",
 				 pkg->name);
 		    return err;
 	       }
@@ -1769,7 +1769,7 @@ int ipkg_process_actions_unpack_packages(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_r
      return 0;
 }
 
-int ipkg_process_actions_prerm(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_install)
+int opkg_process_actions_prerm(opkg_conf_t *conf, pkg_vec_t *pkgs_to_install)
 {
      int i;
      /* now one more pass checking on the ones that need to be installed */
@@ -1795,7 +1795,7 @@ int ipkg_process_actions_prerm(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_install)
      return 0;
 }
 
-int ipkg_process_actions_install(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_install)
+int opkg_process_actions_install(opkg_conf_t *conf, pkg_vec_t *pkgs_to_install)
 {
      int i;
      /* now one more pass checking on the ones that need to be installed */
@@ -1807,27 +1807,27 @@ int ipkg_process_actions_install(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_install)
 	       old_pkg->state_want = SW_DEINSTALL;
 
 	       if (old_pkg->state_flag & SF_NOPRUNE) {
-		    ipkg_message(conf, IPKG_INFO,
+		    opkg_message(conf, OPKG_INFO,
 				 "  not removing obsolesced files because package marked noprune\n");
 	       } else {
-		    ipkg_message(conf, IPKG_INFO,
+		    opkg_message(conf, OPKG_INFO,
 				 "  removing obsolesced files\n");
 		    remove_obsolesced_files(conf, pkg, old_pkg);
 	       }
 	  }
 
-	  ipkg_message(conf, IPKG_INFO,
+	  opkg_message(conf, OPKG_INFO,
 		       "  installing maintainer scripts\n");
 	  install_maintainer_scripts(conf, pkg, old_pkg);
 
 	  /* the following just returns 0 */
 	  remove_disappeared(conf, pkg);
 
-	  ipkg_message(conf, IPKG_INFO,
+	  opkg_message(conf, OPKG_INFO,
 		       "  installing data files\n");
 	  install_data_files(conf, pkg);
 
-	  ipkg_message(conf, IPKG_INFO,
+	  opkg_message(conf, OPKG_INFO,
 		       "  resolving conf files\n");
 	  resolve_conffiles(conf, pkg);
 
@@ -1839,7 +1839,7 @@ int ipkg_process_actions_install(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_install)
 
 	  time(&pkg->installed_time);
 
-	  ipkg_message(conf, IPKG_INFO,
+	  opkg_message(conf, OPKG_INFO,
 		       "  cleanup temp files\n");
 	  cleanup_temporary_files(conf, pkg);
 
@@ -1849,7 +1849,7 @@ int ipkg_process_actions_install(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_install)
      return 0;
 }
 
-int ipkg_process_actions_unwind_prerm(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_install)
+int opkg_process_actions_unwind_prerm(opkg_conf_t *conf, pkg_vec_t *pkgs_to_install)
 {
      int i;
      /* now one more pass checking on the ones that need to be installed */
@@ -1887,22 +1887,22 @@ int ipkg_process_actions_unwind_prerm(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_inst
  *
  * Assumes pkgs_to_install includes all dependences, recursively, sorted in installable order.
  */
-int ipkg_process_actions(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_remove, pkg_vec_t *pkgs_superseded, pkg_vec_t *pkgs_to_install)
+int opkg_process_actions(opkg_conf_t *conf, pkg_vec_t *pkgs_to_remove, pkg_vec_t *pkgs_superseded, pkg_vec_t *pkgs_to_install)
 {
      int err;
      int i;
 
-     err = ipkg_remove_packages(conf, pkgs_to_remove);
+     err = opkg_remove_packages(conf, pkgs_to_remove);
      if (err) return err;
 
-     err = ipkg_process_actions_sanity_check(conf, pkgs_superseded, pkgs_to_install);
+     err = opkg_process_actions_sanity_check(conf, pkgs_superseded, pkgs_to_install);
      if (err) return err;
 
-     err = ipkg_process_actions_remove_replacees(conf, pkgs_to_install);
+     err = opkg_process_actions_remove_replacees(conf, pkgs_to_install);
      if (err) goto UNWIND;
 
-     /* @@@@ look at ipkg_install_pkg for handling replacements */
-     err = ipkg_process_actions_unpack_packages(conf, pkgs_to_install);
+     /* @@@@ look at opkg_install_pkg for handling replacements */
+     err = opkg_process_actions_unpack_packages(conf, pkgs_to_install);
      if (err) goto UNWIND;
 
      /* 
@@ -1913,28 +1913,28 @@ int ipkg_process_actions(ipkg_conf_t *conf, pkg_vec_t *pkgs_to_remove, pkg_vec_t
       * non-obsolete files.
       */
 
-     err = ipkg_process_actions_check_data_file_clashes(conf, pkgs_superseded, pkgs_to_install);
+     err = opkg_process_actions_check_data_file_clashes(conf, pkgs_superseded, pkgs_to_install);
      if (err) goto UNWIND;
 
      /* this was before checking data file clashes */
-     err = ipkg_process_actions_prerm(conf, pkgs_superseded, pkgs_to_install);
+     err = opkg_process_actions_prerm(conf, pkgs_superseded, pkgs_to_install);
      if (err) goto UNWIND;
 
      /* point of no return: no unwinding after this */
-     err = ipkg_process_actions_install(conf, pkgs_to_install);
+     err = opkg_process_actions_install(conf, pkgs_to_install);
      if (err) return err;
 
-     ipkg_message(conf, IPKG_INFO, "Done.\n");
+     opkg_message(conf, OPKG_INFO, "Done.\n");
      return 0;
 
  UNWIND:
-     ipkg_process_actions_unwind(conf, pkgs_to_install);
+     opkg_process_actions_unwind(conf, pkgs_to_install);
 
-     ipkg_message(conf, IPKG_INFO,
+     opkg_message(conf, OPKG_INFO,
 		  "  cleanup temp files\n");
      cleanup_temporary_files(conf, pkg);
 
-     ipkg_message(conf, IPKG_INFO,
+     opkg_message(conf, OPKG_INFO,
 		  "Failed.\n");
      return err;
 }

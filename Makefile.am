@@ -3,38 +3,38 @@ SUBDIRS = etc familiar libbb
 
 HOST_CPU=@host_cpu@
 BUILD_CPU=@build_cpu@
-IPKGLIBDIR=@ipkglibdir@ 
-ALL_CFLAGS=-g -O -Wall -DHOST_CPU_STR=\"@host_cpu@\" -DBUILD_CPU=@build_cpu@ -DLIBDIR=\"@libdir@\" -DIPKGLIBDIR=\"@ipkglibdir@\" -DDATADIR=\"@datadir@\"
+OPKGLIBDIR=@opkglibdir@ 
+ALL_CFLAGS=-g -O -Wall -DHOST_CPU_STR=\"@host_cpu@\" -DBUILD_CPU=@build_cpu@ -DLIBDIR=\"@libdir@\" -DOPKGLIBDIR=\"@opkglibdir@\" -DDATADIR=\"@datadir@\"
 
-bin_PROGRAMS = ipkg-cl
+bin_PROGRAMS = opkg-cl
 
-lib_LTLIBRARIES = libipkg.la
+lib_LTLIBRARIES = libopkg.la
 
 bin_SCRIPTS = update-alternatives
 
-interceptdir = $(datadir)/ipkg/intercept
+interceptdir = $(datadir)/opkg/intercept
 intercept_DATA = intercept/ldconfig intercept/depmod intercept/update-modules
 
 install-data-hook:
-	chmod +x $(DESTDIR)$(datadir)/ipkg/intercept/*
+	chmod +x $(DESTDIR)$(datadir)/opkg/intercept/*
 
-# ipkg_LDADD = libbb/libbb.a replace/libreplace.a
+# opkg_LDADD = libbb/libbb.a replace/libreplace.a
 
-#ipkg_cl_LDADD = libipkg.la libbb/libbb.la replace/libreplace.a 
-ipkg_cl_LDADD = libipkg.la libbb/libbb.la 
+#opkg_cl_LDADD = libopkg.la libbb/libbb.la replace/libreplace.a 
+opkg_cl_LDADD = libopkg.la libbb/libbb.la 
 
-libipkg_includedir=$(includedir)/libipkg
+libopkg_includedir=$(includedir)/libopkg
 
-libipkg_include_HEADERS= \
+libopkg_include_HEADERS= \
 	args.h \
 	conffile.h \
 	conffile_list.h \
 	config.h \
 	hash_table.h \
 	includes.h \
-	ipkg_conf.h \
-	ipkg.h \
-	ipkg_message.h \
+	opkg_conf.h \
+	opkg.h \
+	opkg_message.h \
 	nv_pair.h \
 	nv_pair_list.h \
 	pkg_depends.h \
@@ -47,41 +47,41 @@ libipkg_include_HEADERS= \
 	pkg_vec.h \
 	str_list.h \
 	void_list.h \
-	libipkg.h 
+	libopkg.h 
 
 #\ replace/replace.h
 
-#libipkg_la_LIBADD = libbb/libbb.la replace/libreplace.a
-libipkg_la_LIBADD = libbb/libbb.la $(CURL_LIBS)
+#libopkg_la_LIBADD = libbb/libbb.la replace/libreplace.a
+libopkg_la_LIBADD = libbb/libbb.la $(CURL_LIBS)
 
-ipkg_core_sources = args.c args.h ipkg.c \
+opkg_core_sources = args.c args.h opkg.c \
 		    user.c user.h 
-ipkg_libcore_sources = args.c args.h libipkg.c libipkg.h ipkg.h\
+opkg_libcore_sources = args.c args.h libopkg.c libopkg.h opkg.h\
 		    user.c user.h 
-ipkg_cmd_sources = ipkg_cmd.c ipkg_cmd.h \
-		   ipkg_configure.c ipkg_configure.h \
-		   ipkg_download.c ipkg_download.h \
-		   ipkg_install.c ipkg_install.h \
-		   ipkg_upgrade.c ipkg_upgrade.h \
-		   ipkg_remove.c ipkg_remove.h
-ipkg_db_sources = ipkg_conf.c ipkg_conf.h \
-		  ipkg_utils.c ipkg_utils.h pkg.c pkg.h hash_table.h \
+opkg_cmd_sources = opkg_cmd.c opkg_cmd.h \
+		   opkg_configure.c opkg_configure.h \
+		   opkg_download.c opkg_download.h \
+		   opkg_install.c opkg_install.h \
+		   opkg_upgrade.c opkg_upgrade.h \
+		   opkg_remove.c opkg_remove.h
+opkg_db_sources = opkg_conf.c opkg_conf.h \
+		  opkg_utils.c opkg_utils.h pkg.c pkg.h hash_table.h \
 		  pkg_depends.c pkg_depends.h pkg_extract.c pkg_extract.h \
 		  hash_table.c pkg_hash.c pkg_hash.h pkg_parse.c pkg_parse.h \
 		  pkg_vec.c pkg_vec.h
-ipkg_list_sources = conffile.c conffile.h conffile_list.c conffile_list.h \
+opkg_list_sources = conffile.c conffile.h conffile_list.c conffile_list.h \
 		    nv_pair.c nv_pair.h nv_pair_list.c nv_pair_list.h \
 		    pkg_dest.c pkg_dest.h pkg_dest_list.c pkg_dest_list.h \
 		    pkg_src.c pkg_src.h pkg_src_list.c pkg_src_list.h \
 		    str_list.c str_list.h void_list.c void_list.h
-ipkg_util_sources = file_util.c file_util.h ipkg_message.h ipkg_message.c md5.c md5.h \
+opkg_util_sources = file_util.c file_util.h opkg_message.h opkg_message.c md5.c md5.h \
 		    sprintf_alloc.c sprintf_alloc.h str_util.c str_util.h \
 		    xregex.c xregex.h xsystem.c xsystem.h
 
-# ipkg_SOURCES = $(ipkg_core_sources) $(ipkg_cmd_sources) $(ipkg_db_sources) \
-#	       $(ipkg_util_sources) $(ipkg_list_sources)
+# opkg_SOURCES = $(opkg_core_sources) $(opkg_cmd_sources) $(opkg_db_sources) \
+#	       $(opkg_util_sources) $(opkg_list_sources)
 
-EXTRA_DIST = ipkg.c update-alternatives $(intercept_DATA)
+EXTRA_DIST = opkg.c update-alternatives $(intercept_DATA)
 
 MAINTAINERCLEANFILES= \
 	configure \
@@ -92,26 +92,26 @@ MAINTAINERCLEANFILES= \
 	.Makefile.am.swp \
 	aclocal.m4
 
-libipkg_la_SOURCES = $(ipkg_libcore_sources) $(ipkg_cmd_sources) $(ipkg_db_sources) \
-	       $(ipkg_util_sources) $(ipkg_list_sources)
+libopkg_la_SOURCES = $(opkg_libcore_sources) $(opkg_cmd_sources) $(opkg_db_sources) \
+	       $(opkg_util_sources) $(opkg_list_sources)
 
-ipkg_cl_SOURCES = ipkg-frontend.c
+opkg_cl_SOURCES = opkg-frontend.c
 
-libipkg_la_CFLAGS = -DIPKG_LIB $(ALL_CFLAGS)  $(CURL_CFLAGS)
+libopkg_la_CFLAGS = -DOPKG_LIB $(ALL_CFLAGS)  $(CURL_CFLAGS)
 
-ipkg_CFLAGS = $(ALL_CFLAGS) $(CURL_CFLAGS)
+opkg_CFLAGS = $(ALL_CFLAGS) $(CURL_CFLAGS)
 
-ipkg_cl_CFLAGS = -DIPKG_LIB $(ALL_CFLAGS)
+opkg_cl_CFLAGS = -DOPKG_LIB $(ALL_CFLAGS)
 
-noinst_PROGRAMS = ipkg_hash_test ipkg_extract_test
+noinst_PROGRAMS = opkg_hash_test opkg_extract_test
 
-ipkg_hash_test_LDADD = libbb/libbb.la
-ipkg_hash_test_SOURCES = ipkg_hash_test.c $(ipkg_db_sources) $(ipkg_util_sources) $(ipkg_list_sources)
-ipkg_hash_test_CFLAGS = $(ALL_CFLAGS)
+opkg_hash_test_LDADD = libbb/libbb.la
+opkg_hash_test_SOURCES = opkg_hash_test.c $(opkg_db_sources) $(opkg_util_sources) $(opkg_list_sources)
+opkg_hash_test_CFLAGS = $(ALL_CFLAGS)
 
-ipkg_extract_test_LDADD = libbb/libbb.la
-ipkg_extract_test_SOURCES = ipkg_extract_test.c $(ipkg_db_sources) $(ipkg_util_sources) $(ipkg_list_sources)
-ipkg_extract_test_CFLAGS = $(ALL_CFLAGS)
+opkg_extract_test_LDADD = libbb/libbb.la
+opkg_extract_test_SOURCES = opkg_extract_test.c $(opkg_db_sources) $(opkg_util_sources) $(opkg_list_sources)
+opkg_extract_test_CFLAGS = $(ALL_CFLAGS)
 
 package: all-recursive
 	STRIPPROG=$(STRIP) familiar/rules INSTALL=$$PWD/install-sh  binary-arch

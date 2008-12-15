@@ -1,4 +1,4 @@
-/* ipkg_message.c - the itsy package management system
+/* opkg_message.c - the itsy package management system
 
    Copyright (C) 2003 Daniele Nicolodi <daniele@grinta.net>
 
@@ -14,14 +14,14 @@
 */
 
 
-#include "ipkg.h"
-#include "ipkg_conf.h"
-#include "ipkg_message.h"
+#include "opkg.h"
+#include "opkg_conf.h"
+#include "opkg_message.h"
 
-#ifndef IPKG_LIB
+#ifndef OPKG_LIB
 
 void
-ipkg_message (ipkg_conf_t * conf, message_level_t level, char *fmt, ...)
+opkg_message (opkg_conf_t * conf, message_level_t level, char *fmt, ...)
 {
 	va_list ap;
 
@@ -40,22 +40,22 @@ ipkg_message (ipkg_conf_t * conf, message_level_t level, char *fmt, ...)
 
 #else
 
-#include "libipkg.h"
+#include "libopkg.h"
 
-//#define ipkg_message(conf, level, fmt, arg...) ipkg_cb_message(conf, level, fmt, ## arg)
+//#define opkg_message(conf, level, fmt, arg...) opkg_cb_message(conf, level, fmt, ## arg)
 
 void
-ipkg_message (ipkg_conf_t * conf, message_level_t level, char *fmt, ...)
+opkg_message (opkg_conf_t * conf, message_level_t level, char *fmt, ...)
 {
 	va_list ap;
 	char ts[256];
 
-	if (ipkg_cb_message)
+	if (opkg_cb_message)
 	{
 		va_start (ap, fmt);
 		vsnprintf (ts,256,fmt, ap);
 		va_end (ap);
-		ipkg_cb_message(conf,level,ts);
+		opkg_cb_message(conf,level,ts);
 	}
 }
 #endif

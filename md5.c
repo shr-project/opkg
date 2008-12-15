@@ -20,8 +20,8 @@
 /* Written by Ulrich Drepper <drepper@gnu.ai.mit.edu> */
 /* Hacked to work with BusyBox by Alfred M. Szmidt <ams@trillian.itslinux.org> */
 
-/* Sucked directly into ipkg since the md5sum functions aren't in libbb
-   Dropped a few functions since ipkg only needs md5_stream.
+/* Sucked directly into opkg since the md5sum functions aren't in libbb
+   Dropped a few functions since opkg only needs md5_stream.
    Got rid of evil, twisted defines of FALSE=1 and TRUE=0
    6 March 2002 Carl Worth <cworth@east.isi.edu>
 */

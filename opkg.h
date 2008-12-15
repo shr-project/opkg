@@ -1,4 +1,4 @@
-/* ipkg.h - the itsy package management system
+/* opkg.h - the itsy package management system
 
    Carl D. Worth
 
@@ -15,46 +15,46 @@
    General Public License for more details.
 */
 
-#ifndef IPKG_H
-#define IPKG_H
+#ifndef OPKG_H
+#define OPKG_H
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #if 0
-#define IPKG_DEBUG_NO_TMP_CLEANUP
+#define OPKG_DEBUG_NO_TMP_CLEANUP
 #endif
 
 #include "includes.h"
-#include "ipkg_conf.h"
-#include "ipkg_message.h"
+#include "opkg_conf.h"
+#include "opkg_message.h"
 
-#define IPKG_PKG_EXTENSION ".ipk"
+#define OPKG_PKG_EXTENSION ".ipk"
 #define DPKG_PKG_EXTENSION ".deb"
 
-#define IPKG_LEGAL_PKG_NAME_CHARS "abcdefghijklmnopqrstuvwxyz0123456789.+-"
-#define IPKG_PKG_VERSION_SEP_CHAR '_'
+#define OPKG_LEGAL_PKG_NAME_CHARS "abcdefghijklmnopqrstuvwxyz0123456789.+-"
+#define OPKG_PKG_VERSION_SEP_CHAR '_'
 
-#define IPKG_STATE_DIR_PREFIX IPKGLIBDIR"/ipkg"
-#define IPKG_LISTS_DIR_SUFFIX "lists"
-#define IPKG_INFO_DIR_SUFFIX "info"
-#define IPKG_STATUS_FILE_SUFFIX "status"
+#define OPKG_STATE_DIR_PREFIX OPKGLIBDIR"/opkg"
+#define OPKG_LISTS_DIR_SUFFIX "lists"
+#define OPKG_INFO_DIR_SUFFIX "info"
+#define OPKG_STATUS_FILE_SUFFIX "status"
 
-#define IPKG_BACKUP_SUFFIX "-ipkg.backup"
+#define OPKG_BACKUP_SUFFIX "-opkg.backup"
 
-#define IPKG_LIST_DESCRIPTION_LENGTH 128
+#define OPKG_LIST_DESCRIPTION_LENGTH 128
 
-enum ipkg_error {
-    IPKG_SUCCESS = 0,
-    IPKG_PKG_DEPS_UNSATISFIED,
-    IPKG_PKG_IS_ESSENTIAL,
-    IPKG_PKG_HAS_DEPENDENTS,
-    IPKG_PKG_HAS_NO_CANDIDATE
+enum opkg_error {
+    OPKG_SUCCESS = 0,
+    OPKG_PKG_DEPS_UNSATISFIED,
+    OPKG_PKG_IS_ESSENTIAL,
+    OPKG_PKG_HAS_DEPENDENTS,
+    OPKG_PKG_HAS_NO_CANDIDATE
 };
-typedef enum ipkg_error ipkg_error_t;
+typedef enum opkg_error opkg_error_t;
 
-extern int ipkg_state_changed;
+extern int opkg_state_changed;
 
 
 struct errlist {

@@ -1,4 +1,4 @@
-/* ipkg_conf.c - the itsy package management system
+/* opkg_conf.c - the itsy package management system
 
    Carl D. Worth
 
@@ -17,59 +17,59 @@
 
 #include <glob.h>
 
-#include "ipkg.h"
-#include "ipkg_conf.h"
+#include "opkg.h"
+#include "opkg_conf.h"
 
 #include "xregex.h"
 #include "sprintf_alloc.h"
-#include "ipkg_conf.h"
-#include "ipkg_message.h"
+#include "opkg_conf.h"
+#include "opkg_message.h"
 #include "file_util.h"
 #include "str_util.h"
 #include "xsystem.h"
 
-static int ipkg_conf_parse_file(ipkg_conf_t *conf, const char *filename,
+static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 				pkg_src_list_t *pkg_src_list,
 				nv_pair_list_t *tmp_dest_nv_pair_list,
 				char **tmp_lists_dir);
-static int ipkg_init_options_array(const ipkg_conf_t *conf, ipkg_option_t **options);
-static int ipkg_conf_set_option(const ipkg_option_t *options,
+static int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options);
+static int opkg_conf_set_option(const opkg_option_t *options,
 				const char *name, const char *value);
-static int ipkg_conf_set_default_dest(ipkg_conf_t *conf,
+static int opkg_conf_set_default_dest(opkg_conf_t *conf,
 				      const char *default_dest_name);
-static int set_and_load_pkg_src_list(ipkg_conf_t *conf,
+static int set_and_load_pkg_src_list(opkg_conf_t *conf,
 				     pkg_src_list_t *nv_pair_list);
-static int set_and_load_pkg_dest_list(ipkg_conf_t *conf,
+static int set_and_load_pkg_dest_list(opkg_conf_t *conf,
 				      nv_pair_list_t *nv_pair_list, char * lists_dir);
 
-int ipkg_init_options_array(const ipkg_conf_t *conf, ipkg_option_t **options)
+int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
 {
-     ipkg_option_t tmp[] = {
-	  { "force_defaults", IPKG_OPT_TYPE_BOOL, &conf->force_defaults },
-	  { "force_depends", IPKG_OPT_TYPE_BOOL, &conf->force_depends },
-	  { "force_overwrite", IPKG_OPT_TYPE_BOOL, &conf->force_overwrite },
-	  { "force_downgrade", IPKG_OPT_TYPE_BOOL, &conf->force_downgrade },
-	  { "force_reinstall", IPKG_OPT_TYPE_BOOL, &conf->force_reinstall },
-	  { "force_space", IPKG_OPT_TYPE_BOOL, &conf->force_space },
-	  { "ftp_proxy", IPKG_OPT_TYPE_STRING, &conf->ftp_proxy },
-	  { "http_proxy", IPKG_OPT_TYPE_STRING, &conf->http_proxy },
-	  { "multiple_providers", IPKG_OPT_TYPE_BOOL, &conf->multiple_providers },
-	  { "no_proxy", IPKG_OPT_TYPE_STRING, &conf->no_proxy },
-	  { "test", IPKG_OPT_TYPE_INT, &conf->noaction },
-	  { "noaction", IPKG_OPT_TYPE_INT, &conf->noaction },
-	  { "nodeps", IPKG_OPT_TYPE_BOOL, &conf->nodeps },
-	  { "offline_root", IPKG_OPT_TYPE_STRING, &conf->offline_root },
-	  { "offline_root_post_script_cmd", IPKG_OPT_TYPE_STRING, &conf->offline_root_post_script_cmd },
-	  { "offline_root_pre_script_cmd", IPKG_OPT_TYPE_STRING, &conf->offline_root_pre_script_cmd },
-	  { "proxy_passwd", IPKG_OPT_TYPE_STRING, &conf->proxy_passwd },
-	  { "proxy_user", IPKG_OPT_TYPE_STRING, &conf->proxy_user },
-	  { "query-all", IPKG_OPT_TYPE_BOOL, &conf->query_all },
-	  { "verbose-wget", IPKG_OPT_TYPE_BOOL, &conf->verbose_wget },
-	  { "verbosity", IPKG_OPT_TYPE_BOOL, &conf->verbosity },
+     opkg_option_t tmp[] = {
+	  { "force_defaults", OPKG_OPT_TYPE_BOOL, &conf->force_defaults },
+	  { "force_depends", OPKG_OPT_TYPE_BOOL, &conf->force_depends },
+	  { "force_overwrite", OPKG_OPT_TYPE_BOOL, &conf->force_overwrite },
+	  { "force_downgrade", OPKG_OPT_TYPE_BOOL, &conf->force_downgrade },
+	  { "force_reinstall", OPKG_OPT_TYPE_BOOL, &conf->force_reinstall },
+	  { "force_space", OPKG_OPT_TYPE_BOOL, &conf->force_space },
+	  { "ftp_proxy", OPKG_OPT_TYPE_STRING, &conf->ftp_proxy },
+	  { "http_proxy", OPKG_OPT_TYPE_STRING, &conf->http_proxy },
+	  { "multiple_providers", OPKG_OPT_TYPE_BOOL, &conf->multiple_providers },
+	  { "no_proxy", OPKG_OPT_TYPE_STRING, &conf->no_proxy },
+	  { "test", OPKG_OPT_TYPE_INT, &conf->noaction },
+	  { "noaction", OPKG_OPT_TYPE_INT, &conf->noaction },
+	  { "nodeps", OPKG_OPT_TYPE_BOOL, &conf->nodeps },
+	  { "offline_root", OPKG_OPT_TYPE_STRING, &conf->offline_root },
+	  { "offline_root_post_script_cmd", OPKG_OPT_TYPE_STRING, &conf->offline_root_post_script_cmd },
+	  { "offline_root_pre_script_cmd", OPKG_OPT_TYPE_STRING, &conf->offline_root_pre_script_cmd },
+	  { "proxy_passwd", OPKG_OPT_TYPE_STRING, &conf->proxy_passwd },
+	  { "proxy_user", OPKG_OPT_TYPE_STRING, &conf->proxy_user },
+	  { "query-all", OPKG_OPT_TYPE_BOOL, &conf->query_all },
+	  { "verbose-wget", OPKG_OPT_TYPE_BOOL, &conf->verbose_wget },
+	  { "verbosity", OPKG_OPT_TYPE_BOOL, &conf->verbosity },
 	  { NULL }
      };
 
-     *options = (ipkg_option_t *)malloc(sizeof(tmp));
+     *options = (opkg_option_t *)malloc(sizeof(tmp));
      if ( options == NULL ){
         fprintf(stderr,"%s: Unable to allocate memory\n",__FUNCTION__);
         return -1;
@@ -79,7 +79,7 @@ int ipkg_init_options_array(const ipkg_conf_t *conf, ipkg_option_t **options)
      return 0;
 };
 
-static void ipkg_conf_override_string(char **conf_str, char *arg_str) 
+static void opkg_conf_override_string(char **conf_str, char *arg_str) 
 {
      if (arg_str) {
 	  if (*conf_str) {
@@ -89,7 +89,7 @@ static void ipkg_conf_override_string(char **conf_str, char *arg_str)
      }
 }
 
-static void ipkg_conf_free_string(char **conf_str)
+static void opkg_conf_free_string(char **conf_str)
 {
      if (*conf_str) {
 	  free(*conf_str);
@@ -97,17 +97,17 @@ static void ipkg_conf_free_string(char **conf_str)
      }
 }
 
-int ipkg_conf_init(ipkg_conf_t *conf, const args_t *args)
+int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 {
      int err;
      char *tmp_dir_base;
      nv_pair_list_t tmp_dest_nv_pair_list;
      char * lists_dir =NULL;
      glob_t globbuf;
-     char *etc_ipkg_conf_pattern = "/etc/ipkg/*.conf";
+     char *etc_opkg_conf_pattern = "/etc/opkg/*.conf";
      char *pending_dir  =NULL;
 
-     memset(conf, 0, sizeof(ipkg_conf_t));
+     memset(conf, 0, sizeof(opkg_conf_t));
 
      pkg_src_list_init(&conf->pkg_src_list);
 
@@ -125,8 +125,8 @@ int ipkg_conf_init(ipkg_conf_t *conf, const args_t *args)
      else 
 	  tmp_dir_base = getenv("TMPDIR");
      sprintf_alloc(&conf->tmp_dir, "%s/%s",
-		   tmp_dir_base ? tmp_dir_base : IPKG_CONF_DEFAULT_TMP_DIR_BASE,
-		   IPKG_CONF_TMP_DIR_SUFFIX);
+		   tmp_dir_base ? tmp_dir_base : OPKG_CONF_DEFAULT_TMP_DIR_BASE,
+		   OPKG_CONF_TMP_DIR_SUFFIX);
      conf->tmp_dir = mkdtemp(conf->tmp_dir);
      if (conf->tmp_dir == NULL) {
 	  fprintf(stderr, "%s: Failed to create temporary directory `%s': %s\n",
@@ -157,18 +157,18 @@ int ipkg_conf_init(ipkg_conf_t *conf, const args_t *args)
      conf->proxy_user = NULL;
      conf->proxy_passwd = NULL;
 
-     pkg_hash_init("pkg-hash", &conf->pkg_hash, IPKG_CONF_DEFAULT_HASH_LEN);
-     hash_table_init("file-hash", &conf->file_hash, IPKG_CONF_DEFAULT_HASH_LEN);
-     hash_table_init("obs-file-hash", &conf->obs_file_hash, IPKG_CONF_DEFAULT_HASH_LEN);
+     pkg_hash_init("pkg-hash", &conf->pkg_hash, OPKG_CONF_DEFAULT_HASH_LEN);
+     hash_table_init("file-hash", &conf->file_hash, OPKG_CONF_DEFAULT_HASH_LEN);
+     hash_table_init("obs-file-hash", &conf->obs_file_hash, OPKG_CONF_DEFAULT_HASH_LEN);
      lists_dir=(char *)malloc(1);
      lists_dir[0]='\0';
      if (args->conf_file) {
 	  struct stat stat_buf;
 	  err = stat(args->conf_file, &stat_buf);
 	  if (err == 0)
-	       if (ipkg_conf_parse_file(conf, args->conf_file,
+	       if (opkg_conf_parse_file(conf, args->conf_file,
 				    &conf->pkg_src_list, &tmp_dest_nv_pair_list,&lists_dir)<0) {
-                   /* Memory leakage from ipkg_conf_parse-file */
+                   /* Memory leakage from opkg_conf_parse-file */
                    return -1;
                }
                    
@@ -176,8 +176,8 @@ int ipkg_conf_init(ipkg_conf_t *conf, const args_t *args)
 
      /* if (!lists_dir ){*/
      if (strlen(lists_dir)<=1 ){
-        lists_dir = realloc(lists_dir,strlen(IPKG_CONF_LISTS_DIR)+2);
-        sprintf (lists_dir,"%s",IPKG_CONF_LISTS_DIR);
+        lists_dir = realloc(lists_dir,strlen(OPKG_CONF_LISTS_DIR)+2);
+        sprintf (lists_dir,"%s",OPKG_CONF_LISTS_DIR);
      }
 
      if (args->offline_root) {
@@ -194,16 +194,16 @@ int ipkg_conf_init(ipkg_conf_t *conf, const args_t *args)
      conf->pending_dir = strdup(pending_dir);
 
      if (args->offline_root) 
-	  sprintf_alloc(&etc_ipkg_conf_pattern, "%s/etc/ipkg/*.conf", args->offline_root);
+	  sprintf_alloc(&etc_opkg_conf_pattern, "%s/etc/opkg/*.conf", args->offline_root);
      memset(&globbuf, 0, sizeof(globbuf));
-     err = glob(etc_ipkg_conf_pattern, 0, NULL, &globbuf);
+     err = glob(etc_opkg_conf_pattern, 0, NULL, &globbuf);
      if (!err) {
 	  int i;
 	  for (i = 0; i < globbuf.gl_pathc; i++) {
 	       if (globbuf.gl_pathv[i]) 
-		    if ( ipkg_conf_parse_file(conf, globbuf.gl_pathv[i], 
+		    if ( opkg_conf_parse_file(conf, globbuf.gl_pathv[i], 
 				         &conf->pkg_src_list, &tmp_dest_nv_pair_list,&lists_dir)<0) {
-                        /* Memory leakage from ipkg_conf_parse-file */
+                        /* Memory leakage from opkg_conf_parse-file */
                         return -1;
 	            }
 	  }
@@ -220,15 +220,15 @@ int ipkg_conf_init(ipkg_conf_t *conf, const args_t *args)
      /* Even if there is no conf file, we'll need at least one dest. */
      if (tmp_dest_nv_pair_list.head == NULL) {
 	  nv_pair_list_append(&tmp_dest_nv_pair_list,
-			      IPKG_CONF_DEFAULT_DEST_NAME,
-			      IPKG_CONF_DEFAULT_DEST_ROOT_DIR);
+			      OPKG_CONF_DEFAULT_DEST_NAME,
+			      OPKG_CONF_DEFAULT_DEST_ROOT_DIR);
      }
 
      /* After parsing the file, set options from command-line, (so that
 	command-line arguments take precedence) */
-     /* XXX: CLEANUP: The interaction between args.c and ipkg_conf.c
+     /* XXX: CLEANUP: The interaction between args.c and opkg_conf.c
 	really needs to be cleaned up. There is so much duplication
-	right now it is ridiculous. Maybe ipkg_conf_t should just save
+	right now it is ridiculous. Maybe opkg_conf_t should just save
 	a pointer to args_t (which could then not be freed), rather
 	than duplicating every field here? */
      if (args->force_depends) {
@@ -271,11 +271,11 @@ int ipkg_conf_init(ipkg_conf_t *conf, const args_t *args)
 	  conf->verbosity = args->verbosity;
      } 
 
-     ipkg_conf_override_string(&conf->offline_root, 
+     opkg_conf_override_string(&conf->offline_root, 
 			       args->offline_root);
-     ipkg_conf_override_string(&conf->offline_root_pre_script_cmd, 
+     opkg_conf_override_string(&conf->offline_root_pre_script_cmd, 
 			       args->offline_root_pre_script_cmd);
-     ipkg_conf_override_string(&conf->offline_root_post_script_cmd, 
+     opkg_conf_override_string(&conf->offline_root_post_script_cmd, 
 			       args->offline_root_post_script_cmd);
 
 /* Pigi: added a flag to disable the checking of structures if the command does not need to 
@@ -292,7 +292,7 @@ int ipkg_conf_init(ipkg_conf_t *conf, const args_t *args)
         set_and_load_pkg_dest_list(conf, &tmp_dest_nv_pair_list,lists_dir);
    
         if (args->dest) {
-	     err = ipkg_conf_set_default_dest(conf, args->dest);
+	     err = opkg_conf_set_default_dest(conf, args->dest);
 	     if (err) {
 	          return err;
 	     }
@@ -305,12 +305,12 @@ int ipkg_conf_init(ipkg_conf_t *conf, const args_t *args)
      return 0;
 }
 
-void ipkg_conf_deinit(ipkg_conf_t *conf)
+void opkg_conf_deinit(opkg_conf_t *conf)
 {
-#ifdef IPKG_DEBUG_NO_TMP_CLEANUP
+#ifdef OPKG_DEBUG_NO_TMP_CLEANUP
 #error
-     fprintf(stderr, "%s: Not cleaning up %s since ipkg compiled "
-	     "with IPKG_DEBUG_NO_TMP_CLEANUP\n",
+     fprintf(stderr, "%s: Not cleaning up %s since opkg compiled "
+	     "with OPKG_DEBUG_NO_TMP_CLEANUP\n",
 	     __FUNCTION__, conf->tmp_dir);
 #else
      int err;
@@ -326,7 +326,7 @@ void ipkg_conf_deinit(ipkg_conf_t *conf)
 	  if (err)
 	       fprintf(stderr, "WARNING: Unable to remove temporary directory: %s: %s\n", conf->tmp_dir, strerror(errno));
      }
-#endif /* IPKG_DEBUG_NO_TMP_CLEANUP */
+#endif /* OPKG_DEBUG_NO_TMP_CLEANUP */
 
      free(conf->tmp_dir); /*XXX*/
 
@@ -340,9 +340,9 @@ void ipkg_conf_deinit(ipkg_conf_t *conf)
      if (&conf->obs_file_hash)
 	            hash_table_deinit(&conf->obs_file_hash);
 
-     ipkg_conf_free_string(&conf->offline_root);
-     ipkg_conf_free_string(&conf->offline_root_pre_script_cmd);
-     ipkg_conf_free_string(&conf->offline_root_post_script_cmd);
+     opkg_conf_free_string(&conf->offline_root);
+     opkg_conf_free_string(&conf->offline_root_pre_script_cmd);
+     opkg_conf_free_string(&conf->offline_root_post_script_cmd);
 
      if (conf->verbosity > 1) { 
 	  int i;
@@ -367,14 +367,14 @@ void ipkg_conf_deinit(ipkg_conf_t *conf)
 		    if (len > c) 
 			 c = len;
 	       }
-	       ipkg_message(conf, IPKG_DEBUG, "hash_table[%s] n_buckets=%d n_elements=%d max_conflicts=%d n_conflicts=%d\n", 
+	       opkg_message(conf, OPKG_DEBUG, "hash_table[%s] n_buckets=%d n_elements=%d max_conflicts=%d n_conflicts=%d\n", 
 			    hash->name, hash->n_entries, hash->n_elements, c, n_conflicts);
 	       hash_table_deinit(hash);
 	  }
      }
 }
 
-static int ipkg_conf_set_default_dest(ipkg_conf_t *conf,
+static int opkg_conf_set_default_dest(opkg_conf_t *conf,
 				      const char *default_dest_name)
 {
      pkg_dest_list_elt_t *iter;
@@ -394,7 +394,7 @@ static int ipkg_conf_set_default_dest(ipkg_conf_t *conf,
      return 1;
 }
 
-static int set_and_load_pkg_src_list(ipkg_conf_t *conf, pkg_src_list_t *pkg_src_list)
+static int set_and_load_pkg_src_list(opkg_conf_t *conf, pkg_src_list_t *pkg_src_list)
 {
      pkg_src_list_elt_t *iter;
      pkg_src_t *src;
@@ -419,7 +419,7 @@ static int set_and_load_pkg_src_list(ipkg_conf_t *conf, pkg_src_list_t *pkg_src_
      return 0;
 }
 
-static int set_and_load_pkg_dest_list(ipkg_conf_t *conf, nv_pair_list_t *nv_pair_list, char *lists_dir )
+static int set_and_load_pkg_dest_list(opkg_conf_t *conf, nv_pair_list_t *nv_pair_list, char *lists_dir )
 {
      nv_pair_list_elt_t *iter;
      nv_pair_t *nv_pair;
@@ -451,19 +451,19 @@ static int set_and_load_pkg_dest_list(ipkg_conf_t *conf, nv_pair_list_t *nv_pair
      return 0;
 }
 
-static int ipkg_conf_parse_file(ipkg_conf_t *conf, const char *filename,
+static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 				pkg_src_list_t *pkg_src_list,
 				nv_pair_list_t *tmp_dest_nv_pair_list,
 				char **lists_dir)
 {
      int err;
-     ipkg_option_t * options;
+     opkg_option_t * options;
      FILE *file = fopen(filename, "r");
      regex_t valid_line_re, comment_re;
 #define regmatch_size 12
      regmatch_t regmatch[regmatch_size];
 
-     if (ipkg_init_options_array(conf, &options)<0)
+     if (opkg_init_options_array(conf, &options)<0)
         return ENOMEM;
 
      if (file == NULL) {
@@ -472,7 +472,7 @@ static int ipkg_conf_parse_file(ipkg_conf_t *conf, const char *filename,
 	  free(options);
 	  return errno;
      }
-     ipkg_message(conf, IPKG_NOTICE, "loading conf file %s\n", filename);
+     opkg_message(conf, OPKG_NOTICE, "loading conf file %s\n", filename);
 
      err = xregcomp(&comment_re, 
 		    "^[[:space:]]*(#.*|[[:space:]]*)$",
@@ -546,19 +546,19 @@ static int ipkg_conf_parse_file(ipkg_conf_t *conf, const char *filename,
 	     pkg_dest_list_init. (We do a similar thing with
 	     tmp_src_nv_pair_list for sake of symmetry.) */
 	  if (strcmp(type, "option") == 0) {
-	       ipkg_conf_set_option(options, name, value);
+	       opkg_conf_set_option(options, name, value);
 	  } else if (strcmp(type, "src") == 0) {
 	       if (!nv_pair_list_find(pkg_src_list, name)) {
 		    pkg_src_list_append (pkg_src_list, name, value, extra, 0);
 	       } else {
-		    ipkg_message(conf, IPKG_ERROR, "ERROR: duplicate src declaration.  Skipping:\n\t src %s %s\n",
+		    opkg_message(conf, OPKG_ERROR, "ERROR: duplicate src declaration.  Skipping:\n\t src %s %s\n",
 				 name, value);
 	       }
 	  } else if (strcmp(type, "src/gz") == 0) {
 	       if (!nv_pair_list_find(pkg_src_list, name)) {
 		    pkg_src_list_append (pkg_src_list, name, value, extra, 1);
 	       } else {
-		    ipkg_message(conf, IPKG_ERROR, "ERROR: duplicate src declaration.  Skipping:\n\t src %s %s\n",
+		    opkg_message(conf, OPKG_ERROR, "ERROR: duplicate src declaration.  Skipping:\n\t src %s %s\n",
 				 name, value);
 	       }
 	  } else if (strcmp(type, "dest") == 0) {
@@ -566,15 +566,15 @@ static int ipkg_conf_parse_file(ipkg_conf_t *conf, const char *filename,
 	  } else if (strcmp(type, "lists_dir") == 0) {
 	       *lists_dir = realloc(*lists_dir,strlen(value)+1);
                if (*lists_dir == NULL) {
-		    ipkg_message(conf, IPKG_ERROR, "ERROR: Not enough memory\n");
+		    opkg_message(conf, OPKG_ERROR, "ERROR: Not enough memory\n");
 	            free(options);
 	            return EINVAL;
                }
                sprintf (*lists_dir,"%s",value);
 	  } else if (strcmp(type, "arch") == 0) {
-	       ipkg_message(conf, IPKG_INFO, "supported arch %s priority (%s)\n", name, value);
+	       opkg_message(conf, OPKG_INFO, "supported arch %s priority (%s)\n", name, value);
 	       if (!value) {
-		    ipkg_message(conf, IPKG_NOTICE, "defaulting architecture %s priority to 10\n", name);
+		    opkg_message(conf, OPKG_NOTICE, "defaulting architecture %s priority to 10\n", name);
 		    value = strdup("10");
 	       }
 	       nv_pair_list_append(&conf->arch_list, strdup(name), strdup(value));
@@ -603,17 +603,17 @@ static int ipkg_conf_parse_file(ipkg_conf_t *conf, const char *filename,
      return 0;
 }
 
-static int ipkg_conf_set_option(const ipkg_option_t *options,
+static int opkg_conf_set_option(const opkg_option_t *options,
 				const char *name, const char *value)
 {
      int i = 0;
      while (options[i].name) {
 	  if (strcmp(options[i].name, name) == 0) {
 	       switch (options[i].type) {
-	       case IPKG_OPT_TYPE_BOOL:
+	       case OPKG_OPT_TYPE_BOOL:
 		    *((int *)options[i].value) = 1;
 		    return 0;
-	       case IPKG_OPT_TYPE_INT:
+	       case OPKG_OPT_TYPE_INT:
 		    if (value) {
 			 *((int *)options[i].value) = atoi(value);
 			 return 0;
@@ -622,7 +622,7 @@ static int ipkg_conf_set_option(const ipkg_option_t *options,
 				__FUNCTION__, name);
 			 return EINVAL;
 		    }		    
-	       case IPKG_OPT_TYPE_STRING:
+	       case OPKG_OPT_TYPE_STRING:
 		    if (value) {
 			 *((char **)options[i].value) = strdup(value);
 			 return 0;
@@ -641,7 +641,7 @@ static int ipkg_conf_set_option(const ipkg_option_t *options,
      return EINVAL;
 }
 
-int ipkg_conf_write_status_files(ipkg_conf_t *conf)
+int opkg_conf_write_status_files(opkg_conf_t *conf)
 {
      pkg_dest_list_elt_t *iter;
      pkg_dest_t *dest;
@@ -709,7 +709,7 @@ int ipkg_conf_write_status_files(ipkg_conf_t *conf)
 }
 
 
-char *root_filename_alloc(ipkg_conf_t *conf, char *filename)
+char *root_filename_alloc(opkg_conf_t *conf, char *filename)
 {
      char *root_filename;
      sprintf_alloc(&root_filename, "%s%s", (conf->offline_root ? conf->offline_root : ""), filename);

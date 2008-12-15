@@ -21,7 +21,7 @@
 set -e
 
 # admin dir
-ad="$IPKG_OFFLINE_ROOT/usr/lib/ipkg/alternatives"
+ad="$OPKG_OFFLINE_ROOT/usr/lib/opkg/alternatives"
 
 usage() {
 	echo "update-alternatives: $*
@@ -93,7 +93,7 @@ find_best_alt() {
 	[ $# -lt 1 ] && return 1
 	[ ! -f $ad/$name ] && return 0
 
-	link=$IPKG_OFFLINE_ROOT/`head -n 1 $ad/$name`
+	link=$OPKG_OFFLINE_ROOT/`head -n 1 $ad/$name`
 
 ##	path=`sed -ne "1!p" $ad/$name | sort -nr -k2 | head -1 | sed 's/ .*//'`
 ## busybox safe:
@@ -134,7 +134,7 @@ do_install() {
 	path=`echo $path | sed 's|/\+|/|g'`
 
 	# This is a bad hack, but I haven't thought of a cleaner solution yet...
-	[ -n "$IPKG_OFFLINE_ROOT" ] && path=`echo $path | sed "s|^$IPKG_OFFLINE_ROOT/*|/|"`
+	[ -n "$OPKG_OFFLINE_ROOT" ] && path=`echo $path | sed "s|^$OPKG_OFFLINE_ROOT/*|/|"`
 
 	register_alt $name $link
 	add_alt $name $path $priority
@@ -151,7 +151,7 @@ do_remove() {
 	path=`echo $path | sed 's|/\+|/|g'`
 
 	# This is a bad hack, but I haven't thought of a cleaner solution yet...
-	[ -n "$IPKG_OFFLINE_ROOT" ] && path=`echo $path | sed "s|^$IPKG_OFFLINE_ROOT/*|/|"`
+	[ -n "$OPKG_OFFLINE_ROOT" ] && path=`echo $path | sed "s|^$OPKG_OFFLINE_ROOT/*|/|"`
 
 	remove_alt $name $path
 	find_best_alt $name

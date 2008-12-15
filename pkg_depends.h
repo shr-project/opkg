@@ -97,9 +97,9 @@ void buildDependedUponBy(pkg_t * pkg, abstract_pkg_t * ab_pkg);
 void freeDepends(pkg_t *pkg);
 void printDepends(pkg_t * pkg);
 int version_constraints_satisfied(depend_t * depends, pkg_t * pkg);
-int pkg_hash_fetch_unsatisfied_dependencies(ipkg_conf_t *conf, pkg_t * pkg, pkg_vec_t *depends, char *** unresolved);
+int pkg_hash_fetch_unsatisfied_dependencies(opkg_conf_t *conf, pkg_t * pkg, pkg_vec_t *depends, char *** unresolved);
 pkg_vec_t * pkg_hash_fetch_conflicts(hash_table_t * hash, pkg_t * pkg);
-int pkg_dependence_satisfiable(ipkg_conf_t *conf, depend_t *depend);
-int pkg_dependence_satisfied(ipkg_conf_t *conf, depend_t *depend);
+int pkg_dependence_satisfiable(opkg_conf_t *conf, depend_t *depend);
+int pkg_dependence_satisfied(opkg_conf_t *conf, depend_t *depend);
 
 #endif

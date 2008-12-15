@@ -762,23 +762,23 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 		free(ared_file);
 		return(output_buffer);
 	} else if (strncmp(ar_magic, "\037\213", 2) == 0) {
-		/* it's a gz file, let's assume it's an ipkg */
-		int unzipped_ipkg_pid;
-		FILE *unzipped_ipkg_stream;
+		/* it's a gz file, let's assume it's an opkg */
+		int unzipped_opkg_pid;
+		FILE *unzipped_opkg_stream;
 		file_header_t *tar_header;
 		archive_offset = 0;
 		fseek(deb_stream, 0, SEEK_SET);
-		unzipped_ipkg_stream = gz_open(deb_stream, &unzipped_ipkg_pid);
+		unzipped_opkg_stream = gz_open(deb_stream, &unzipped_opkg_pid);
 		
-                /*fprintf(stderr, __FUNCTION__ ": processing ipkg %s -- ared_file=%s\n", package_filename, ared_file);*/
+                /*fprintf(stderr, __FUNCTION__ ": processing opkg %s -- ared_file=%s\n", package_filename, ared_file);*/
 		/* walk through outer tar file to find ared_file */
-		while ((tar_header = get_header_tar(unzipped_ipkg_stream)) != NULL) {
+		while ((tar_header = get_header_tar(unzipped_opkg_stream)) != NULL) {
                         int name_offset = 0;
                         if (strncmp(tar_header->name, "./", 2) == 0)
                                 name_offset = 2;
 			if (strcmp(ared_file, tar_header->name+name_offset) == 0) {
 				/* open a stream of decompressed data */
-				uncompressed_stream = gz_open(unzipped_ipkg_stream, &gunzip_pid);
+				uncompressed_stream = gz_open(unzipped_opkg_stream, &gunzip_pid);
 				archive_offset = 0;
                                 /*fprintf(stderr, __FUNCTION__ ":%d: here -- found file\n", __LINE__);*/
 				output_buffer = unarchive(uncompressed_stream, 
@@ -794,11 +794,11 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 				fclose(uncompressed_stream);
 				break;
 			}
-			seek_sub_file(unzipped_ipkg_stream, tar_header->size);
+			seek_sub_file(unzipped_opkg_stream, tar_header->size);
 			free_header_tar(tar_header);
 		}
-		gz_close(unzipped_ipkg_pid);
-		fclose(unzipped_ipkg_stream);
+		gz_close(unzipped_opkg_pid);
+		fclose(unzipped_opkg_stream);
 		fclose(deb_stream);
 		free(ared_file);
                 /*fprintf(stderr, __FUNCTION__ ":%d: done\n", __LINE__);*/

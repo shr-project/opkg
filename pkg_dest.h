@@ -23,7 +23,7 @@ struct pkg_dest
 {
     char *name;
     char *root_dir;
-    char *ipkg_dir;
+    char *opkg_dir;
     char *lists_dir;
     char *info_dir;
     char *status_file_name;

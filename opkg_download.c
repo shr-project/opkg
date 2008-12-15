@@ -1,5 +1,5 @@
 /* vi: set noexpandtab sw=4 sts=4: */
-/* ipkg_download.c - the itsy package management system
+/* opkg_download.c - the itsy package management system
 
    Carl D. Worth
 
@@ -19,9 +19,9 @@
 
 #include <curl/curl.h>
 
-#include "ipkg.h"
-#include "ipkg_download.h"
-#include "ipkg_message.h"
+#include "opkg.h"
+#include "opkg_download.h"
+#include "opkg_message.h"
 
 #include "sprintf_alloc.h"
 #include "xsystem.h"
@@ -51,7 +51,7 @@ curl_progress_func (void* data,
     return 0;
 }
 
-int ipkg_download(ipkg_conf_t *conf, const char *src, const char *dest_file_name)
+int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name)
 {
     int err = 0;
 
@@ -60,38 +60,38 @@ int ipkg_download(ipkg_conf_t *conf, const char *src, const char *dest_file_name
     char *tmp_file_location;
     char *cmd;
 
-    ipkg_message(conf,IPKG_NOTICE,"Downloading %s\n", src);
+    opkg_message(conf,OPKG_NOTICE,"Downloading %s\n", src);
 	
     fflush(stdout);
     
     if (str_starts_with(src, "file:")) {
 	int ret;
 	const char *file_src = src + 5;
-	ipkg_message(conf,IPKG_INFO,"Copying %s to %s...", file_src, dest_file_name);
+	opkg_message(conf,OPKG_INFO,"Copying %s to %s...", file_src, dest_file_name);
 	ret = file_copy(src + 5, dest_file_name);
-	ipkg_message(conf,IPKG_INFO,"Done\n");
+	opkg_message(conf,OPKG_INFO,"Done\n");
 	return ret;
     }
 
     sprintf_alloc(&tmp_file_location, "%s/%s", conf->tmp_dir, src_base);
     err = unlink(tmp_file_location);
     if (err && errno != ENOENT) {
-	ipkg_message(conf,IPKG_ERROR, "%s: ERROR: failed to unlink %s: %s\n",
+	opkg_message(conf,OPKG_ERROR, "%s: ERROR: failed to unlink %s: %s\n",
 		__FUNCTION__, tmp_file_location, strerror(errno));
 	free(tmp_file_location);
 	return errno;
     }
 
     if (conf->http_proxy) {
-	ipkg_message(conf,IPKG_DEBUG,"Setting environment variable: http_proxy = %s\n", conf->http_proxy);
+	opkg_message(conf,OPKG_DEBUG,"Setting environment variable: http_proxy = %s\n", conf->http_proxy);
 	setenv("http_proxy", conf->http_proxy, 1);
     }
     if (conf->ftp_proxy) {
-	ipkg_message(conf,IPKG_DEBUG,"Setting environment variable: ftp_proxy = %s\n", conf->ftp_proxy);
+	opkg_message(conf,OPKG_DEBUG,"Setting environment variable: ftp_proxy = %s\n", conf->ftp_proxy);
 	setenv("ftp_proxy", conf->ftp_proxy, 1);
     }
     if (conf->no_proxy) {
-	ipkg_message(conf,IPKG_DEBUG,"Setting environment variable: no_proxy = %s\n", conf->no_proxy);
+	opkg_message(conf,OPKG_DEBUG,"Setting environment variable: no_proxy = %s\n", conf->no_proxy);
 	setenv("no_proxy", conf->no_proxy, 1);
     }
 
@@ -109,7 +109,7 @@ int ipkg_download(ipkg_conf_t *conf, const char *src, const char *dest_file_name
     err = xsystem(cmd);
     if (err) {
 	if (err != -1) {
-	    ipkg_message(conf,IPKG_ERROR, "%s: ERROR: Command failed with return value %d: `%s'\n",
+	    opkg_message(conf,OPKG_ERROR, "%s: ERROR: Command failed with return value %d: `%s'\n",
 		    __FUNCTION__, err, cmd);
 	} 
 	unlink(tmp_file_location);
@@ -153,13 +153,13 @@ int ipkg_download(ipkg_conf_t *conf, const char *src, const char *dest_file_name
     return 0;
 }
 
-int ipkg_download_pkg(ipkg_conf_t *conf, pkg_t *pkg, const char *dir)
+int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir)
 {
     int err;
     char *url;
 
     if (pkg->src == NULL) {
-	ipkg_message(conf,IPKG_ERROR, "ERROR: Package %s (parent %s) is not available from any configured src.\n",
+	opkg_message(conf,OPKG_ERROR, "ERROR: Package %s (parent %s) is not available from any configured src.\n",
 		pkg->name, pkg->parent->name);
 	return -1;
     }
@@ -172,7 +172,7 @@ int ipkg_download_pkg(ipkg_conf_t *conf, pkg_t *pkg, const char *dir)
        use just the filename part, without any directory. */
     sprintf_alloc(&pkg->local_filename, "%s/%s", dir, pkg->filename);
 
-    err = ipkg_download(conf, url, pkg->local_filename);
+    err = opkg_download(conf, url, pkg->local_filename);
     free(url);
 
     return err;
@@ -181,7 +181,7 @@ int ipkg_download_pkg(ipkg_conf_t *conf, pkg_t *pkg, const char *dir)
 /*
  * Downloads file from url, installs in package database, return package name. 
  */
-int ipkg_prepare_url_for_install(ipkg_conf_t *conf, const char *url, char **namep)
+int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **namep)
 {
      int err = 0;
      pkg_t *pkg;
@@ -196,7 +196,7 @@ int ipkg_prepare_url_for_install(ipkg_conf_t *conf, const char *url, char **name
 	  char *file_base = basename(file_basec);
 
 	  sprintf_alloc(&tmp_file, "%s/%s", conf->tmp_dir, file_base);
-	  err = ipkg_download(conf, url, tmp_file);
+	  err = opkg_download(conf, url, tmp_file);
 	  if (err)
 	       return err;
 
@@ -208,14 +208,14 @@ int ipkg_prepare_url_for_install(ipkg_conf_t *conf, const char *url, char **name
 	  free(tmp_file);
 	  free(file_basec);
 
-     } else if (strcmp(&url[strlen(url) - 4], IPKG_PKG_EXTENSION) == 0
+     } else if (strcmp(&url[strlen(url) - 4], OPKG_PKG_EXTENSION) == 0
 		|| strcmp(&url[strlen(url) - 4], DPKG_PKG_EXTENSION) == 0) {
 
 	  err = pkg_init_from_file(pkg, url);
 	  if (err)
 	       return err;
 	  pkg->local_filename = strdup(url);
-	  ipkg_message(conf, IPKG_DEBUG2, "Package %s provided by hand \(%s\).\n", pkg->name,pkg->local_filename);
+	  opkg_message(conf, OPKG_DEBUG2, "Package %s provided by hand \(%s\).\n", pkg->name,pkg->local_filename);
           pkg->provided_by_hand = 1;
 
      } else {
@@ -225,7 +225,7 @@ int ipkg_prepare_url_for_install(ipkg_conf_t *conf, const char *url, char **name
      }
 
      if (!pkg->architecture) {
-	  ipkg_message(conf, IPKG_ERROR, "Package %s has no Architecture defined.\n", pkg->name);
+	  opkg_message(conf, OPKG_ERROR, "Package %s has no Architecture defined.\n", pkg->name);
 	  return -EINVAL;
      }
 

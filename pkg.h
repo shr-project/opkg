@@ -26,10 +26,10 @@
 #include "str_list.h"
 #include "pkg_src.h"
 #include "pkg_dest.h"
-#include "ipkg_conf.h"
+#include "opkg_conf.h"
 #include "conffile_list.h"
 
-struct ipkg_conf;
+struct opkg_conf;
 
 
 #define ARRAY_SIZE(array) sizeof(array) / sizeof((array)[0])
@@ -174,7 +174,7 @@ struct pkg
      int installed_files_ref_cnt;
      int essential;
      int arch_priority;
-/* Adding this flag, to "force" ipkg to choose a "provided_by_hand" package, if there are multiple choice */
+/* Adding this flag, to "force" opkg to choose a "provided_by_hand" package, if there are multiple choice */
      int provided_by_hand;
 };
 
@@ -200,16 +200,16 @@ int abstract_pkg_name_compare(void *a, void *b);
 char * pkg_formatted_info(pkg_t *pkg );
 char * pkg_formatted_field(pkg_t *pkg, const char *field );
 
-void set_flags_from_control(ipkg_conf_t *conf, pkg_t *pkg);
+void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg);
 
 void pkg_print_info(pkg_t *pkg, FILE *file);
 void pkg_print_status(pkg_t * pkg, FILE * file);
 void pkg_print_field(pkg_t *pkg, FILE *file, const char *field);
 str_list_t *pkg_get_installed_files(pkg_t *pkg);
 int pkg_free_installed_files(pkg_t *pkg);
-int pkg_remove_installed_files_list(ipkg_conf_t *conf, pkg_t *pkg);
+int pkg_remove_installed_files_list(opkg_conf_t *conf, pkg_t *pkg);
 conffile_t *pkg_get_conffile(pkg_t *pkg, const char *file_name);
-int pkg_run_script(struct ipkg_conf *conf, pkg_t *pkg,
+int pkg_run_script(struct opkg_conf *conf, pkg_t *pkg,
 		   const char *script, const char *args);
 
 /* enum mappings */
@@ -222,11 +222,11 @@ pkg_state_status_t pkg_state_status_from_str(char *str);
 
 int pkg_version_satisfied(pkg_t *it, pkg_t *ref, const char *op);
 
-int pkg_arch_supported(ipkg_conf_t *conf, pkg_t *pkg);
-int pkg_info_preinstall_check(ipkg_conf_t *conf);
+int pkg_arch_supported(opkg_conf_t *conf, pkg_t *pkg);
+int pkg_info_preinstall_check(opkg_conf_t *conf);
 int pkg_free_installed_files(pkg_t *pkg);
 
-int pkg_write_filelist(ipkg_conf_t *conf, pkg_t *pkg);
-int pkg_write_changed_filelists(ipkg_conf_t *conf);
+int pkg_write_filelist(opkg_conf_t *conf, pkg_t *pkg);
+int pkg_write_changed_filelists(opkg_conf_t *conf);
 
 #endif
