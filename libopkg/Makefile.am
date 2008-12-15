@@ -29,6 +29,9 @@ libopkg_include_HEADERS= \
 
 libopkg_la_LIBADD = $(top_builddir)/libbb/libbb.la $(CURL_LIBS) $(GPGME_LIBS)
 
+# make sure we only export symbols that are for public use
+libopkg_la_LDFLAGS = -export-symbols-regex "^opkg_.*"
+
 opkg_core_sources = args.c args.h \
 		    user.c user.h 
 opkg_libcore_sources = args.c args.h libopkg.c libopkg.h\
