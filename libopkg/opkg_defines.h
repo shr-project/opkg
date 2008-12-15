@@ -16,7 +16,8 @@
 #ifndef OPKG_DEFINES_H
 #define OPKG_DEFINES_H
 
-#define OPKG_PKG_EXTENSION ".ipk"
+#define OPKG_PKG_EXTENSION ".opk"
+#define IPKG_PKG_EXTENSION ".ipk"
 #define DPKG_PKG_EXTENSION ".deb"
 
 #define OPKG_LEGAL_PKG_NAME_CHARS "abcdefghijklmnopqrstuvwxyz0123456789.+-"

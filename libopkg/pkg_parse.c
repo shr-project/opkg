@@ -369,7 +369,7 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 out:;
     
     *raw = lines;
-/* If the ipk has not a Provides line, we insert our false line */ 
+/* If the opk has not a Provides line, we insert our false line */ 
     if ( pkg_false_provides==1)
     {
        pkg->provides_count = 1;

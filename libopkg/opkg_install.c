@@ -521,7 +521,7 @@ static int verify_pkg_installable(opkg_conf_t *conf, pkg_t *pkg)
      * XXX: BUG easy for cworth
      * 1) please point the call below to the correct current root destination
      * 2) we need to resolve how to check the required space for a pending pkg, 
-     *    my diddling with the .ipk file size below isn't going to cut it.
+     *    my diddling with the .opk file size below isn't going to cut it.
      * 3) return a proper error code instead of 1
      */
      int comp_size, blocks_available;

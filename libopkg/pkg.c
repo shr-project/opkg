@@ -1079,7 +1079,7 @@ void pkg_print_status(pkg_t * pkg, FILE * file)
 	can be found in th available file.
 
 	But, someone proposed the idea to make it possible to
-	reconstruct a .ipk from an installed package, (ie. for beaming
+	reconstruct a .opk from an installed package, (ie. for beaming
 	from one handheld to another). So, maybe we actually want a few
 	more fields here, (depends, suggests, etc.), so that that would
 	be guaranteed to work even in the absence of more information

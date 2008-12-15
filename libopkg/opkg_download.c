@@ -154,7 +154,7 @@ int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir)
     sprintf_alloc(&url, "%s/%s", pkg->src->value, pkg->filename);
 
     /* XXX: BUG: The pkg->filename might be something like
-       "../../foo.ipk". While this is correct, and exactly what we
+       "../../foo.opk". While this is correct, and exactly what we
        want to use to construct url above, here we actually need to
        use just the filename part, without any directory. */
 
@@ -202,6 +202,7 @@ int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **name
 	  free(file_basec);
 
      } else if (strcmp(&url[strlen(url) - 4], OPKG_PKG_EXTENSION) == 0
+                || strcmp(&url[strlen(url) - 4], IPKG_PKG_EXTENSION) == 0
 		|| strcmp(&url[strlen(url) - 4], DPKG_PKG_EXTENSION) == 0) {
 
 	  err = pkg_init_from_file(pkg, url);

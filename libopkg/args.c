@@ -244,7 +244,7 @@ void args_usage(char *complaint)
      printf("\tupdate  		Update list of available packages\n");
      printf("\tupgrade			Upgrade all installed packages to latest version\n");
      printf("\tinstall <pkg>		Download and install <pkg> (and dependencies)\n");
-     printf("\tinstall <file.ipk>	Install package <file.ipk>\n");
+     printf("\tinstall <file.opk>	Install package <file.opk>\n");
      printf("\tconfigure [<pkg>]	Configure unpacked packages\n");
      printf("\tremove <pkg|regexp>	Remove package <pkg|packages following regexp>\n");
      printf("\tflag <flag> <pkg> ...	Flag package(s) <pkg>\n");
