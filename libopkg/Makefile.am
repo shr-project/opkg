@@ -30,7 +30,7 @@ libopkg_include_HEADERS= \
 
 libopkg_la_LIBADD = $(top_builddir)/libbb/libbb.la $(CURL_LIBS) $(GPGME_LIBS)
 
-opkg_core_sources = args.c args.h opkg.c \
+opkg_core_sources = args.c args.h \
 		    user.c user.h 
 opkg_libcore_sources = args.c args.h libopkg.c libopkg.h opkg.h\
 		    user.c user.h opkg_state.c opkg_state.h
