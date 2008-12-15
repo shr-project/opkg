@@ -29,12 +29,8 @@ struct opkg_cmd
 typedef struct opkg_cmd opkg_cmd_t;
 
 opkg_cmd_t *opkg_cmd_find(const char *name);
-#ifdef OPKG_LIB
 int opkg_cmd_exec(opkg_cmd_t *cmd, opkg_conf_t *conf, int argc, 
                   const char **argv, void *userdata);
-#else
-int opkg_cmd_exec(opkg_cmd_t *cmd, opkg_conf_t *conf, int argc, const char **argv);
-#endif
 int opkg_multiple_files_scan (opkg_conf_t *conf, int argc, char *argv[]);
 /* install any packges with state_want == SW_INSTALL */
 int opkg_install_wanted_packages(opkg_conf_t *conf);

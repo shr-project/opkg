@@ -253,13 +253,8 @@ void args_usage(char *complaint)
      fprintf(stderr, "\tlist_installed		List all and only the installed packages and description \n");
      fprintf(stderr, "\tfiles <pkg>		List all files belonging to <pkg>\n");
      fprintf(stderr, "\tsearch <file|regexp>		Search for a package providing <file>\n");
-#ifndef OPKG_LIB
-     fprintf(stderr, "\tinfo [pkg|regexp [<field>]]	Display all/some info fields for <pkg> or all\n");
-     fprintf(stderr, "\tstatus [pkg|regexp [<field>]]	Display all/some status fields for <pkg> or all\n");
-#else
      fprintf(stderr, "\tinfo [pkg|regexp]		Display all info for <pkg>\n");
      fprintf(stderr, "\tstatus [pkg|regexp]		Display all status for <pkg>\n");
-#endif
      fprintf(stderr, "\tdownload <pkg>		Download <pkg> to current directory.\n");
      fprintf(stderr, "\tcompare_versions <v1> <op> <v2>\n");
      fprintf(stderr, "\t                          compare versions using <= < > >= = << >>\n");

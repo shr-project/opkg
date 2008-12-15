@@ -59,7 +59,7 @@ libopkg_la_SOURCES = \
 	$(opkg_cmd_sources) $(opkg_db_sources) \
 	$(opkg_util_sources) $(opkg_list_sources)
 
-libopkg_la_CFLAGS = -DOPKG_LIB $(ALL_CFLAGS)  $(CURL_CFLAGS) $(GPGME_CFLAGS)
+libopkg_la_CFLAGS = $(ALL_CFLAGS)  $(CURL_CFLAGS) $(GPGME_CFLAGS)
 lib_LTLIBRARIES = libopkg.la
 
 

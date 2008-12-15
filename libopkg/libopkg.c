@@ -15,8 +15,6 @@
    General Public License for more details.
 */
 
-#ifdef OPKG_LIB
-
 #include "opkg.h"
 #include "includes.h"
 #include "libopkg.h"
@@ -394,12 +392,9 @@ int default_opkg_message_callback(opkg_conf_t *conf, message_level_t level,
      if (conf && (conf->verbosity < level)) {
 	  return 0;
      } else {
-#ifdef OPKG_LIB
           if ( level == OPKG_ERROR ){
              push_error_list(&error_list, msg); 
-//	     printf(msg);
           } else
-#endif
 	     printf(msg);
      }
      return 0;
@@ -523,5 +518,3 @@ opkg_op (int argc, char *argv[])
 
 	return err;
 }
-
-#endif /* OPKG_LIB */

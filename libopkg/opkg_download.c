@@ -32,10 +32,8 @@
 #include "file_util.h"
 #include "str_util.h"
 
-#ifdef OPKG_LIB
 #include "libopkg.h"
 opkg_download_progress_callback opkg_cb_download_progress = NULL;
-#endif
 
 int
 curl_progress_func (char* url,
@@ -47,7 +45,6 @@ curl_progress_func (char* url,
     int i;
     int p = (t) ? d*100/t : 0;
 
-#ifdef OPKG_LIB
     if (opkg_cb_download_progress)
     {
 	static int prev = -1;
@@ -61,7 +58,6 @@ curl_progress_func (char* url,
 	opkg_cb_download_progress (p, url);
 	return 0;
     }
-#endif
 
     /* skip progress bar if we haven't done started yet
      * this prevents drawing the progress bar if we receive an error such as

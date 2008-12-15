@@ -21,8 +21,6 @@
 #endif
 
 
-#ifdef OPKG_LIB
-
 #include "opkg_conf.h"
 #include "opkg_message.h"
 #include "opkg_state.h"
@@ -88,8 +86,5 @@ extern opkg_state_changed_callback opkg_cb_state_changed; /* opkg_state.c */
 extern void push_error_list(struct errlist **errors,char * msg);
 extern void reverse_error_list(struct errlist **errors);
 extern void free_error_list();
-
-#endif
-
 
 #endif

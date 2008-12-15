@@ -20,15 +20,12 @@
 #include <stdarg.h>
 #include "file_util.h"
 #include "str_util.h"
-#ifdef OPKG_LIB	
 #include "libopkg.h"
-#endif	
 
 
-#ifdef OPKG_LIB
 static char *question = NULL;
 static int question_len = 255;
-#endif	
+
 char *get_user_response(const char *format, ...)
 {
      int len = question_len;
@@ -36,12 +33,6 @@ char *get_user_response(const char *format, ...)
      char *response;
      va_start(ap, format);
 
-#ifndef OPKG_LIB
-     vprintf(format, ap);
-     do {
-	  response = file_read_line_alloc(stdin);
-     } while (response == NULL);
-#else
      do {
 	  if (question == NULL || len > question_len) {
 	       question = realloc(question, len + 1);
@@ -50,7 +41,6 @@ char *get_user_response(const char *format, ...)
 	  len = vsnprintf(question,question_len,format,ap);
      } while (len > question_len);
      response = strdup(opkg_cb_response(question));
-#endif
      str_chomp(response);
      str_tolower(response);
 

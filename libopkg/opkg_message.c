@@ -18,28 +18,6 @@
 #include "opkg_conf.h"
 #include "opkg_message.h"
 
-#ifndef OPKG_LIB
-
-void
-opkg_message (opkg_conf_t * conf, message_level_t level, char *fmt, ...)
-{
-	va_list ap;
-
-	if (conf && (conf->verbosity < level))
-	{
-		return;
-	}
-	else
-	{
-
-		va_start (ap, fmt);
-		vprintf (fmt, ap);
-		va_end (ap);
-	}
-}
-
-#else
-
 #include "libopkg.h"
 
 //#define opkg_message(conf, level, fmt, arg...) opkg_cb_message(conf, level, fmt, ## arg)
@@ -58,4 +36,3 @@ opkg_message (opkg_conf_t * conf, message_level_t level, char *fmt, ...)
 		opkg_cb_message(conf,level,ts);
 	}
 }
-#endif
