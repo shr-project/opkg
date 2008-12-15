@@ -57,7 +57,7 @@ libopkg_la_LIBADD = libbb/libbb.la $(CURL_LIBS) $(GPGME_LIBS)
 opkg_core_sources = args.c args.h opkg.c \
 		    user.c user.h 
 opkg_libcore_sources = args.c args.h libopkg.c libopkg.h opkg.h\
-		    user.c user.h 
+		    user.c user.h opkg_state.c opkg_state.h
 opkg_cmd_sources = opkg_cmd.c opkg_cmd.h \
 		   opkg_configure.c opkg_configure.h \
 		   opkg_download.c opkg_download.h \
