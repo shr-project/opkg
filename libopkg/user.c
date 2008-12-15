@@ -33,14 +33,16 @@ char *get_user_response(const char *format, ...)
      int len = question_len;
      va_list ap;
      char *response;
-     va_start(ap, format);
 
      do {
 	  if (question == NULL || len > question_len) {
 	       question = realloc(question, len + 1);
 	       question_len = len;
 	  }
+
+          va_start(ap, format);
 	  len = vsnprintf(question,question_len,format,ap);
+          va_end(ap);
      } while (len > question_len);
      response = strdup(opkg_cb_response(question));
      str_chomp(response);
