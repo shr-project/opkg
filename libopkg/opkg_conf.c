@@ -231,6 +231,9 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 	right now it is ridiculous. Maybe opkg_conf_t should just save
 	a pointer to args_t (which could then not be freed), rather
 	than duplicating every field here? */
+     if (args->autoremove) {
+	  conf->autoremove = 1;
+     }
      if (args->force_depends) {
 	  conf->force_depends = 1;
      }

@@ -169,7 +169,10 @@ int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)
 */
      int err;
      abstract_pkg_t *parent_pkg = NULL;
-	
+
+     if (conf->autoremove)
+       printf ("autoremove is enabled, but not yet implemented\n");
+
      if (pkg->essential && !message) {
 	  if (conf->force_removal_of_essential_packages) {
 	       fprintf(stderr, "WARNING: Removing essential package %s under your coercion.\n"

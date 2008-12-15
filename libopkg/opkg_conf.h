@@ -54,6 +54,7 @@ struct opkg_conf
      const char *pending_dir;
 
      /* options */
+     int autoremove;
      int force_depends;
      int force_defaults;
      int force_overwrite;

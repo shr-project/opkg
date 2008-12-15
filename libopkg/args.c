@@ -42,7 +42,8 @@ enum long_args_opt
      ARGS_OPT_NODEPS,
      ARGS_OPT_VERBOSE_WGET,
      ARGS_OPT_VERBOSITY,
-     ARGS_OPT_MULTIPLE_PROVIDERS
+     ARGS_OPT_MULTIPLE_PROVIDERS,
+     ARGS_OPT_AUTOREMOVE
 };
 
 int args_init(args_t *args)
@@ -67,6 +68,7 @@ int args_init(args_t *args)
      args->force_reinstall = ARGS_DEFAULT_FORCE_REINSTALL;
      args->force_removal_of_dependent_packages = ARGS_DEFAULT_FORCE_REMOVAL_OF_DEPENDENT_PACKAGES;
      args->force_removal_of_essential_packages = ARGS_DEFAULT_FORCE_REMOVAL_OF_ESSENTIAL_PACKAGES;
+     args->autoremove = ARGS_DEFAULT_AUTOREMOVE;
      args->noaction = ARGS_DEFAULT_NOACTION;
      args->nodeps = ARGS_DEFAULT_NODEPS;
      args->verbose_wget = ARGS_DEFAULT_VERBOSE_WGET;
@@ -94,6 +96,7 @@ int args_parse(args_t *args, int argc, char *argv[])
      int parse_err = 0;
      static struct option long_options[] = {
 	  {"query-all", 0, 0, 'A'},
+	  {"autoremove", 0, 0, ARGS_OPT_AUTOREMOVE},
 	  {"conf-file", 1, 0, 'f'},
 	  {"conf", 1, 0, 'f'},
 	  {"dest", 1, 0, 'd'},
@@ -168,6 +171,9 @@ int args_parse(args_t *args, int argc, char *argv[])
 		    args->verbosity = atoi(optarg);
 	       else
 		    args->verbosity += 1;
+	       break;
+	  case ARGS_OPT_AUTOREMOVE:
+	       args->autoremove = 1;
 	       break;
 	  case ARGS_OPT_FORCE_DEFAULTS:
 	       args->force_defaults = 1;
@@ -299,6 +305,7 @@ void args_usage(char *complaint)
      fprintf(stderr, "\t-nodeps                 Do not follow dependences\n");
      fprintf(stderr, "\t-force-removal-of-dependent-packages\n");
      fprintf(stderr, "\t-recursive	 	Allow opkg to remove package and all that depend on it.\n");
+     fprintf(stderr, "\t-autoremove	 	Allow opkg to remove packages that where installed automatically to satisfy dependencies.\n");
      fprintf(stderr, "\t-test                   No action -- test only\n");
      fprintf(stderr, "\t-t	 	        Specify tmp-dir.\n");
      fprintf(stderr, "\t--tmp-dir 	        Specify tmp-dir.\n");

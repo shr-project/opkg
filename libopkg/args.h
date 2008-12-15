@@ -39,6 +39,7 @@ struct args
     int verbosity;
     int nocheckfordirorfile;
     int noreadfeedsfile;
+    int autoremove;
     char *offline_root;
     char *offline_root_pre_script_cmd;
     char *offline_root_post_script_cmd;
@@ -63,6 +64,7 @@ typedef struct args args_t;
 #define ARGS_DEFAULT_NODEPS 0
 #define ARGS_DEFAULT_VERBOSE_WGET 0
 #define ARGS_DEFAULT_VERBOSITY 1
+#define ARGS_DEFAULT_AUTOREMOVE 0
 
 int args_init(args_t *args);
 void args_deinit(args_t *args);
