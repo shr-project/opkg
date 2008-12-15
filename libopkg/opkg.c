@@ -378,14 +378,14 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   if (old)
   {
     /* XXX: Error: Package is already installed. */
-    return 1;
+    return OPKG_PACKAGE_ALREADY_INSTALLED;
   }
 
   new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, package_name);
   if (!new)
   {
     /* XXX: Error: Could not find package to install */
-    return 1;
+    return OPKG_PACKAGE_NOT_FOUND;
   }
 
   new->state_flag |= SF_USER;
@@ -403,7 +403,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   {
     /* XXX: Error: Could not satisfy dependencies */
     pkg_vec_free (deps);
-    return 1;
+    return OPKG_DEPENDANCIES_FAILED;
   }
 
   /* insert the package we are installing so that we download it */
@@ -427,7 +427,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
     if (pkg->src == NULL)
     {
       /* XXX: Error: Package not available from any configured src */
-      return 1;
+      return OPKG_PACKAGE_NOT_AVAILABLE;
     }
 
     sprintf_alloc(&url, "%s/%s", pkg->src->value, pkg->filename);
@@ -515,7 +515,7 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
   if (pkg == NULL)
   {
     /* XXX: Error: Package not installed. */
-    return 1;
+    return OPKG_PACKAGE_NOT_INSTALLED;
   }
 
   pdata.action = OPKG_REMOVE;
@@ -526,7 +526,7 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
   if (pkg->state_status == SS_NOT_INSTALLED)
   {
     /* XXX:  Error: Package seems to be not installed (STATUS = NOT_INSTALLED). */
-    return 1;
+    return OPKG_PACKAGE_NOT_INSTALLED;
   }
   progress (pdata, 25);
 
@@ -577,7 +577,7 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
     if (pkg == NULL)
     {
       /* XXX: Error: Package not installed in default_dest */
-      return 1;
+      return OPKG_PACKAGE_NOT_INSTALLED;
     }
   }
   else
@@ -589,7 +589,7 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   if (!pkg)
   {
     /* XXX: Error: Package not installed */
-    return 1;
+    return OPKG_PACKAGE_NOT_INSTALLED;
   }
 
   pdata.action = OPKG_INSTALL;
@@ -652,7 +652,7 @@ int
 opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callback, void *user_data)
 {
   char *tmp;
-  int err;
+  int err, result = 0;
   char *lists_dir;
   pkg_src_list_elt_t *iter;
   pkg_src_t *src;
@@ -762,6 +762,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     if (err)
     {
       /* XXX: Error: download error */
+      result = OPKG_DOWNLOAD_FAILED;
     }
     free (url);
 
@@ -815,7 +816,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
   free (tmp);
   free (lists_dir);
 
-  return 0;
+  return result;
 }
 
 

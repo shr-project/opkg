@@ -32,6 +32,18 @@ enum _opkg_action_t
   OPKG_DOWNLOAD
 };
 
+enum _opkg_error_code_t
+{
+  OPKG_NO_ERROR,
+  OPKG_UNKNOWN_ERROR,
+  OPKG_DOWNLOAD_FAILED,
+  OPKG_DEPENDANCIES_FAILED,
+  OPKG_PACKAGE_ALREADY_INSTALLED,
+  OPKG_PACKAGE_NOT_AVAILABLE,
+  OPKG_PACKAGE_NOT_FOUND,
+  OPKG_PACKAGE_NOT_INSTALLED
+};
+
 struct _opkg_package_t
 {
   char *name;
