@@ -24,6 +24,12 @@
 
 #include "opkg_install.h"
 #include "opkg_configure.h"
+#include "opkg_download.h"
+
+#include "sprintf_alloc.h"
+#include "file_util.h"
+
+#include "libbb.h"
 
 struct _opkg_t
 {
@@ -43,19 +49,19 @@ opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
   pkg_t *pkg;
   int r, err = 0;
 
-  all = pkg_vec_alloc();
-  pkg_hash_fetch_available(&conf->pkg_hash, all);
+  all = pkg_vec_alloc ();
+  pkg_hash_fetch_available (&conf->pkg_hash, all);
 
   for (i = 0; i < all->len; i++)
   {
     pkg = all->pkgs[i];
 
-    if (pkg_name && fnmatch(pkg_name, pkg->name, 0))
+    if (pkg_name && fnmatch (pkg_name, pkg->name, 0))
       continue;
 
     if (pkg->state_status == SS_UNPACKED)
     {
-      r = opkg_configure(conf, pkg);
+      r = opkg_configure (conf, pkg);
       if (r == 0)
       {
         pkg->state_status = SS_INSTALLED;
@@ -70,7 +76,7 @@ opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
     }
   }
 
-  pkg_vec_free(all);
+  pkg_vec_free (all);
   return err;
 }
 
@@ -111,7 +117,7 @@ opkg_get_option (opkg_t *opkg, char *option, void **value)
    */
   while (options[i]->name)
   {
-    if (strcmp(options[i]->name, option) != 0)
+    if (strcmp (options[i]->name, option) != 0)
     {
       i++;
       continue;
@@ -121,18 +127,18 @@ opkg_get_option (opkg_t *opkg, char *option, void **value)
   /* get the option */
   switch (options[i]->type)
   {
-    case OPKG_OPT_TYPE_BOOL:
-      *((int *) value) = *((int *) options[i]->value);
-      return;
+  case OPKG_OPT_TYPE_BOOL:
+    *((int *) value) = *((int *) options[i]->value);
+    return;
 
-    case OPKG_OPT_TYPE_INT:
-      *((int *) value) = *((int *) options[i]->value);
-      return;
+  case OPKG_OPT_TYPE_INT:
+    *((int *) value) = *((int *) options[i]->value);
+    return;
 
-    case OPKG_OPT_TYPE_STRING:
-      *((char **)value) = strdup (options[i]->value);
-      return;
-   }
+  case OPKG_OPT_TYPE_STRING:
+    *((char **)value) = strdup (options[i]->value);
+    return;
+  }
 
 }
 
@@ -151,7 +157,7 @@ opkg_set_option (opkg_t *opkg, char *option, void *value)
    */
   while (options[i]->name)
   {
-    if (strcmp(options[i]->name, option) != 0)
+    if (strcmp (options[i]->name, option) != 0)
     {
       i++;
       continue;
@@ -161,21 +167,21 @@ opkg_set_option (opkg_t *opkg, char *option, void *value)
   /* set the option */
   switch (options[i]->type)
   {
-    case OPKG_OPT_TYPE_BOOL:
-      if (*((int *) value) == 0)
-        *((int *)options[i]->value) = 0;
-      else
-        *((int *)options[i]->value) = 1;
-      return;
+  case OPKG_OPT_TYPE_BOOL:
+    if (*((int *) value) == 0)
+      *((int *)options[i]->value) = 0;
+    else
+      *((int *)options[i]->value) = 1;
+    return;
 
-    case OPKG_OPT_TYPE_INT:
-      *((int *) options[i]->value) = *((int *) value);
-      return;
+  case OPKG_OPT_TYPE_INT:
+    *((int *) options[i]->value) = *((int *) value);
+    return;
 
-    case OPKG_OPT_TYPE_STRING:
-      *((char **)options[i]->value) = strdup(value);
-      return;
-   }
+  case OPKG_OPT_TYPE_STRING:
+    *((char **)options[i]->value) = strdup (value);
+    return;
+  }
 
 }
 
@@ -184,7 +190,7 @@ opkg_install_package (opkg_t *opkg, char *package_name)
 {
   int err;
 
-  pkg_info_preinstall_check(opkg->conf);
+  pkg_info_preinstall_check (opkg->conf);
 
   if (opkg->conf->multiple_providers)
   {
@@ -227,5 +233,140 @@ opkg_upgrade_all (opkg_t *opkg)
 int
 opkg_update_package_lists (opkg_t *opkg)
 {
-  return 1;
+  char *tmp;
+  int err;
+  char *lists_dir;
+  pkg_src_list_elt_t *iter;
+  pkg_src_t *src;
+
+
+  sprintf_alloc (&lists_dir, "%s",
+                 (opkg->conf->restrict_to_default_dest)
+                 ? opkg->conf->default_dest->lists_dir
+                 : opkg->conf->lists_dir);
+
+  if (!file_is_dir (lists_dir))
+  {
+    if (file_exists (lists_dir))
+    {
+      /* XXX: Error: file exists but is not a directory */
+      free (lists_dir);
+      return 1;
+    }
+
+    err = file_mkdir_hier (lists_dir, 0755);
+    if (err)
+    {
+      /* XXX: Error: failed to create directory */
+      free (lists_dir);
+      return 1;
+    }
+  }
+
+  tmp = strdup ("/tmp/opkg.XXXXXX");
+
+  if (mkdtemp (tmp) == NULL)
+  {
+    /* XXX: Error: could not create temporary file name */
+    free (lists_dir);
+    free (tmp);
+    return 1;
+  }
+
+
+  for (iter = opkg->conf->pkg_src_list.head; iter; iter = iter->next)
+  {
+    char *url, *list_file_name;
+
+    src = iter->data;
+
+    if (src->extra_data)  /* debian style? */
+      sprintf_alloc (&url, "%s/%s/%s", src->value, src->extra_data,
+                     src->gzip ? "Packages.gz" : "Packages");
+    else
+      sprintf_alloc (&url, "%s/%s", src->value, src->gzip ? "Packages.gz" : "Packages");
+
+    sprintf_alloc (&list_file_name, "%s/%s", lists_dir, src->name);
+    if (src->gzip)
+    {
+      char *tmp_file_name;
+      FILE *in, *out;
+
+      sprintf_alloc (&tmp_file_name, "%s/%s.gz", tmp, src->name);
+
+      /* XXX: Note: downloading url */
+      err = opkg_download (opkg->conf, url, tmp_file_name);
+
+      if (err == 0)
+      {
+        /* XXX: Note: Inflating downloaded file */
+        in = fopen (tmp_file_name, "r");
+        out = fopen (list_file_name, "w");
+        if (in && out)
+          unzip (in, out);
+        else
+          err = 1;
+        if (in)
+          fclose (in);
+        if (out)
+          fclose (out);
+        unlink (tmp_file_name);
+      }
+    }
+    else
+      err = opkg_download (opkg->conf, url, list_file_name);
+
+    if (err)
+    {
+      /* XXX: Error: download error */
+    }
+    free (url);
+
+#ifdef HAVE_GPGME
+    /* download detached signitures to verify the package lists */
+    /* get the url for the sig file */
+    if (src->extra_data)  /* debian style? */
+      sprintf_alloc (&url, "%s/%s/%s", src->value, src->extra_data,
+                     "Packages.sig");
+    else
+      sprintf_alloc (&url, "%s/%s", src->value, "Packages.sig");
+
+    /* create temporary file for it */
+    char *tmp_file_name;
+
+    sprintf_alloc (&tmp_file_name, "%s/%s", tmp, "Packages.sig");
+
+    err = opkg_download (opkg->conf, url, tmp_file_name);
+    if (err)
+    {
+      /* XXX: Warning: Download failed */
+    }
+    else
+    {
+      int err;
+      err = opkg_verify_file (opkg->conf, list_file_name, tmp_file_name);
+      if (err == 0)
+      {
+        /* XXX: Notice: Signature check passed */
+      }
+      else
+      {
+        /* XXX: Warning: Signature check failed */
+      }
+    }
+    unlink (tmp_file_name);
+    free (tmp_file_name);
+    free (url);
+#else
+    /* XXX: Note: Signiture check for %s skipped because GPG support was not
+     * enabled in this build
+     */
+#endif
+    free (list_file_name);
+  }
+  rmdir (tmp);
+  free (tmp);
+  free (lists_dir);
+
+  return 0;
 }

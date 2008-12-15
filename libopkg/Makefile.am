@@ -1,5 +1,5 @@
 
-ALL_CFLAGS=-g -O -Wall -Werror -DHOST_CPU_STR=\"@host_cpu@\" -DBUILD_CPU=@build_cpu@ -DLIBDIR=\"@libdir@\" -DOPKGLIBDIR=\"@opkglibdir@\" -DDATADIR=\"@datadir@\" -I$(top_srcdir)
+ALL_CFLAGS=-g -O -Wall -Werror -DHOST_CPU_STR=\"@host_cpu@\" -DBUILD_CPU=@build_cpu@ -DLIBDIR=\"@libdir@\" -DOPKGLIBDIR=\"@opkglibdir@\" -DDATADIR=\"@datadir@\" -I$(top_srcdir)/libbb
 
 libopkg_includedir=$(includedir)/libopkg
 
