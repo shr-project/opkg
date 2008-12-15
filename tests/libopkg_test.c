@@ -11,6 +11,8 @@ main (int argc, char **argv)
 
   opkg_set_option (opkg, "offline_root", "/tmp/");
 
+  opkg_read_config_files (opkg);
+
   err = opkg_update_package_lists (opkg);
 
   printf ("opkg_update_package_lists returned %d\n", err);
