@@ -226,7 +226,7 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 	      FILE *in, *out;
 	      
 	      sprintf_alloc (&tmp_file_name, "%s/%s.gz", tmp, src->name);
-	      err = opkg_download(conf, url, tmp_file_name);
+	      err = opkg_download(conf, url, tmp_file_name, NULL, NULL);
 	      if (err == 0) {
 		   opkg_message (conf, OPKG_NOTICE, "Inflating %s\n", url);
 		   in = fopen (tmp_file_name, "r");
@@ -242,7 +242,7 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 		   unlink (tmp_file_name);
 	      }
 	  } else
-	      err = opkg_download(conf, url, list_file_name);
+	      err = opkg_download(conf, url, list_file_name, NULL, NULL);
 	  if (err) {
 	       failures++;
 	  } else {
@@ -266,7 +266,7 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 
 	  sprintf_alloc (&tmp_file_name, "%s/%s", tmp, "Packages.sig");
 
-	  err = opkg_download(conf, url, tmp_file_name);
+	  err = opkg_download(conf, url, tmp_file_name, NULL, NULL);
 	  if (err) {
 	    failures++;
 		opkg_message (conf, OPKG_NOTICE, "Signature check failed\n");

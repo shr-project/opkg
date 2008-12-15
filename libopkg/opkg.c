@@ -87,6 +87,39 @@ opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
   return err;
 }
 
+struct _curl_cb_data
+{
+  opkg_progress_callback_t cb;
+  opkg_t *opkg;
+  void *user_data;
+  int start_range;
+  int finish_range;
+};
+
+int
+curl_progress_cb (struct _curl_cb_data *cb_data,
+		    double t, /* dltotal */
+		    double d, /* dlnow */
+		    double ultotal,
+		    double ulnow)
+{
+  int p = (t) ? d*100/t : 0;
+  static int prev = -1;
+
+  /* prevent the same value being sent twice (can occur due to rounding) */
+  if (p == prev)
+    return 0;
+  prev = p;
+
+  if (t < 1)
+    return 0;
+
+  (cb_data->cb) (cb_data->opkg,
+      cb_data->start_range + (d/t * ((cb_data->finish_range - cb_data->start_range))),
+      cb_data->user_data);
+
+  return 0;
+}
 
 
 /*** Public API ***/
@@ -456,11 +489,19 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     {
       char *tmp_file_name;
       FILE *in, *out;
+      struct _curl_cb_data cb_data;
 
       sprintf_alloc (&tmp_file_name, "%s/%s.gz", tmp, src->name);
 
       /* XXX: Note: downloading url */
-      err = opkg_download (opkg->conf, url, tmp_file_name);
+
+      cb_data.cb = progress_callback;
+      cb_data.opkg = opkg;
+      cb_data.user_data = user_data;
+      cb_data.start_range = 100 * sources_done / sources_list_count;
+      cb_data.finish_range = 100 * (sources_done + 1) / sources_list_count;
+
+      err = opkg_download (opkg->conf, url, tmp_file_name, (curl_progress_func) curl_progress_cb, &cb_data);
 
       if (err == 0)
       {
@@ -479,7 +520,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
       }
     }
     else
-      err = opkg_download (opkg->conf, url, list_file_name);
+      err = opkg_download (opkg->conf, url, list_file_name, NULL, NULL);
 
     if (err)
     {
@@ -501,7 +542,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
 
     sprintf_alloc (&tmp_file_name, "%s/%s", tmp, "Packages.sig");
 
-    err = opkg_download (opkg->conf, url, tmp_file_name);
+    err = opkg_download (opkg->conf, url, tmp_file_name, NULL, NULL);
     if (err)
     {
       /* XXX: Warning: Download failed */

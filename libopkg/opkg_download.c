@@ -33,34 +33,7 @@
 #include "str_util.h"
 #include "opkg_defines.h"
 
-opkg_download_progress_callback opkg_cb_download_progress = NULL;
-
-int
-curl_progress_func (char* url,
-		    double t, /* dltotal */
-		    double d, /* dlnow */
-		    double ultotal,
-		    double ulnow)
-{
-    int p = (t) ? d*100/t : 0;
-
-    if (opkg_cb_download_progress)
-    {
-	static int prev = -1;
-
-	/* don't report the same percentage multiple times
-	 * (this can occur due to rounding) */
-	if (prev == p)
-	    return 0;
-	prev = p;
-
-	opkg_cb_download_progress (p, url);
-	return 0;
-    }
-    return 0;
-}
-
-int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name)
+int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name, curl_progress_func cb, void *data)
 {
     int err = 0;
 
@@ -110,9 +83,12 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
     {
 	curl_easy_setopt (curl, CURLOPT_URL, src);
 	curl_easy_setopt (curl, CURLOPT_WRITEDATA, file);
-	curl_easy_setopt (curl, CURLOPT_NOPROGRESS, 0);
-	curl_easy_setopt (curl, CURLOPT_PROGRESSDATA, src);
-	curl_easy_setopt (curl, CURLOPT_PROGRESSFUNCTION, curl_progress_func);
+	curl_easy_setopt (curl, CURLOPT_NOPROGRESS, (cb == NULL));
+	if (cb)
+	{
+		curl_easy_setopt (curl, CURLOPT_PROGRESSDATA, data);
+		curl_easy_setopt (curl, CURLOPT_PROGRESSFUNCTION, cb);
+	}
 	curl_easy_setopt (curl, CURLOPT_FAILONERROR, 1);
 	if (conf->http_proxy || conf->ftp_proxy)
 	{
@@ -179,7 +155,7 @@ int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir)
 
     sprintf_alloc(&pkg->local_filename, "%s/%s", dir, stripped_filename);
 
-    err = opkg_download(conf, url, pkg->local_filename);
+    err = opkg_download(conf, url, pkg->local_filename, NULL, NULL);
     free(url);
 
     opkg_set_current_state (conf, OPKG_STATE_NONE, NULL);
@@ -204,7 +180,7 @@ int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **name
 	  char *file_base = basename(file_basec);
 
 	  sprintf_alloc(&tmp_file, "%s/%s", conf->tmp_dir, file_base);
-	  err = opkg_download(conf, url, tmp_file);
+	  err = opkg_download(conf, url, tmp_file, NULL, NULL);
 	  if (err)
 	       return err;
 
