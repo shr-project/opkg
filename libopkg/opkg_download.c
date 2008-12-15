@@ -49,6 +49,7 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
 	opkg_message(conf,OPKG_INFO,"Copying %s to %s...", file_src, dest_file_name);
 	ret = file_copy(src + 5, dest_file_name);
 	opkg_message(conf,OPKG_INFO,"Done\n");
+        free(src_basec);
 	return ret;
     }
 
@@ -58,6 +59,7 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
 	opkg_message(conf,OPKG_ERROR, "%s: ERROR: failed to unlink %s: %s\n",
 		__FUNCTION__, tmp_file_location, strerror(errno));
 	free(tmp_file_location);
+        free(src_basec);
 	return errno;
     }
 
