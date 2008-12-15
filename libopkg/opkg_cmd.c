@@ -292,33 +292,6 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
      free (tmp);
      free(lists_dir);
 
-#ifdef CONFIG_CLEAR_SW_INSTALL_FLAG
-#warning here
-     /* clear SW_INSTALL on any package where state is SS_NOT_INSTALLED.
-      * this is a hack to work around poor bookkeeping in old opkg upgrade code 
-      * -Jamey 3/1/03
-      */
-     {
-	  int i;
-	  int changed = 0;
-	  pkg_vec_t *available = pkg_vec_alloc();
-	  pkg_hash_fetch_available(&conf->pkg_hash, available);
-	  opkg_message(conf, OPKG_DEBUG, "Clearing SW_INSTALL for SS_NOT_INSTALLED packages.\n");
-	  for (i = 0; i < available->len; i++) {
-	       pkg_t *pkg = available->pkgs[i];
-	       if (pkg->state_want == SW_INSTALL && pkg->state_status == SS_NOT_INSTALLED) {
-		    opkg_message(conf, OPKG_DEBUG, "Clearing SW_INSTALL on package %s.\n", pkg->name);
-		    pkg->state_want = SW_UNKNOWN;
-		    changed = 1;
-	       }
-	  }
-	  pkg_vec_free(available);
-	  if (changed) {
-	       write_status_files_if_changed(conf);
-	  }
-     }
-#endif
-
      return failures;
 }
 
