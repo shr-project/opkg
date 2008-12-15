@@ -91,6 +91,7 @@ int opkg_download(opkg_conf_t *conf, const char *src, const char *dest_file_name
 		curl_easy_setopt (curl, CURLOPT_PROGRESSDATA, data);
 		curl_easy_setopt (curl, CURLOPT_PROGRESSFUNCTION, cb);
 	}
+	curl_easy_setopt (curl, CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_setopt (curl, CURLOPT_FAILONERROR, 1);
 	if (conf->http_proxy || conf->ftp_proxy)
 	{
