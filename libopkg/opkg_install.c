@@ -627,6 +627,59 @@ static int unpack_pkg_control_files(opkg_conf_t *conf, pkg_t *pkg)
      return 0;
 }
 
+static int pkg_remove_orphan_dependent(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg) 
+{
+    int i, j, found;
+    char *buf, *d_str;
+    pkg_t *p;
+    if (!old_pkg) 
+        return 0;
+    if (!pkg) {
+        fprintf(stderr, "pkg shall not be NULL here.  please send to the bugzilla!! [%s %d]\n", __FILE__, __LINE__);
+        return -1;
+    }
+    if (old_pkg->depends_count == 0) 
+        return 0;
+    for (i=0;i<old_pkg->depends_count;i++) {
+        found = 0;
+        for (j=0;j<pkg->depends_count;j++) {
+            if (!strcmp(old_pkg->depends_str[i], pkg->depends_str[j])) {
+                found = 1;
+                break;
+            }
+        }
+        if (found)
+            continue;
+        d_str = old_pkg->depends_str[i];
+        buf = malloc (strlen (d_str) + 1);
+        j=0;
+        while (d_str[j] != '\0' && d_str[j] != ' ') {
+            buf[j]=d_str[j];
+            ++j;
+        }
+        buf[j]='\0';
+        buf = realloc (buf, strlen (buf) + 1);
+        p = pkg_hash_fetch_installed_by_name (&conf->pkg_hash, buf);
+        if (!p) {
+            fprintf(stderr, "The pkg %s had been removed!!\n", buf);
+            free(buf);
+            continue;
+        }
+        if (p->auto_installed) {
+            int deps;
+            abstract_pkg_t **dependents;
+            deps = pkg_has_installed_dependents(conf, NULL, p, &dependents);
+            if (deps == 0) {
+                opkg_message (conf, OPKG_NOTICE,"%s was autoinstalled but is now orphaned, remove it.\n", buf);
+                opkg_remove_pkg(conf, p, 0);
+            } else 
+                opkg_message (conf, OPKG_INFO, "%s was autoinstalled and is still required by %d installed packages\n", buf, deps);
+        }
+        free(buf);
+    }
+    return 0;
+}
+
 /* returns number of installed replacees */
 int pkg_get_installed_replacees(opkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *installed_replacees)
 {
@@ -907,6 +960,8 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 
 	  opkg_state_changed++;
 	  pkg->state_flag |= SF_FILELIST_CHANGED;
+
+          pkg_remove_orphan_dependent(conf, pkg, old_pkg);
 
 	  /* XXX: BUG: we really should treat replacement more like an upgrade
 	   *      Instead, we're going to remove the replacees 
