@@ -477,6 +477,10 @@ opkg_op (int argc, char *argv[])
              !strcmp(cmd_name,"status") )
            args.noreadfeedsfile = 1;
 
+	opkg_cb_message = default_opkg_message_callback;
+	opkg_cb_response = default_opkg_response_callback;
+	opkg_cb_status = default_opkg_status_callback;
+
 
 	err = opkg_conf_init (&opkg_conf, &args);
 	if (err)
@@ -486,9 +490,6 @@ opkg_op (int argc, char *argv[])
 
 	args_deinit (&args);
 
-	opkg_cb_message = default_opkg_message_callback;
-	opkg_cb_response = default_opkg_response_callback;
-	opkg_cb_status = default_opkg_status_callback;
  	if ( strcmp(cmd_name, "files")==0)
 	     opkg_cb_list = default_opkg_files_callback;
  	else
