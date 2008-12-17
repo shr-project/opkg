@@ -203,6 +203,7 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pk
      for (i = 0; i < nprovides; i++) {
 	  abstract_pkg_t *provider_apkg = provided_apkgs[i];
 	  opkg_message(conf, OPKG_DEBUG, " adding %s to providers\n", provider_apkg->name);
+	  printf(" adding %s to providers\n", provider_apkg->name);
 	  abstract_pkg_vec_insert(providers, provider_apkg);
      }
      nprovides = providers->len;
