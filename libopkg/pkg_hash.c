@@ -477,7 +477,6 @@ static void pkg_hash_fetch_available_helper(const char *pkg_name, void *entry, v
 void pkg_hash_fetch_available(hash_table_t *hash, pkg_vec_t *all)
 {
     hash_table_foreach(hash, pkg_hash_fetch_available_helper, all);
-    //qsort(all->pkgs, all->len, sizeof(pkg_t *), pkg_compare_names);
 }
 
 static void pkg_hash_fetch_all_installed_helper(const char *pkg_name, void *entry, void *data)
@@ -498,7 +497,6 @@ static void pkg_hash_fetch_all_installed_helper(const char *pkg_name, void *entr
 void pkg_hash_fetch_all_installed(hash_table_t *hash, pkg_vec_t *all)
 {
     hash_table_foreach(hash, pkg_hash_fetch_all_installed_helper, all);
-    //qsort(all->pkgs, all->len, sizeof(void*), pkg_compare_names);
 }
 
 static void pkg_hash_dump_helper(const char *pkg_name, void *entry, void *data)

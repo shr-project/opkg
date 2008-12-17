@@ -711,6 +711,7 @@ static int opkg_list_cmd(opkg_conf_t *conf, int argc, char **argv)
      }
      available = pkg_vec_alloc();
      pkg_hash_fetch_available(&conf->pkg_hash, available);
+     pkg_vec_sort(available, pkg_compare_names);
      for (i=0; i < available->len; i++) {
 	  pkg = available->pkgs[i];
 	  /* if we have package name or pattern and pkg does not match, then skip it */
@@ -1439,6 +1440,7 @@ static int opkg_search_cmd(opkg_conf_t *conf, int argc, char **argv)
  
      installed = pkg_vec_alloc();
      pkg_hash_fetch_all_installed(&conf->pkg_hash, installed);
+     pkg_vec_sort(installed, pkg_compare_names);
 
      for (i=0; i < installed->len; i++) {
 	  pkg = installed->pkgs[i];
@@ -1458,9 +1460,6 @@ static int opkg_search_cmd(opkg_conf_t *conf, int argc, char **argv)
 	  pkg_free_installed_files(pkg);
      }
 
-     /* XXX: CLEANUP: It's not obvious from the name of
-	pkg_hash_fetch_all_installed that we need to call
-	pkg_vec_free to avoid a memory leak. */
      pkg_vec_free(installed);
 
      return 0;
