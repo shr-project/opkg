@@ -113,7 +113,6 @@ int pkg_init(pkg_t *pkg)
      pkg->recommends_count = 0;
      
      active_list_init(&pkg->list);
-     active_list_init(&pkg->searched_node);
 
      /* Abhaya: added init for conflicts fields */
      pkg->conflicts = NULL;
@@ -453,7 +452,6 @@ int abstract_pkg_init(abstract_pkg_t *ab_pkg)
      }
      ab_pkg->dependencies_checked = 0;
      ab_pkg->state_status = SS_NOT_INSTALLED;
-     active_list_init(&ab_pkg->searched_node);
 
      return 0;
 }

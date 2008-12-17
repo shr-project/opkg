@@ -209,3 +209,14 @@ void abstract_pkg_vec_sort(pkg_vec_t *vec, compare_fcn_t compar)
      qsort(vec->pkgs, vec->len, sizeof(pkg_t *), compar);
 }
 
+int pkg_compare_names(const void *p1, const void *p2)
+{
+  const pkg_t *pkg1 = *(const pkg_t **)p1;
+  const pkg_t *pkg2 = *(const pkg_t **)p2;
+  if (pkg1->name == NULL)
+    return 1;
+  if (pkg2->name == NULL)
+    return -1;
+  return(strcmp(pkg1->name, pkg2->name));
+}
+

@@ -756,6 +756,7 @@ static int opkg_list_installed_cmd(opkg_conf_t *conf, int argc, char **argv)
      }
      available = pkg_vec_alloc();
      pkg_hash_fetch_all_installed(&conf->pkg_hash, available);
+     pkg_vec_sort(available, pkg_compare_names);
      for (i=0; i < available->len; i++) {
 	  pkg = available->pkgs[i];
 	  /* if we have package name or pattern and pkg does not match, then skip it */

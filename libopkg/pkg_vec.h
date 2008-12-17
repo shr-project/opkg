@@ -61,5 +61,7 @@ void abstract_pkg_vec_insert(abstract_pkg_vec_t *vec, abstract_pkg_t *pkg);
 abstract_pkg_t * abstract_pkg_vec_get(abstract_pkg_vec_t *vec, int i);
 int abstract_pkg_vec_contains(abstract_pkg_vec_t *vec, abstract_pkg_t *apkg);
 void abstract_pkg_vec_sort(pkg_vec_t *vec, compare_fcn_t compar);
+
+int pkg_compare_names(const void *p1, const void *p2);
 #endif
 

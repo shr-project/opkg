@@ -203,7 +203,6 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pk
      for (i = 0; i < nprovides; i++) {
 	  abstract_pkg_t *provider_apkg = provided_apkgs[i];
 	  opkg_message(conf, OPKG_DEBUG, " adding %s to providers\n", provider_apkg->name);
-	  printf(" adding %s to providers\n", provider_apkg->name);
 	  abstract_pkg_vec_insert(providers, provider_apkg);
      }
      nprovides = providers->len;
@@ -460,17 +459,6 @@ pkg_vec_t *pkg_vec_fetch_by_name(hash_table_t *hash, const char *pkg_name)
     }
 }
 
-static int pkg_compare_names(const void *p1, const void *p2)
-{
-  const pkg_t *pkg1 = *(const pkg_t **)p1;
-  const pkg_t *pkg2 = *(const pkg_t **)p2;
-  if (pkg1->name == NULL)
-    return 1;
-  if (pkg2->name == NULL)
-    return -1;
-  return(strcmp(pkg1->name, pkg2->name));
-}
-
 
 static void pkg_hash_fetch_available_helper(const char *pkg_name, void *entry, void *data)
 {
@@ -489,7 +477,7 @@ static void pkg_hash_fetch_available_helper(const char *pkg_name, void *entry, v
 void pkg_hash_fetch_available(hash_table_t *hash, pkg_vec_t *all)
 {
     hash_table_foreach(hash, pkg_hash_fetch_available_helper, all);
-    qsort(all->pkgs, all->len, sizeof(pkg_t *), pkg_compare_names);
+    //qsort(all->pkgs, all->len, sizeof(pkg_t *), pkg_compare_names);
 }
 
 static void pkg_hash_fetch_all_installed_helper(const char *pkg_name, void *entry, void *data)
@@ -510,7 +498,7 @@ static void pkg_hash_fetch_all_installed_helper(const char *pkg_name, void *entr
 void pkg_hash_fetch_all_installed(hash_table_t *hash, pkg_vec_t *all)
 {
     hash_table_foreach(hash, pkg_hash_fetch_all_installed_helper, all);
-    qsort(all->pkgs, all->len, sizeof(void*), pkg_compare_names);
+    //qsort(all->pkgs, all->len, sizeof(void*), pkg_compare_names);
 }
 
 static void pkg_hash_dump_helper(const char *pkg_name, void *entry, void *data)
