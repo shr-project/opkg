@@ -88,6 +88,7 @@ struct abstract_pkg{
     struct abstract_pkg ** depended_upon_by; /* @@@@ this should be abstract_pkg_vec_t -Jamey */
     abstract_pkg_vec_t * provided_by;
     abstract_pkg_vec_t * replaced_by;
+    struct active_list   searched_node;   /* Used for hash search */
 };
 
 #include "pkg_depends.h"
@@ -137,6 +138,7 @@ struct pkg
      char **suggests_str;
      int suggests_count;
      struct active_list list; /* Used for installing|upgrading */
+     struct active_list searched_node;  /* Used for searching */
      compound_depend_t * depends;
 
      /* Abhaya: new conflicts */

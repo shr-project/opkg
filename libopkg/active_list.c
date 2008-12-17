@@ -129,3 +129,36 @@ void active_list_head_delete(struct active_list *head) {
     free(head);
 }
 
+/*
+ *  Using insert sort. 
+ *  Note. the list should not be large, or it will be very inefficient. 
+ *
+ */
+struct active_list * active_list_sort(struct active_list *head, int (*compare)(const void *, const void *)) {
+    struct active_list tmphead;
+    struct active_list *node, *ptr;
+    if ( !head )
+        return NULL;
+    active_list_init(&tmphead);
+    for (node = active_list_next(head, NULL); node; node = active_list_next(head, NULL)) {
+        if (tmphead.node.next == &tmphead.node) {
+            active_list_move_node(head, &tmphead, node);
+        } else {
+            for (ptr = active_list_next(&tmphead, NULL); ptr; ptr=active_list_next(&tmphead, ptr)) {
+                if (compare(ptr, node) <= 0) {
+                    break;
+                }
+            }
+            if (!ptr) {
+                active_list_move_node(head, &tmphead, node);
+            } else {
+                active_list_move_node(head, ptr, node);
+            }
+        }
+        node->depended = &tmphead;
+    }
+    for (ptr = active_list_prev(&tmphead, NULL); ptr; ptr=active_list_prev(&tmphead, NULL)) {
+        active_list_move_node(&tmphead, head, ptr);
+    }
+    return head;
+}

@@ -94,6 +94,23 @@ void make_list(struct active_list *head) {
     active_test_add_depend(L, N);
 }
 
+int active_test_compare(const void *a, const void *b) {
+    struct active_list *first = (struct active_list *)a;
+    struct active_list *second = (struct active_list *)b;
+    return strcmp(list_entry(first, struct active_test, list),
+            list_entry(second, struct active_test, list));
+}
+
+void show_list(struct active_list *head) {
+    struct active_list *ptr;
+    struct active_test *test;
+    for(ptr = active_list_next(head, NULL); ptr ;ptr = active_list_next(head, ptr)) {
+        test = list_entry(ptr, struct active_test, list);
+        printf ("%s ",test->str);
+    }
+    printf("\n");
+}
+
 int main (void) {
     struct active_list head;
     struct active_list *ptr;
@@ -102,16 +119,21 @@ int main (void) {
     make_list(&head);
 
     printf("pos order: ");
-    for(ptr = active_list_next(&head, &head); ptr ;ptr = active_list_next(&head, ptr)) {
+    show_list(&head);
+/*    for(ptr = active_list_next(&head, &head); ptr ;ptr = active_list_next(&head, ptr)) {
         test = list_entry(ptr, struct active_test, list);
         printf ("%s ",test->str);
-    }
-    printf("\nneg order: ");
+    }*/
+    printf("neg order: ");
     for(ptr = active_list_prev(&head, &head); ptr ;ptr = active_list_prev(&head, ptr)) {
         test = list_entry(ptr, struct active_test, list);
         printf ("%s ",test->str);
     }
-    printf("\nafter clear: ");
+    printf("\npos order after sort: ");
+    active_list_sort(&head, &active_test_compare);
+    show_list(&head);
+
+    printf("after clear: ");
     active_list_clear(&head);
     for(ptr = active_list_next(&head, NULL); ptr ;ptr = active_list_next(&head, ptr)) {
         test = list_entry(ptr, struct active_test, list);

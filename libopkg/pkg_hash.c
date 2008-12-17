@@ -47,7 +47,6 @@ static abstract_pkg_t * add_new_abstract_pkg_by_name(hash_table_t * hash, const 
  */
 
 
-
 int pkg_hash_init(const char *name, hash_table_t *hash, int len)
 {
   return hash_table_init(name, hash, len);

@@ -113,6 +113,7 @@ int pkg_init(pkg_t *pkg)
      pkg->recommends_count = 0;
      
      active_list_init(&pkg->list);
+     active_list_init(&pkg->searched_node);
 
      /* Abhaya: added init for conflicts fields */
      pkg->conflicts = NULL;
@@ -446,14 +447,13 @@ abstract_pkg_t *abstract_pkg_new(void)
 
 int abstract_pkg_init(abstract_pkg_t *ab_pkg)
 {
-     memset(ab_pkg, 0, sizeof(abstract_pkg_t));
-
      ab_pkg->provided_by = abstract_pkg_vec_alloc();
      if (ab_pkg->provided_by==NULL){
         return -1;
      }
      ab_pkg->dependencies_checked = 0;
      ab_pkg->state_status = SS_NOT_INSTALLED;
+     active_list_init(&ab_pkg->searched_node);
 
      return 0;
 }
