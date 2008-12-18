@@ -434,8 +434,8 @@ static int update_file_ownership(opkg_conf_t *conf, pkg_t *new_pkg, pkg_t *old_p
      str_list_t *new_list = pkg_get_installed_files(new_pkg);
      str_list_elt_t *iter;
 
-     for (iter = new_list->head; iter; iter = iter->next) {
-	  char *new_file = iter->data;
+     for (iter = str_list_first(new_list); iter; iter = str_list_next(new_list, iter)) {
+	  char *new_file = (char *)iter->data;
 	  pkg_t *owner = file_hash_get_file_owner(conf, new_file);
 	  if (!new_file)
 	       opkg_message(conf, OPKG_ERROR, "Null new_file for new_pkg=%s\n", new_pkg->name);
@@ -444,8 +444,8 @@ static int update_file_ownership(opkg_conf_t *conf, pkg_t *new_pkg, pkg_t *old_p
      }
      if (old_pkg) {
 	  str_list_t *old_list = pkg_get_installed_files(old_pkg);
-	  for (iter = old_list->head; iter; iter = iter->next) {
-	       char *old_file = iter->data;
+	  for (iter = str_list_first(old_list); iter; iter = str_list_next(old_list, iter)) {
+	       char *old_file = (char *)iter->data;
 	       pkg_t *owner = file_hash_get_file_owner(conf, old_file);
 	       if (owner == old_pkg) {
 		    /* obsolete */
@@ -517,7 +517,7 @@ static int unpack_pkg_control_files(opkg_conf_t *conf, pkg_t *pkg)
 	move all of unpack_pkg_control_files to that function. */
 
      /* Don't need to re-read conffiles if we already have it */
-     if (pkg->conffiles.head) {
+     if (!nv_pair_list_empty(&pkg->conffiles)) {
 	  return 0;
      }
 
@@ -1144,7 +1144,7 @@ static int backup_modified_conffiles(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_p
 
      /* Backup all modified conffiles */
      if (old_pkg) {
-	  for (iter = old_pkg->conffiles.head; iter; iter = iter->next) {
+	  for (iter = nv_pair_list_first(&old_pkg->conffiles); iter; iter = nv_pair_list_next(&old_pkg->conffiles, iter)) {
 	       char *cf_name;
 	       
 	       cf = iter->data;
@@ -1162,9 +1162,9 @@ static int backup_modified_conffiles(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_p
      }
 
      /* Backup all conffiles that were not conffiles in old_pkg */
-     for (iter = pkg->conffiles.head; iter; iter = iter->next) {
+     for (iter = nv_pair_list_first(&pkg->conffiles); iter; iter = nv_pair_list_next(&pkg->conffiles, iter)) {
 	  char *cf_name;
-	  cf = iter->data;
+	  cf = (conffile_t *)iter->data;
 	  cf_name = root_filename_alloc(conf, cf->name);
 	  /* Ignore if this was a conffile in old_pkg as well */
 	  if (pkg_get_conffile(old_pkg, cf->name)) {
@@ -1188,13 +1188,13 @@ static int backup_modified_conffiles_unwind(opkg_conf_t *conf, pkg_t *pkg, pkg_t
      conffile_list_elt_t *iter;
 
      if (old_pkg) {
-	  for (iter = old_pkg->conffiles.head; iter; iter = iter->next) {
-	       backup_remove(iter->data->name);
+	  for (iter = nv_pair_list_first(&old_pkg->conffiles); iter; iter = nv_pair_list_next(&old_pkg->conffiles, iter)) {
+	       backup_remove(((nv_pair_t *)iter->data)->name);
 	  }
      }
 
-     for (iter = pkg->conffiles.head; iter; iter = iter->next) {
-	  backup_remove(iter->data->name);
+     for (iter = nv_pair_list_first(&pkg->conffiles); iter; iter = nv_pair_list_next(&pkg->conffiles, iter)) {
+	  backup_remove(((nv_pair_t *)iter->data)->name);
      }
 
      return 0;
@@ -1222,9 +1222,9 @@ static int check_data_file_clashes(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg
      int clashes = 0;
 
      files_list = pkg_get_installed_files(pkg);
-     for (iter = files_list->head; iter; iter = iter->next) {
+     for (iter = str_list_first(files_list); iter; iter = str_list_next(files_list, iter)) {
 	  char *root_filename;
-	  char *filename = iter->data;
+	  char *filename = (char *) iter->data;
 	  root_filename = root_filename_alloc(conf, filename);
 	  if (file_exists(root_filename) && (! file_is_dir(root_filename))) {
 	       pkg_t *owner;
@@ -1309,9 +1309,9 @@ static int check_data_file_clashes_change(opkg_conf_t *conf, pkg_t *pkg, pkg_t *
      int clashes = 0;
 
      files_list = pkg_get_installed_files(pkg);
-     for (iter = files_list->head; iter; iter = iter->next) {
+     for (iter = str_list_first(files_list); iter; iter = str_list_next(files_list, iter)) {
 	  char *root_filename;
-	  char *filename = iter->data;
+	  char *filename = (char *) iter->data;
 	  root_filename = root_filename_alloc(conf, filename);
 	  if (file_exists(root_filename) && (! file_is_dir(root_filename))) {
 	       pkg_t *owner;
@@ -1377,6 +1377,7 @@ static int remove_obsolesced_files(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg
      str_list_elt_t *of;
      str_list_t *new_files;
      str_list_elt_t *nf;
+     str_list_elt_t **niter;
 
      if (old_pkg == NULL) {
 	  return 0;
@@ -1385,14 +1386,18 @@ static int remove_obsolesced_files(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg
      old_files = pkg_get_installed_files(old_pkg);
      new_files = pkg_get_installed_files(pkg);
 
-     for (of = old_files->head; of; of = of->next) {
+     for (of = str_list_first(old_files); of; of = str_list_next(old_files, of)) {
 	  pkg_t *owner;
 	  char *old, *new;
-	  old = of->data;
-	  for (nf = new_files->head; nf; nf = nf->next) {
+	  old = (char *)of->data;
+	  for (nf = str_list_first(new_files); nf; nf = str_list_next(new_files, nf)) {
 	       new = nf->data;
 	       if (strcmp(old, new) == 0) {
-		    goto NOT_OBSOLETE;
+                    niter = &nf;
+                    nf=str_list_next(new_files, nf);
+                    str_list_remove(new_files, niter);
+                    free(new);
+                    goto NOT_OBSOLETE;
 	       }
 	  }
 	  if (file_is_dir(old)) {
@@ -1549,9 +1554,9 @@ static int resolve_conffiles(opkg_conf_t *conf, pkg_t *pkg)
     
      if (conf->noaction) return 0;
 
-     for (iter = pkg->conffiles.head; iter; iter = iter->next) {
+     for (iter = nv_pair_list_first(&pkg->conffiles); iter; iter = nv_pair_list_next(&pkg->conffiles, iter)) {
 	  char *root_filename;
-	  cf = iter->data;
+	  cf = (conffile_t *)iter->data;
 	  root_filename = root_filename_alloc(conf, cf->name);
 
 	  /* Might need to initialize the md5sum for each conffile */

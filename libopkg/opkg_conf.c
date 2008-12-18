@@ -215,7 +215,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      }
 
      /* Even if there is no conf file, we'll need at least one dest. */
-     if (tmp_dest_nv_pair_list.head == NULL) {
+     if (nv_pair_list_empty(&tmp_dest_nv_pair_list)) {
 	  nv_pair_list_append(&tmp_dest_nv_pair_list,
 			      OPKG_CONF_DEFAULT_DEST_NAME,
 			      OPKG_CONF_DEFAULT_DEST_ROOT_DIR);
@@ -383,8 +383,8 @@ static int opkg_conf_set_default_dest(opkg_conf_t *conf,
      pkg_dest_list_elt_t *iter;
      pkg_dest_t *dest;
 
-     for (iter = conf->pkg_dest_list.head; iter; iter = iter->next) {
-	  dest = iter->data;
+     for (iter = void_list_first(&conf->pkg_dest_list); iter; iter = void_list_next(&conf->pkg_dest_list, iter)) {
+	  dest = (pkg_dest_t *)iter->data;
 	  if (strcmp(dest->name, default_dest_name) == 0) {
 	       conf->default_dest = dest;
 	       conf->restrict_to_default_dest = 1;
@@ -403,8 +403,8 @@ static int set_and_load_pkg_src_list(opkg_conf_t *conf, pkg_src_list_t *pkg_src_
      pkg_src_t *src;
      char *list_file;
 
-     for (iter = pkg_src_list->head; iter; iter = iter->next) {
-          src = iter->data;
+     for (iter = void_list_first(pkg_src_list); iter; iter = void_list_next(pkg_src_list, iter)) {
+          src = (pkg_src_t *)iter->data;
 	  if (src == NULL) {
 	       continue;
 	  }
@@ -429,8 +429,8 @@ static int set_and_load_pkg_dest_list(opkg_conf_t *conf, nv_pair_list_t *nv_pair
      pkg_dest_t *dest;
      char *root_dir;
 
-     for (iter = nv_pair_list->head; iter; iter = iter->next) {
-	  nv_pair = iter->data;
+     for (iter = nv_pair_list_first(nv_pair_list); iter; iter = nv_pair_list_next(nv_pair_list, iter)) {
+	  nv_pair = (nv_pair_t *)iter->data;
 
 	  if (conf->offline_root) {
 	       sprintf_alloc(&root_dir, "%s%s", conf->offline_root, nv_pair->value);
@@ -655,8 +655,8 @@ int opkg_conf_write_status_files(opkg_conf_t *conf)
 
      if (conf->noaction)
 	  return 0;
-     for (iter = conf->pkg_dest_list.head; iter; iter = iter->next) {
-	  dest = iter->data;
+     for (iter = void_list_first(&conf->pkg_dest_list); iter; iter = void_list_next(&conf->pkg_dest_list, iter)) {
+	  dest = (pkg_dest_t *)iter->data;
 	  dest->status_file = fopen(dest->status_file_tmp_name, "w");
 	  if (dest->status_file == NULL) {
 	       fprintf(stderr, "%s: Can't open status file: %s for writing: %s\n",
@@ -692,8 +692,8 @@ int opkg_conf_write_status_files(opkg_conf_t *conf)
 
      pkg_vec_free(all);
 
-     for (iter = conf->pkg_dest_list.head; iter; iter = iter->next) {
-	  dest = iter->data;
+     for (iter = void_list_first(&conf->pkg_dest_list); iter; iter = void_list_next(&conf->pkg_dest_list, iter)) {
+	  dest = (pkg_dest_t *)iter->data;
 	  if (dest->status_file) {
 	       err = ferror(dest->status_file);
 	       fclose(dest->status_file);

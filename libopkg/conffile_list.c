@@ -42,6 +42,7 @@ int conffile_list_push(conffile_list_t *list, conffile_t *data)
 
 conffile_list_elt_t *conffile_list_pop(conffile_list_t *list)
 {
-    return nv_pair_list_pop(list);
+    conffile_list_elt_t *pos = nv_pair_list_pop(list);
+    return pos;
 }
 

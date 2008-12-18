@@ -20,20 +20,9 @@
 
 #include "pkg_dest.h"
 
-typedef struct pkg_dest_list_elt pkg_dest_list_elt_t;
-struct pkg_dest_list_elt
-{
-    pkg_dest_list_elt_t *next;
-    pkg_dest_t *data;
-};
+typedef struct void_list_elt pkg_dest_list_elt_t;
 
-typedef struct pkg_dest_list pkg_dest_list_t;
-struct pkg_dest_list
-{
-    pkg_dest_list_elt_t pre_head;
-    pkg_dest_list_elt_t *head;
-    pkg_dest_list_elt_t *tail;
-};
+typedef struct void_list pkg_dest_list_t;
 
 int pkg_dest_list_elt_init(pkg_dest_list_elt_t *elt, pkg_dest_t *data);
 void pkg_dest_list_elt_deinit(pkg_dest_list_elt_t *elt);

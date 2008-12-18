@@ -93,10 +93,8 @@ static char *pkg_get_default_arch(opkg_conf_t *conf)
      char *def_arch = HOST_CPU_STR;		/* Default arch */
      int def_prio = 0;				/* Other archs override this */
 
-     l = conf->arch_list.head;
-
-     while (l) {
-	  nv_pair_t *nv = l->data;
+     list_for_each_entry(l , &conf->arch_list.head, node) {
+	  nv_pair_t *nv = (nv_pair_t *)l->data;
 	  int priority = strtol(nv->value, NULL, 0);
 
 	  /* Check if this arch has higher priority, and is valid */
@@ -106,7 +104,6 @@ static char *pkg_get_default_arch(opkg_conf_t *conf)
 	       def_prio = priority;
 	       def_arch = nv->name;
 	  }
-	  l = l->next;
      }
 
      return strdup(def_arch);

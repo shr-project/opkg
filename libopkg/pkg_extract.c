@@ -102,8 +102,8 @@ int pkg_extract_data_file_names_to_file(pkg_t *pkg, const char *file_name)
      tmp = tmpfile();
      if (pkg->installed_files) {
 	  str_list_elt_t *elt;
-	  for (elt = pkg->installed_files->head; elt; elt = elt->next) {
-	       fprintf(file, "%s\n", elt->data);
+	  for (elt = str_list_first(pkg->installed_files); elt; elt = str_list_next(pkg->installed_files, elt)) {
+	       fprintf(file, "%s\n", (char *)elt->data);
 	  }
      } else {
 	  err = pkg_extract_data_file_names_to_stream(pkg, tmp);

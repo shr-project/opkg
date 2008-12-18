@@ -21,15 +21,6 @@
 #include "void_list.h"
 #include "nv_pair_list.h"
 
-int nv_pair_list_elt_init(nv_pair_list_elt_t *elt, nv_pair_t *data)
-{
-    return void_list_elt_init((void_list_elt_t *) elt, data);
-}
-
-void nv_pair_list_elt_deinit(nv_pair_list_elt_t *elt)
-{
-    void_list_elt_deinit((void_list_elt_t *) elt);
-}
 
 int nv_pair_list_init(nv_pair_list_t *list)
 {
@@ -38,16 +29,19 @@ int nv_pair_list_init(nv_pair_list_t *list)
 
 void nv_pair_list_deinit(nv_pair_list_t *list)
 {
-    nv_pair_list_elt_t *iter;
+    nv_pair_list_elt_t *pos;
     nv_pair_t *nv_pair;
 
-    for (iter = list->head; iter; iter = iter->next) {
-	nv_pair = iter->data;
+    while(!void_list_empty(list)) {
+        pos = nv_pair_list_pop(list);
+        if (!pos)
+            break;
+	nv_pair =  (nv_pair_t *) pos->data;
 	nv_pair_deinit(nv_pair);
-
 	/* malloced in nv_pair_list_append */
 	free(nv_pair);
-	iter->data = NULL;
+	pos->data = NULL;
+        //free(pos);
     }
     void_list_deinit((void_list_t *) list);
 }
@@ -88,11 +82,30 @@ char *nv_pair_list_find(nv_pair_list_t *list, char *name)
      nv_pair_list_elt_t *iter;
      nv_pair_t *nv_pair;
 
-     for (iter = list->head; iter; iter = iter->next) {
-	  nv_pair = iter->data;
+     list_for_each_entry(iter, &list->head, node) {
+	  nv_pair = (nv_pair_t *)iter->data;
 	  if (strcmp(nv_pair->name, name) == 0) {
 	       return nv_pair->value;
 	  }
      }    
      return NULL;
 }
+
+nv_pair_list_elt_t *nv_pair_list_first(nv_pair_list_t *list) {
+    return (nv_pair_list_elt_t * )void_list_first((void_list_t *) list);
+}
+
+nv_pair_list_elt_t *nv_pair_list_prev(nv_pair_list_t *list, nv_pair_list_elt_t *node) {
+    return (nv_pair_list_elt_t * )void_list_prev((void_list_t *) list, (void_list_elt_t *)node);
+}
+
+nv_pair_list_elt_t *nv_pair_list_next(nv_pair_list_t *list, nv_pair_list_elt_t *node) {
+    return (nv_pair_list_elt_t * )void_list_next((void_list_t *) list, (void_list_elt_t *)node);
+}
+
+nv_pair_list_elt_t *nv_pair_list_last(nv_pair_list_t *list) {
+    return (nv_pair_list_elt_t * )void_list_last((void_list_t *) list);
+}
+
+
+

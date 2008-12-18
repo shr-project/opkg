@@ -346,8 +346,8 @@ int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
      str_list_init(&installed_dirs);
      installed_files = pkg_get_installed_files(pkg);
 
-     for (iter = installed_files->head; iter; iter = iter->next) {
-	  file_name = iter->data;
+     for (iter = str_list_first(installed_files); iter; iter = str_list_next(installed_files, iter)) {
+	  file_name = (char *)iter->data;
 
 	  if (file_is_dir(file_name)) {
 	       str_list_append(&installed_dirs, strdup(file_name));
@@ -377,8 +377,8 @@ int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
      if (!conf->noaction) {
 	  do {
 	       removed_a_dir = 0;
-	       for (iter = installed_dirs.head; iter; iter = iter->next) {
-		    file_name = iter->data;
+	       for (iter = str_list_first(&installed_dirs); iter; iter = str_list_next(&installed_dirs, iter)) {
+		    file_name = (char *)iter->data;
 	    
 		    if (rmdir(file_name) == 0) {
 			 opkg_message(conf, OPKG_INFO, "  deleting %s\n", file_name);
@@ -395,8 +395,8 @@ int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
      pkg_remove_installed_files_list(conf, pkg);
 
      /* Don't print warning for dirs that are provided by other packages */
-     for (iter = installed_dirs.head; iter; iter = iter->next) {
-	  file_name = iter->data;
+     for (iter = str_list_first(&installed_dirs); iter; iter = str_list_next(&installed_dirs, iter)) {
+	  file_name = (char *)iter->data;
 
 	  owner = file_hash_get_file_owner(conf, file_name);
 	  if (owner) {
@@ -407,9 +407,10 @@ int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
      }
 
      /* cleanup */
-     for (iter = installed_dirs.head; iter; iter = iter->next) {
-	  free(iter->data);
-	  iter->data = NULL;
+     while (!void_list_empty(&installed_dirs)) {
+        iter = str_list_pop(&installed_dirs);
+        free(iter->data);
+        free(iter);
      }
      str_list_deinit(&installed_dirs);
 

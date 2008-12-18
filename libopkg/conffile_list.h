@@ -20,8 +20,8 @@
 
 #include "nv_pair_list.h"
 
-typedef struct nv_pair_list_elt conffile_list_elt_t;
-typedef struct nv_pair_list conffile_list_t;
+typedef nv_pair_list_elt_t conffile_list_elt_t;
+typedef nv_pair_list_t conffile_list_t;
 
 #include "conffile.h"
 

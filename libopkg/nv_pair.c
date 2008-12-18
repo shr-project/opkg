@@ -22,6 +22,7 @@
 
 int nv_pair_init(nv_pair_t *nv_pair, const char *name, const char *value)
 {
+
     nv_pair->name = str_dup_safe(name);
     nv_pair->value = str_dup_safe(value);
 

@@ -38,11 +38,11 @@ int pkg_dest_list_init(pkg_dest_list_t *list)
 
 void pkg_dest_list_deinit(pkg_dest_list_t *list)
 {
-    pkg_dest_list_elt_t *iter;
+    pkg_dest_list_elt_t *iter, *n;
     pkg_dest_t *pkg_dest;
 
-    for (iter = list->head; iter; iter = iter->next) {
-	pkg_dest = iter->data;
+    list_for_each_entry_safe(iter, n,  &list->head, node) {
+	pkg_dest = (pkg_dest_t *)iter->data;
 	pkg_dest_deinit(pkg_dest);
 
 	/* malloced in pkg_dest_list_append */

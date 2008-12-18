@@ -217,10 +217,10 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
      }
 
 
-     for (iter = conf->pkg_src_list.head; iter; iter = iter->next) {
+     for (iter = void_list_first(&conf->pkg_src_list); iter; iter = void_list_next(&conf->pkg_src_list, iter)) {
 	  char *url, *list_file_name;
 
-	  src = iter->data;
+	  src = (pkg_src_t *)iter->data;
 
 	  if (src->extra_data)	/* debian style? */
 	      sprintf_alloc(&url, "%s/%s/%s", src->value, src->extra_data, 
@@ -849,8 +849,8 @@ static int opkg_info_status_cmd(opkg_conf_t *conf, int argc, char **argv, int in
           }
 	  if (conf->verbosity > 1) {
 	       conffile_list_elt_t *iter;
-	       for (iter = pkg->conffiles.head; iter; iter = iter->next) {
-		    conffile_t *cf = iter->data;
+	       for (iter = nv_pair_list_first(&pkg->conffiles); iter; iter = nv_pair_list_next(&pkg->conffiles, iter)) {
+		    conffile_t *cf = (conffile_t *)iter->data;
 		    int modified = conffile_has_been_modified(conf, cf);
 		    opkg_message(conf, OPKG_NOTICE, "conffile=%s md5sum=%s modified=%d\n",
 				 cf->name, cf->value, modified);
@@ -1140,7 +1140,7 @@ static int opkg_files_cmd(opkg_conf_t *conf, int argc, char **argv)
 	       buff = realloc (buff, buff_len);
 	       goto try_again;
 	  }
-	  for (iter = installed_files->head; iter; iter = iter->next) {
+	  for (iter = str_list_first(installed_files); iter; iter = str_list_next(installed_files, iter)) {
 	       used_len += strlen (iter->data) + 1;
 	       while (buff_len <= used_len) {
 		    buff_len *= 2;
@@ -1447,8 +1447,8 @@ static int opkg_search_cmd(opkg_conf_t *conf, int argc, char **argv)
 
 	  installed_files = pkg_get_installed_files(pkg);
 
-	  for (iter = installed_files->head; iter; iter = iter->next) {
-	       installed_file = iter->data;
+	  for (iter = str_list_first(installed_files); iter; iter = str_list_next(installed_files, iter)) {
+	       installed_file = (char *)iter->data;
 	       if (fnmatch(argv[0], installed_file, 0)==0)  {
 			if (opkg_cb_list) opkg_cb_list(pkg->name, 
 						       installed_file, 
@@ -1491,11 +1491,9 @@ static int opkg_print_architecture_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      nv_pair_list_elt_t *l;
 
-     l = conf->arch_list.head;
-     while (l) {
-	  nv_pair_t *nv = l->data;
+     list_for_each_entry(l, &conf->arch_list.head, node) {
+	  nv_pair_t *nv = (nv_pair_t *)l->data;
 	  printf("arch %s %s\n", nv->name, nv->value);
-	  l = l->next;
      }
      return 0;
 }

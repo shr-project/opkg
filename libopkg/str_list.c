@@ -74,3 +74,33 @@ char *str_list_remove_elt(str_list_t *list, const char *target_str)
 					 (void *)target_str,
 					 (void_list_cmp_t)strcmp);
 }
+
+str_list_elt_t *str_list_first(str_list_t *list) {
+    return (str_list_elt_t * )void_list_first((void_list_t *) list);
+}
+
+str_list_elt_t *str_list_prev(str_list_t *list, str_list_elt_t *node) {
+    return (str_list_elt_t * )void_list_prev((void_list_t *) list, (void_list_elt_t *)node);
+}
+
+str_list_elt_t *str_list_next(str_list_t *list, str_list_elt_t *node) {
+    return (str_list_elt_t * )void_list_next((void_list_t *) list, (void_list_elt_t *)node);
+}
+
+str_list_elt_t *str_list_last(str_list_t *list) {
+    return (str_list_elt_t * )void_list_last((void_list_t *) list);
+}
+
+
+void str_list_purge(str_list_t *list) {
+    str_list_elt_t *elt;
+    while (!void_list_empty(list)) {
+        elt = str_list_first(list);
+        if (!elt)
+            return;
+        list_del_init(&elt->node);
+        free(elt->data);
+        elt->data=NULL;
+        free(elt);
+    }
+}

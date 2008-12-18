@@ -22,24 +22,33 @@
 
 int void_list_elt_init(void_list_elt_t *elt, void *data)
 {
-    elt->next = NULL;
+    INIT_LIST_HEAD(&elt->node);
     elt->data = data;
 
     return 0;
 }
 
+void_list_elt_t * void_list_elt_new (void *data) {
+    void_list_elt_t *elt;
+    /* freed in void_list_deinit */
+    elt = calloc(1, sizeof(void_list_elt_t));
+    if (elt == NULL) {
+	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
+	return NULL;
+    }
+    void_list_elt_init(elt, data);
+    return elt;
+}
+
 void void_list_elt_deinit(void_list_elt_t *elt)
 {
+    list_del_init(&elt->node);
     void_list_elt_init(elt, NULL);
 }
 
 int void_list_init(void_list_t *list)
 {
-    void_list_elt_init(&list->pre_head, NULL);
-    list->head = NULL;
-    list->pre_head.next = list->head;
-    list->tail = NULL;
-
+    INIT_LIST_HEAD(&list->head);
     return 0;
 }
 
@@ -47,108 +56,67 @@ void void_list_deinit(void_list_t *list)
 {
     void_list_elt_t *elt;
 
-    while (list->head) {
+    while (!void_list_empty(list)) {
 	elt = void_list_pop(list);
 	void_list_elt_deinit(elt);
 	/* malloced in void_list_append */
 	free(elt);
     }
+    INIT_LIST_HEAD(&list->head);
 }
 
 int void_list_append(void_list_t *list, void *data)
 {
-    void_list_elt_t *elt;
-
-    /* freed in void_list_deinit */
-    elt = calloc(1, sizeof(void_list_elt_t));
-    if (elt == NULL) {
-	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	return ENOMEM;
-    }
-
-    void_list_elt_init(elt, data);
-
-    if (list->tail) {
-	list->tail->next = elt;
-	list->tail = elt;
-    } else {
-	list->head = elt;
-	list->pre_head.next = list->head;
-	list->tail = elt;
-    }
+    void_list_elt_t *elt = void_list_elt_new(data);
+     
+    list_add_tail(&elt->node, &list->head);
 
     return 0;
 }
 
 int void_list_push(void_list_t *list, void *data)
 {
-    void_list_elt_t *elt;
+    void_list_elt_t *elt = void_list_elt_new(data);
 
-    elt = calloc(1, sizeof(void_list_elt_t));
-    if (elt == NULL) {
-	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	return ENOMEM;
-    }
-
-    void_list_elt_init(elt, data);
-
-    elt->next = list->head;
-    list->head->next = elt;
-    if (list->tail == NULL) {
-	list->tail = list->head;
-    }
+    list_add(&elt->node, &list->head);
 
     return 0;
 }
 
 void_list_elt_t *void_list_pop(void_list_t *list)
 {
-    void_list_elt_t *elt;
+    struct list_head *node;
 
-    elt = list->head;
-
-    if (list->head) {
-	list->head = list->head->next;
-	list->pre_head.next = list->head;
-	if (list->head == NULL) {
-	    list->tail = NULL;
-	}
-    }
-
-    return elt;
+    if (void_list_empty(list)) 
+        return NULL;
+    node = list->head.next;
+    list_del_init(node);
+    return list_entry(node, void_list_elt_t, node);
 }
 
 void *void_list_remove(void_list_t *list, void_list_elt_t **iter)
 {
-    void_list_elt_t *prior;
+    void_list_elt_t *pos, *n;
     void_list_elt_t *old_elt;
-    void *old_data;
+    void *old_data = NULL;
 
     old_elt = *iter;
+    if (!old_elt)
+        return old_data;
     old_data = old_elt->data;
 
-    if (old_elt == list->head) {
-	prior = &list->pre_head;
-	void_list_pop(list);
-    } else {
-	for (prior = list->head; prior; prior = prior->next) {
-	    if (prior->next == old_elt) {
-		break;
-	    }
-	}
-	if (prior == NULL || prior->next != old_elt) {
-	    fprintf(stderr, "%s: ERROR: element not found in list\n", __FUNCTION__);
-	    return NULL;
-	}
-	prior->next = old_elt->next;
-
-	if (old_elt == list->tail) {
-	    list->tail = prior;
-	}
+    list_for_each_entry_safe(pos, n, &list->head, node) {
+        if (pos == old_elt)
+            break;
+    }
+    if ( pos != old_elt) {
+        fprintf(stderr, "%s: ERROR: element not found in list\n", __FUNCTION__);
+        return NULL;
     }
 
-    void_list_elt_deinit(old_elt);
-    *iter = prior;
+    *iter = list_entry(pos->node.prev, void_list_elt_t, node);
+    void_list_elt_deinit(pos);
+    free(pos);
 
     return old_data;
 }
@@ -156,48 +124,59 @@ void *void_list_remove(void_list_t *list, void_list_elt_t **iter)
 /* remove element containing elt data, using cmp(elt->data, target_data) == 0. */
 void *void_list_remove_elt(void_list_t *list, const void *target_data, void_list_cmp_t cmp)
 {
-     void_list_elt_t *prior;
-     void_list_elt_t *old_elt = NULL;
-     void *old_data = NULL;
-
-     if (!list) {
-          fprintf(stderr, "Error: void_list_remove_elt list is NULL\n");
-          return NULL;
-     }
-     if (!target_data) {
-          fprintf(stderr, "Error: void_list_remove_elt target_data is NULL\n");
-	  return NULL;
-     }
-
-     /* first element */
-     if (list->head && list->head->data && (cmp(list->head->data, target_data) == 0)) {
-	  old_elt = list->head;
-	  old_data = list->head->data;
-	  void_list_pop(list);
-     } else {
-	  int found = 0;
-	  for (prior = list->head; prior && prior->next; prior = prior->next) {
-	       if (prior->next->data && (cmp(prior->next->data, target_data) == 0)) {
-		    old_elt = prior->next;
-		    old_data = old_elt->data;
-		    found = 1;
-		    break;
-	       }
-	  }
-	  if (!found) {
-	       return NULL;
-	  }
-	  prior->next = old_elt->next;
-
-	  if (old_elt == list->tail) {
-	       list->tail = prior;
-	  }
-     }
-     if (old_elt)
-	  void_list_elt_deinit(old_elt);
-
-     if (old_data)
-	  return old_data;
-     else
-	  return NULL;
+    void_list_elt_t *pos, *n;
+    void *old_data = NULL;
+    list_for_each_entry_safe(pos, n, &list->head, node) {
+        if ( pos->data && cmp(pos->data, target_data)==0 ){
+            old_data = pos->data;
+            void_list_elt_deinit(pos);
+            break;
+        }
+    }
+    return old_data;
 }
+
+void_list_elt_t *void_list_first(void_list_t *list) {
+    struct list_head *elt;
+    if (!list)
+        return NULL;
+    elt = list->head.next;
+    if (elt == &list->head ) {
+        return NULL;
+    }
+    return list_entry(elt, void_list_elt_t, node);
+}
+
+void_list_elt_t *void_list_prev(void_list_t *list, void_list_elt_t *node) {
+    struct list_head *elt;
+    if (!list || !node)
+        return NULL;
+    elt = node->node.prev;
+    if (elt == &list->head ) {
+        return NULL;
+    }
+    return list_entry(elt, void_list_elt_t, node);
+}
+
+void_list_elt_t *void_list_next(void_list_t *list, void_list_elt_t *node) {
+    struct list_head *elt;
+    if (!list || !node)
+        return NULL;
+    elt = node->node.next;
+    if (elt == &list->head ) {
+        return NULL;
+    }
+    return list_entry(elt, void_list_elt_t, node);
+}
+
+void_list_elt_t *void_list_last(void_list_t *list) {
+    struct list_head *elt;
+    if (!list)
+        return NULL;
+    elt = list->head.prev;
+    if (elt == &list->head ) {
+        return NULL;
+    }
+    return list_entry(elt, void_list_elt_t, node);
+}
+

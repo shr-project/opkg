@@ -785,18 +785,16 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
   /* count the number of sources so we can give some progress updates */
   sources_list_count = 0;
   sources_done = 0;
-  iter = opkg->conf->pkg_src_list.head;
-  while (iter)
+  list_for_each_entry(iter, &opkg->conf->pkg_src_list.head, node)
   {
     sources_list_count++;
-    iter = iter->next;
   }
 
-  for (iter = opkg->conf->pkg_src_list.head; iter; iter = iter->next)
+  list_for_each_entry(iter, &opkg->conf->pkg_src_list.head, node)
   {
     char *url, *list_file_name = NULL;
 
-    src = iter->data;
+    src = (pkg_src_t *)iter->data;
 
     if (src->extra_data)  /* debian style? */
       sprintf_alloc (&url, "%s/%s/%s", src->value, src->extra_data,
@@ -1040,17 +1038,17 @@ int opkg_repository_accessibility_check(opkg_t *opkg)
 
   src = str_list_alloc();
 
-  for (iter = opkg->conf->pkg_src_list.head; iter; iter = iter->next) 
+  list_for_each_entry(iter, &opkg->conf->pkg_src_list.head, node)
   {
-    if (strstr(iter->data->value, "://") && 
-		    index(strstr(iter->data->value, "://") + 3, '/')) 
-      stmp = strndup(iter->data->value, 
-		      (index(strstr(iter->data->value, "://") + 3, '/') - iter->data->value)*sizeof(char));
+    if (strstr(((pkg_src_t *)iter->data)->value, "://") && 
+		    index(strstr(((pkg_src_t *)iter->data)->value, "://") + 3, '/')) 
+      stmp = strndup(((pkg_src_t *)iter->data)->value, 
+		      (index(strstr(((pkg_src_t *)iter->data)->value, "://") + 3, '/') - ((pkg_src_t *)iter->data)->value)*sizeof(char));
 
     else
-      stmp = strdup(iter->data->value);
+      stmp = strdup(((pkg_src_t *)iter->data)->value);
 
-    for (iter1 = src->head; iter1; iter1 = iter1->next)
+    for (iter1 = str_list_first(src); iter1; iter1 = str_list_next(src, iter1))
     {
       if (strstr(iter1->data, stmp)) 
         break;

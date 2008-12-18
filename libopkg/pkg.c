@@ -412,8 +412,8 @@ int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
 	  oldpkg->priority = str_dup_safe(newpkg->priority);
      if (!oldpkg->source)
 	  oldpkg->source = str_dup_safe(newpkg->source);
-     if (oldpkg->conffiles.head == NULL){
-	  oldpkg->conffiles = newpkg->conffiles;
+     if (nv_pair_list_empty(&oldpkg->conffiles)){
+	  list_splice_init(&newpkg->conffiles.head, &oldpkg->conffiles.head);
 	  conffile_list_init(&newpkg->conffiles);
      }
      if (!oldpkg->installed_files){
@@ -643,14 +643,14 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
 	       conffile_list_elt_t *iter;
                char confstr[LINE_LEN];
 
-	       if (pkg->conffiles.head == NULL) {
+	       if (nv_pair_list_empty(&pkg->conffiles)) {
 		    return temp;
 	       }
 
                len = 14 ;
-	       for (iter = pkg->conffiles.head; iter; iter = iter->next) {
-		    if (iter->data->name && iter->data->value) {
-                       len = len + (strlen(iter->data->name)+strlen(iter->data->value)+5);
+	       for (iter = nv_pair_list_first(&pkg->conffiles); iter; iter = nv_pair_list_next(&pkg->conffiles, iter)) {
+		    if (((conffile_t *)iter->data)->name && ((conffile_t *)iter->data)->value) {
+                       len = len + (strlen(((conffile_t *)iter->data)->name)+strlen(((conffile_t *)iter->data)->value)+5);
 		    }
 	       }
                temp = (char *)realloc(temp,len);
@@ -660,9 +660,11 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
                }
                temp[0]='\0';
                strncpy(temp, "Conffiles:\n", 12);
-	       for (iter = pkg->conffiles.head; iter; iter = iter->next) {
-		    if (iter->data->name && iter->data->value) {
-                         snprintf(confstr, LINE_LEN, "%s %s\n", iter->data->name, iter->data->value);
+	       for (iter = nv_pair_list_first(&pkg->conffiles); iter; iter = nv_pair_list_next(&pkg->conffiles, iter)) {
+		    if (((conffile_t *)iter->data)->name && ((conffile_t *)iter->data)->value) {
+                         snprintf(confstr, LINE_LEN, "%s %s\n", 
+                                 ((conffile_t *)iter->data)->name, 
+                                 ((conffile_t *)iter->data)->value);
                          strncat(temp, confstr, strlen(confstr));           
 		    }
 	       }
@@ -1395,23 +1397,13 @@ str_list_t *pkg_get_installed_files(pkg_t *pkg)
    work. */
 int pkg_free_installed_files(pkg_t *pkg)
 {
-     str_list_elt_t *iter;
-
      pkg->installed_files_ref_cnt--;
 
      if (pkg->installed_files_ref_cnt > 0)
 	  return 0;
 
      if (pkg->installed_files) {
-
-	  for (iter = pkg->installed_files->head; iter; iter = iter->next) {
-	       /* malloced in pkg_get_installed_files */
-	       free (iter->data);
-	       iter->data = NULL;
-	  }
-
-	  str_list_deinit(pkg->installed_files);
-	  free (pkg->installed_files);
+         str_list_deinit(pkg->installed_files);
      }
 
      pkg->installed_files = NULL;
@@ -1449,8 +1441,8 @@ conffile_t *pkg_get_conffile(pkg_t *pkg, const char *file_name)
 	  return NULL;
      }
 
-     for (iter = pkg->conffiles.head; iter; iter = iter->next) {
-	  conffile = iter->data;
+     for (iter = nv_pair_list_first(&pkg->conffiles); iter; iter = nv_pair_list_next(&pkg->conffiles, iter)) {
+	  conffile = (conffile_t *)iter->data;
 
 	  if (strcmp(conffile->name, file_name) == 0) {
 	       return conffile;
@@ -1671,15 +1663,12 @@ int pkg_arch_supported(opkg_conf_t *conf, pkg_t *pkg)
      if (!pkg->architecture)
 	  return 1;
 
-     l = conf->arch_list.head;
-
-     while (l) {
-	  nv_pair_t *nv = l->data;
+     list_for_each_entry(l , &conf->arch_list.head, node) {
+	  nv_pair_t *nv = (nv_pair_t *)l->data;
 	  if (strcmp(nv->name, pkg->architecture) == 0) {
 	       opkg_message(conf, OPKG_DEBUG, "arch %s (priority %s) supported for pkg %s\n", nv->name, nv->value, pkg->name);
 	       return 1;
 	  }
-	  l = l->next;
      }
 
      opkg_message(conf, OPKG_DEBUG, "arch %s unsupported for pkg %s\n", pkg->architecture, pkg->name);
@@ -1690,15 +1679,12 @@ int pkg_get_arch_priority(opkg_conf_t *conf, const char *archname)
 {
      nv_pair_list_elt_t *l;
 
-     l = conf->arch_list.head;
-
-     while (l) {
-	  nv_pair_t *nv = l->data;
+     list_for_each_entry(l , &conf->arch_list.head, node) {
+	  nv_pair_t *nv = (nv_pair_t *)l->data;
 	  if (strcmp(nv->name, archname) == 0) {
 	       int priority = strtol(nv->value, NULL, 0);
 	       return priority;
 	  }
-	  l = l->next;
      }
      return 0;
 }
@@ -1750,8 +1736,8 @@ int pkg_info_preinstall_check(opkg_conf_t *conf)
 	       opkg_message(conf, OPKG_ERROR, "No installed files for pkg %s\n", pkg->name);
 	       break;
 	  }
-	  for (iter = installed_files->head; iter; iter = iter->next) {
-	       char *installed_file = iter->data;
+	  for (iter = str_list_first(installed_files); iter; iter = str_list_next(installed_files, iter)) {
+	       char *installed_file = (char *) iter->data;
 	       // opkg_message(conf, OPKG_DEBUG2, "pkg %s: file=%s\n", pkg->name, installed_file);
 	       file_hash_set_file_owner(conf, installed_file, pkg);
 	  }

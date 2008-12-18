@@ -19,28 +19,15 @@
 #define PKG_SRC_LIST_H
 
 #include "pkg_src.h"
+#include "void_list.h"
 
-typedef struct pkg_src_list_elt pkg_src_list_elt_t;
-struct pkg_src_list_elt
-{
-    pkg_src_list_elt_t *next;
-    pkg_src_t *data;
-};
+typedef struct void_list_elt pkg_src_list_elt_t;
 
-typedef struct pkg_src_list pkg_src_list_t;
-struct pkg_src_list
-{
-    pkg_src_list_elt_t pre_head;
-    pkg_src_list_elt_t *head;
-    pkg_src_list_elt_t *tail;
-};
+typedef struct void_list pkg_src_list_t;
 
 static inline int pkg_src_list_empty(pkg_src_list_t *list)
 {
-     if (list->head == NULL)
-	  return 1;
-     else
-	  return 0;
+    return void_list_empty((void_list_t *)list);
 }
 
 int pkg_src_list_elt_init(pkg_src_list_elt_t *elt, nv_pair_t *data);

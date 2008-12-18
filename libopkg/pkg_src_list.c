@@ -27,11 +27,11 @@ int pkg_src_list_init(pkg_src_list_t *list)
 
 void pkg_src_list_deinit(pkg_src_list_t *list)
 {
-    pkg_src_list_elt_t *iter;
+    pkg_src_list_elt_t *iter, *n;
     pkg_src_t *pkg_src;
 
-    for (iter = list->head; iter; iter = iter->next) {
-      pkg_src = iter->data;
+    list_for_each_entry_safe(iter, n, &list->head, node) {
+      pkg_src = (pkg_src_t *)iter->data;
       pkg_src_deinit(pkg_src);
 
       /* malloced in pkg_src_list_append */
