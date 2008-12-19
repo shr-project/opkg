@@ -11,9 +11,9 @@ noinst_PROGRAMS = libopkg_test opkg_active_list_test
 #opkg_extract_test_SOURCES = opkg_extract_test.c
 #opkg_extract_test_CFLAGS = $(ALL_CFLAGS) -I$(top_srcdir)
 
-opkg_active_list_test_LDADD = $(top_builddir)/libopkg/active_list.o
-opkg_active_list_test_SOURCES = opkg_active_list_test.c
-opkg_active_list_test_CFLAGS = $(ALL_CFLAGS) -I$(top_srcdir)
+#opkg_active_list_test_LDADD = $(top_builddir)/libopkg/active_list.o
+#opkg_active_list_test_SOURCES = opkg_active_list_test.c
+#opkg_active_list_test_CFLAGS = $(ALL_CFLAGS) -I$(top_srcdir)
 
 libopkg_test_LDADD = $(top_builddir)/libopkg/libopkg.la
 libopkg_test_SOURCE = libopkg_test.c
