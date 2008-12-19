@@ -1377,7 +1377,7 @@ static int remove_obsolesced_files(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg
      str_list_elt_t *of;
      str_list_t *new_files;
      str_list_elt_t *nf;
-     str_list_elt_t **niter;
+     hash_table_t new_files_table;
 
      if (old_pkg == NULL) {
 	  return 0;
@@ -1386,20 +1386,21 @@ static int remove_obsolesced_files(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg
      old_files = pkg_get_installed_files(old_pkg);
      new_files = pkg_get_installed_files(pkg);
 
+     new_files_table.entries = NULL;
+     hash_table_init("new_files" , &new_files_table, 20);
+     for (nf = str_list_first(new_files); nf; nf = str_list_next(new_files, nf)) {
+         if (nf && nf->data)
+            hash_table_insert(&new_files_table, nf->data, nf->data);
+     }
+
      for (of = str_list_first(old_files); of; of = str_list_next(old_files, of)) {
 	  pkg_t *owner;
 	  char *old, *new;
 	  old = (char *)of->data;
-	  for (nf = str_list_first(new_files); nf; nf = str_list_next(new_files, nf)) {
-	       new = nf->data;
-	       if (strcmp(old, new) == 0) {
-                    niter = &nf;
-                    nf=str_list_next(new_files, nf);
-                    str_list_remove(new_files, niter);
-                    free(new);
-                    goto NOT_OBSOLETE;
-	       }
-	  }
+          new = (char *) hash_table_get (&new_files_table, old);
+          if (new)
+               continue;
+
 	  if (file_is_dir(old)) {
 	       continue;
 	  }
@@ -1419,11 +1420,9 @@ static int remove_obsolesced_files(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg
 				 strerror(errno));
 	       }
 	  }
-
-     NOT_OBSOLETE:
-	  ;
      }
 
+     hash_table_deinit(&new_files_table);
      pkg_free_installed_files(old_pkg);
      pkg_free_installed_files(pkg);
 
