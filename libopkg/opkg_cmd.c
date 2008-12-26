@@ -290,8 +290,7 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 	  free (tmp_file_name);
 	  free (url);
 #else
-	  opkg_message (conf, OPKG_NOTICE, "Signature check for %s skipped "
-              "because GPG support was not enabled in this build\n", src->name);
+          // Do nothing
 #endif
 	  free(list_file_name);
      }

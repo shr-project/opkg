@@ -346,7 +346,6 @@ opkg_verify_file (opkg_conf_t *conf, char *text_file, char *sig_file)
 
     return status;
 #else
-    opkg_message (conf, OPKG_NOTICE, "Signature check for %s was skipped because GPG support was not enabled in this build\n");
     return 0;
 #endif
 }
