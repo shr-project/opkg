@@ -270,8 +270,6 @@ char *fgets_str(FILE *file, const char *terminating_string);
 extern int unzip(FILE *l_in_file, FILE *l_out_file);
 extern void gz_close(int gunzip_pid);
 extern FILE *gz_open(FILE *compressed_file, int *pid);
-extern void gzvclose(int gunzip_pid);
-extern FILE *gzvopen(FILE *compressed_file, int *pid);
 
 extern struct hostent *xgethostbyname(const char *name);
 extern int create_icmp_socket(void);

@@ -749,7 +749,7 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 		while ((ar_header = get_header_ar(deb_stream)) != NULL) {
 			if (strcmp(ared_file, ar_header->name) == 0) {
 				/* open a stream of decompressed data */
-				uncompressed_stream = gzvopen(deb_stream, &gunzip_pid);
+				uncompressed_stream = gz_open(deb_stream, &gunzip_pid);
 				archive_offset = 0;
 				output_buffer = unarchive(uncompressed_stream, out_stream, get_header_tar, free_header_tar, extract_function, prefix, file_list);
 			}
@@ -757,7 +757,7 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 			free (ar_header->name);
 			free (ar_header);
 		}
-		gzvclose(gunzip_pid);
+		gz_close(gunzip_pid);
 		fclose(deb_stream);
 		fclose(uncompressed_stream);
 		free(ared_file);
@@ -769,7 +769,7 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 		file_header_t *tar_header;
 		archive_offset = 0;
 		fseek(deb_stream, 0, SEEK_SET);
-		unzipped_opkg_stream = gzvopen(deb_stream, &unzipped_opkg_pid);
+		unzipped_opkg_stream = gz_open(deb_stream, &unzipped_opkg_pid);
 		
                 /*fprintf(stderr, __FUNCTION__ ": processing opkg %s -- ared_file=%s\n", package_filename, ared_file);*/
 		/* walk through outer tar file to find ared_file */
@@ -779,7 +779,7 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
                                 name_offset = 2;
 			if (strcmp(ared_file, tar_header->name+name_offset) == 0) {
 				/* open a stream of decompressed data */
-				uncompressed_stream = gzvopen(unzipped_opkg_stream, &gunzip_pid);
+				uncompressed_stream = gz_open(unzipped_opkg_stream, &gunzip_pid);
 				archive_offset = 0;
                                 /*fprintf(stderr, __FUNCTION__ ":%d: here -- found file\n", __LINE__);*/
 				output_buffer = unarchive(uncompressed_stream, 
@@ -791,14 +791,14 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 							  file_list);
                                 /*fprintf(stderr, __FUNCTION__ ":%d: unarchive complete\n", __LINE__);*/
 				free_header_tar(tar_header);
-				gzvclose(gunzip_pid);
+				gz_close(gunzip_pid);
 				fclose(uncompressed_stream);
 				break;
 			}
 			seek_sub_file(unzipped_opkg_stream, tar_header->size);
 			free_header_tar(tar_header);
 		}
-		gzvclose(unzipped_opkg_pid);
+		gz_close(unzipped_opkg_pid);
 		fclose(unzipped_opkg_stream);
 		fclose(deb_stream);
 		free(ared_file);
