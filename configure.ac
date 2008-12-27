@@ -27,8 +27,15 @@ AC_PROG_LIBTOOL
 # Checks for libraries
 
 # check for libcurl
-PKG_CHECK_MODULES(CURL, libcurl)
+AC_ARG_ENABLE(curl,
+              AC_HELP_STRING([--enable-curl], [Enable downloading with curl
+      [[default=yes]] ]),
+    [want_curl="$enableval"], [want_curl="yes"])
 
+if test "x$want_curl" = "xyes"; then
+  PKG_CHECK_MODULES(CURL, libcurl)
+  AC_DEFINE(HAVE_CURL, 1, [Define if you want CURL support])
+fi
 
 
 dnl **********

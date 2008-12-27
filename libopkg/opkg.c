@@ -1018,7 +1018,9 @@ opkg_find_package (opkg_t *opkg, const char *name, const char *ver, const char *
   return package;
 }
 
+#ifdef HAVE_CURL
 #include <curl/curl.h>
+#endif
 /**
  * @brief Check the accessibility of repositories. It will try to access the repository to check if the respository is accessible throught current network status. 
  * @param opkg The opkg_t
@@ -1068,12 +1070,16 @@ int opkg_repository_accessibility_check(opkg_t *opkg)
     repositories--;
 
     err = opkg_download(opkg->conf, iter1->data, "/dev/null", NULL, NULL);
+#ifdef HAVE_CURL
     if (!(err == CURLE_OK || 
 		err == CURLE_HTTP_RETURNED_ERROR || 
 		err == CURLE_FILE_COULDNT_READ_FILE ||
 		err == CURLE_REMOTE_FILE_NOT_FOUND || 
 		err == CURLE_TFTP_NOTFOUND
 		)) {
+#else
+    if (!(err == 0)) {
+#endif
 	    ret++;
     }
     str_list_elt_deinit(iter1);

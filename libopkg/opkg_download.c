@@ -17,7 +17,9 @@
    General Public License for more details.
 */
 #include "config.h"
+#ifdef HAVE_CURL
 #include <curl/curl.h>
+#endif
 #ifdef HAVE_GPGME
 #include <gpgme.h>
 #endif
@@ -77,6 +79,7 @@ int opkg_download(opkg_conf_t *conf, const char *src,
 	setenv("no_proxy", conf->no_proxy, 1);
     }
 
+#ifdef HAVE_CURL
     CURL *curl;
     CURLcode res;
     FILE * file = fopen (tmp_file_location, "w");
@@ -123,6 +126,27 @@ int opkg_download(opkg_conf_t *conf, const char *src,
         free(src_basec);
 	return -1;
     }
+#else
+    {
+      int res;
+      char *wgetcmd;
+      char *wgetopts;
+      wgetopts = getenv("OPKG_WGETOPTS");
+      sprintf_alloc(&wgetcmd, "wget -q %s%s -O \"%s\" \"%s\"",
+		    (conf->http_proxy || conf->ftp_proxy) ? "-Y on " : "",
+		    (wgetopts!=NULL) ? wgetopts : "",
+		    tmp_file_location, src);
+      opkg_message(conf, OPKG_INFO, "Executing: %s\n", wgetcmd);
+      res = xsystem(wgetcmd);
+      free(wgetcmd);
+      if (res) {
+	opkg_message(conf, OPKG_ERROR, "Failed to download %s, error %d\n", src, res);
+	free(tmp_file_location);
+        free(src_basec);
+	return res;
+      }
+    }
+#endif
 
     err = file_move(tmp_file_location, dest_file_name);
 
