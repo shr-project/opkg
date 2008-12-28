@@ -63,6 +63,7 @@ struct opkg_conf
      int force_space;
      int force_removal_of_dependent_packages;
      int force_removal_of_essential_packages;
+     int check_signature;
      int nodeps; /* do not follow dependences */
      char *offline_root;
      char *offline_root_path;

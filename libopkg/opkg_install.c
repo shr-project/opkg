@@ -832,7 +832,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      char *list_file_name, *sig_file_name, *lists_dir;
 
      /* check to ensure the package has come from a repository */
-     if (pkg->src)
+     if (conf->check_signature && pkg->src)
      {
        sprintf_alloc (&lists_dir, "%s",
                      (conf->restrict_to_default_dest)

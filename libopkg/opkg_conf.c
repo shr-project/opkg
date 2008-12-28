@@ -56,6 +56,7 @@ int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
 	  { "force_downgrade", OPKG_OPT_TYPE_BOOL, &conf->force_downgrade },
 	  { "force_reinstall", OPKG_OPT_TYPE_BOOL, &conf->force_reinstall },
 	  { "force_space", OPKG_OPT_TYPE_BOOL, &conf->force_space },
+          { "check_signature", OPKG_OPT_TYPE_INT, &conf->check_signature }, 
 	  { "ftp_proxy", OPKG_OPT_TYPE_STRING, &conf->ftp_proxy },
 	  { "http_proxy", OPKG_OPT_TYPE_STRING, &conf->http_proxy },
 	  { "no_proxy", OPKG_OPT_TYPE_STRING, &conf->no_proxy },

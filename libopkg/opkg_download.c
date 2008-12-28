@@ -304,6 +304,8 @@ int
 opkg_verify_file (opkg_conf_t *conf, char *text_file, char *sig_file)
 {
 #ifdef HAVE_GPGME
+    if (conf->check_signature == 0 )
+        return 0;
     int status = -1;
     gpgme_ctx_t ctx;
     gpgme_data_t sig, text, key;

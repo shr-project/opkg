@@ -850,42 +850,44 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     free (url);
 
 #ifdef HAVE_GPGME
-    char *sig_file_name;
-    /* download detached signitures to verify the package lists */
-    /* get the url for the sig file */
-    if (src->extra_data)  /* debian style? */
-      sprintf_alloc (&url, "%s/%s/%s", src->value, src->extra_data,
-                     "Packages.sig");
-    else
-      sprintf_alloc (&url, "%s/%s", src->value, "Packages.sig");
+    if ( opkg->conf->check_signature ) {
+        char *sig_file_name;
+        /* download detached signitures to verify the package lists */
+        /* get the url for the sig file */
+        if (src->extra_data)  /* debian style? */
+            sprintf_alloc (&url, "%s/%s/%s", src->value, src->extra_data,
+                    "Packages.sig");
+        else
+            sprintf_alloc (&url, "%s/%s", src->value, "Packages.sig");
 
-    /* create filename for signature */
-    sprintf_alloc (&sig_file_name, "%s/%s.sig", lists_dir, src->name);
+        /* create filename for signature */
+        sprintf_alloc (&sig_file_name, "%s/%s.sig", lists_dir, src->name);
 
-    /* make sure there is no existing signature file */
-    unlink (sig_file_name);
+        /* make sure there is no existing signature file */
+        unlink (sig_file_name);
 
-    err = opkg_download (opkg->conf, url, sig_file_name, NULL, NULL);
-    if (err)
-    {
-      /* XXX: Warning: Download failed */
+        err = opkg_download (opkg->conf, url, sig_file_name, NULL, NULL);
+        if (err)
+        {
+            /* XXX: Warning: Download failed */
+        }
+        else
+        {
+            int err;
+            err = opkg_verify_file (opkg->conf, list_file_name, sig_file_name);
+            if (err == 0)
+            {
+                /* XXX: Notice: Signature check passed */
+            }
+            else
+            {
+                /* XXX: Warning: Signature check failed */
+            }
+        }
+        free (sig_file_name);
+        free (list_file_name);
+        free (url);
     }
-    else
-    {
-      int err;
-      err = opkg_verify_file (opkg->conf, list_file_name, sig_file_name);
-      if (err == 0)
-      {
-        /* XXX: Notice: Signature check passed */
-      }
-      else
-      {
-        /* XXX: Warning: Signature check failed */
-      }
-    }
-    free (sig_file_name);
-    free (list_file_name);
-    free (url);
 #else
     /* XXX: Note: Signature check for %s skipped because GPG support was not
      * enabled in this build

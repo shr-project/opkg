@@ -261,34 +261,36 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 	  free(url);
 
 #ifdef HAVE_GPGME
-	  /* download detached signitures to verify the package lists */
-	  /* get the url for the sig file */
-	  if (src->extra_data)	/* debian style? */
-	      sprintf_alloc(&url, "%s/%s/%s", src->value, src->extra_data,
-			    "Packages.sig");
-	  else
-	      sprintf_alloc(&url, "%s/%s", src->value, "Packages.sig");
+          if (conf->check_signature) {
+              /* download detached signitures to verify the package lists */
+              /* get the url for the sig file */
+              if (src->extra_data)	/* debian style? */
+                  sprintf_alloc(&url, "%s/%s/%s", src->value, src->extra_data,
+                          "Packages.sig");
+              else
+                  sprintf_alloc(&url, "%s/%s", src->value, "Packages.sig");
 
-	  /* create temporary file for it */
-	  char *tmp_file_name;
+              /* create temporary file for it */
+              char *tmp_file_name;
 
-	  sprintf_alloc (&tmp_file_name, "%s/%s", tmp, "Packages.sig");
+              sprintf_alloc (&tmp_file_name, "%s/%s", tmp, "Packages.sig");
 
-	  err = opkg_download(conf, url, tmp_file_name, NULL, NULL);
-	  if (err) {
-	    failures++;
-		opkg_message (conf, OPKG_NOTICE, "Signature check failed\n");
-	  } else {
-	    int err;
-	    err = opkg_verify_file (conf, list_file_name, tmp_file_name);
-	    if (err == 0)
-		opkg_message (conf, OPKG_NOTICE, "Signature check passed\n");
-	    else
-		opkg_message (conf, OPKG_NOTICE, "Signature check failed\n");
-	  }
-	  unlink (tmp_file_name);
-	  free (tmp_file_name);
-	  free (url);
+              err = opkg_download(conf, url, tmp_file_name, NULL, NULL);
+              if (err) {
+                  failures++;
+                  opkg_message (conf, OPKG_NOTICE, "Signature check failed\n");
+              } else {
+                  int err;
+                  err = opkg_verify_file (conf, list_file_name, tmp_file_name);
+                  if (err == 0)
+                      opkg_message (conf, OPKG_NOTICE, "Signature check passed\n");
+                  else
+                      opkg_message (conf, OPKG_NOTICE, "Signature check failed\n");
+              }
+              unlink (tmp_file_name);
+              free (tmp_file_name);
+              free (url);
+          }
 #else
           // Do nothing
 #endif
