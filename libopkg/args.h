@@ -47,7 +47,7 @@ struct args
 };
 typedef struct args args_t;
 
-#define ARGS_DEFAULT_CONF_FILE_DIR "/etc"
+#define ARGS_DEFAULT_CONF_FILE_DIR "/etc/opkg"
 #define ARGS_DEFAULT_CONF_FILE_NAME "opkg.conf"
 #define ARGS_DEFAULT_DEST NULL
 #define ARGS_DEFAULT_FORCE_DEFAULTS 0
