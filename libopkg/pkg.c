@@ -492,100 +492,127 @@ void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){
 
 }
 
+#define CHECK_BUFF_SIZE(buff, line, buf_size, page_size) do { \
+        if (strlen(buff) + strlen(line) >= (buf_size)) { \
+            buf_size += page_size; \
+            buff = realloc(buff, buf_size); \
+        } \
+    } while(0)
 char * pkg_formatted_info(pkg_t *pkg )
 {
      char *line;
      char * buff;
+     const size_t page_size = 8192;
+     size_t buff_size = page_size;
 
-     buff = calloc(1, 8192);
+     buff = calloc(1, buff_size);
      if (buff == NULL) {
 	  fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
 	  return NULL;
      }
 
-     buff[0] = '\0';
-
      line = pkg_formatted_field(pkg, "Package");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Version");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Depends");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
      
      line = pkg_formatted_field(pkg, "Recommends");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Suggests");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Provides");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Replaces");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Conflicts");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Status");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Section");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Essential"); /* @@@@ should be removed in future release. *//* I do not agree with this Pigi*/
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Architecture");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Maintainer");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "MD5sum");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Size");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Filename");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Conffiles");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Source");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Description");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Installed-Time");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 
      line = pkg_formatted_field(pkg, "Tags");
+     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
      strncat(buff ,line, strlen(line));
      free(line);
 

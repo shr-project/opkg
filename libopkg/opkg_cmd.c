@@ -815,7 +815,7 @@ static int opkg_info_status_cmd(opkg_conf_t *conf, int argc, char **argv, int in
      char *pkg_name = NULL;
      char **pkg_fields = NULL;
      int n_fields = 0;
-     char *buff ; 
+     char *buff = NULL; 
 
      if (argc > 0) {
 	  pkg_name = argv[0];
@@ -847,6 +847,7 @@ static int opkg_info_status_cmd(opkg_conf_t *conf, int argc, char **argv, int in
    We need to free it :)  ( Thanks florian for seeing the error )
 */
                free(buff);
+               buff = NULL;
           }
 	  if (conf->verbosity > 1) {
 	       conffile_list_elt_t *iter;
