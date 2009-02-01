@@ -138,7 +138,7 @@ int opkg_install_from_file(opkg_conf_t *conf, const char *filename)
 
 opkg_error_t opkg_install_by_name(opkg_conf_t *conf, const char *pkg_name)
 {
-     int cmp, err;
+     int cmp, err = 0;
      pkg_t *old, *new;
      char *old_version, *new_version;
 
