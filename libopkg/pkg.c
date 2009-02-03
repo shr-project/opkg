@@ -17,6 +17,7 @@
 
 #include "includes.h"
 #include <ctype.h>
+#include <alloca.h>
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
@@ -461,7 +462,10 @@ void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){
      char **raw =NULL;
      char **raw_start=NULL; 
 
-     temp_str = (char *) calloc (1, strlen(pkg->dest->info_dir)+strlen(pkg->name)+12);
+     size_t str_size = strlen(pkg->dest->info_dir)+strlen(pkg->name)+12;
+     temp_str = (char *) alloca (str_size);
+     memset(temp_str, 0 , str_size);
+     
      if (temp_str == NULL ){
         opkg_message(conf, OPKG_INFO, "Out of memory in  %s\n", __FUNCTION__);
         return;
@@ -486,7 +490,6 @@ void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){
      }
 
      free(raw_start); 
-     free(temp_str);
 
      return ;
 
