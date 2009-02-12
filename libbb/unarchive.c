@@ -606,6 +606,10 @@ file_header_t *get_header_tar(FILE *tar_stream)
                 tar_entry->name = concat_path_file(tar.formated.prefix, tar.formated.name);
         }
 
+	if (strlen(tar_entry->name) > 100) {
+		tar_entry->name[100] = 0;
+	}
+
 	// tar_entry->name = xstrdup(tar.formated.name);
 
 /*
