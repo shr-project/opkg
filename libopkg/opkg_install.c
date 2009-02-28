@@ -1306,12 +1306,17 @@ static int check_data_file_clashes_change(opkg_conf_t *conf, pkg_t *pkg, pkg_t *
      str_list_t *files_list;
      str_list_elt_t *iter;
 
+     char *root_filename = NULL;
+
      int clashes = 0;
 
      files_list = pkg_get_installed_files(pkg);
      for (iter = str_list_first(files_list); iter; iter = str_list_next(files_list, iter)) {
-	  char *root_filename;
 	  char *filename = (char *) iter->data;
+          if (root_filename) {
+              free(root_filename);
+              root_filename = NULL;
+          }
 	  root_filename = root_filename_alloc(conf, filename);
 	  if (file_exists(root_filename) && (! file_is_dir(root_filename))) {
 	       pkg_t *owner;
@@ -1336,7 +1341,10 @@ static int check_data_file_clashes_change(opkg_conf_t *conf, pkg_t *pkg, pkg_t *
 	       }
 
 	  }
-	  free(root_filename);
+     }
+     if (root_filename) {
+         free(root_filename);
+         root_filename = NULL;
      }
      pkg_free_installed_files(pkg);
 
