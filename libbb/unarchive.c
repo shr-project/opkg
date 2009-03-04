@@ -600,15 +600,15 @@ file_header_t *get_header_tar(FILE *tar_stream)
                 linkname = NULL;
         } else
 #endif
-        if (tar.formated.prefix[0] == 0) {
-                tar_entry->name = strdup(tar.formated.name);
-        } else {                                              
-                tar_entry->name = concat_path_file(tar.formated.prefix, tar.formated.name);
-        }
+        {
+                tar_entry->name = xstrndup(tar.formated.name, 100);
 
-	if (strlen(tar_entry->name) > 100) {
-		tar_entry->name[100] = 0;
-	}
+                if (tar.formated.prefix[0]) {
+                        char *temp = tar_entry->name;
+                        tar_entry->name = concat_path_file(tar.formated.prefix, temp);
+                        free(temp);
+                }
+        }
 
 	// tar_entry->name = xstrdup(tar.formated.name);
 
