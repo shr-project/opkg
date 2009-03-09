@@ -432,9 +432,11 @@ static int check_conflicts_for(opkg_conf_t *conf, pkg_t *pkg)
 static int update_file_ownership(opkg_conf_t *conf, pkg_t *new_pkg, pkg_t *old_pkg)
 {
      str_list_t *new_list = pkg_get_installed_files(new_pkg);
-     str_list_elt_t *iter;
+     str_list_elt_t *iter, *niter;
 
-     for (iter = str_list_first(new_list); iter; iter = str_list_next(new_list, iter)) {
+     for (iter = str_list_first(new_list), niter = str_list_next(new_list, iter); 
+             iter; 
+             iter = niter, niter = str_list_next(new_list, niter)) {
 	  char *new_file = (char *)iter->data;
 	  pkg_t *owner = file_hash_get_file_owner(conf, new_file);
 	  if (!new_file)
@@ -444,7 +446,9 @@ static int update_file_ownership(opkg_conf_t *conf, pkg_t *new_pkg, pkg_t *old_p
      }
      if (old_pkg) {
 	  str_list_t *old_list = pkg_get_installed_files(old_pkg);
-	  for (iter = str_list_first(old_list); iter; iter = str_list_next(old_list, iter)) {
+	  for (iter = str_list_first(old_list), niter = str_list_next(old_list, iter); 
+                  iter; 
+                  iter = niter, niter = str_list_next(old_list, niter)) {
 	       char *old_file = (char *)iter->data;
 	       pkg_t *owner = file_hash_get_file_owner(conf, old_file);
 	       if (owner == old_pkg) {
@@ -1217,12 +1221,14 @@ static int check_data_file_clashes(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg
 	other package.
      */
      str_list_t *files_list;
-     str_list_elt_t *iter;
+     str_list_elt_t *iter, *niter;
 
      int clashes = 0;
 
      files_list = pkg_get_installed_files(pkg);
-     for (iter = str_list_first(files_list); iter; iter = str_list_next(files_list, iter)) {
+     for (iter = str_list_first(files_list), niter = str_list_next(files_list, iter); 
+             iter; 
+             iter = niter, niter = str_list_next(files_list, iter)) {
 	  char *root_filename;
 	  char *filename = (char *) iter->data;
 	  root_filename = root_filename_alloc(conf, filename);
@@ -1304,14 +1310,16 @@ static int check_data_file_clashes_change(opkg_conf_t *conf, pkg_t *pkg, pkg_t *
        @@@ To change after 1.0 release.
      */
      str_list_t *files_list;
-     str_list_elt_t *iter;
+     str_list_elt_t *iter, *niter;
 
      char *root_filename = NULL;
 
      int clashes = 0;
 
      files_list = pkg_get_installed_files(pkg);
-     for (iter = str_list_first(files_list); iter; iter = str_list_next(files_list, iter)) {
+     for (iter = str_list_first(files_list), niter = str_list_next(files_list, iter); 
+             iter; 
+             iter = niter, niter = str_list_next(files_list, niter)) {
 	  char *filename = (char *) iter->data;
           if (root_filename) {
               free(root_filename);
@@ -1321,13 +1329,14 @@ static int check_data_file_clashes_change(opkg_conf_t *conf, pkg_t *pkg, pkg_t *
 	  if (file_exists(root_filename) && (! file_is_dir(root_filename))) {
 	       pkg_t *owner;
 
+	       owner = file_hash_get_file_owner(conf, filename);
+
 	       if (conf->force_overwrite) {
 		    /* but we need to change who owns this file */
 		    file_hash_set_file_owner(conf, filename, pkg);
 		    continue;
 	       }
 
-	       owner = file_hash_get_file_owner(conf, filename);
 
 	       /* Pre-existing files are OK if owned by a package replaced by new pkg. */
 	       if (owner) {

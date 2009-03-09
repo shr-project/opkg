@@ -1761,12 +1761,14 @@ int pkg_info_preinstall_check(opkg_conf_t *conf)
      for (i = 0; i < installed_pkgs->len; i++) {
 	  pkg_t *pkg = installed_pkgs->pkgs[i];
 	  str_list_t *installed_files = pkg_get_installed_files(pkg); /* this causes installed_files to be cached */
-	  str_list_elt_t *iter;
+	  str_list_elt_t *iter, *niter;
 	  if (installed_files == NULL) {
 	       opkg_message(conf, OPKG_ERROR, "No installed files for pkg %s\n", pkg->name);
 	       break;
 	  }
-	  for (iter = str_list_first(installed_files); iter; iter = str_list_next(installed_files, iter)) {
+	  for (iter = str_list_first(installed_files), niter = str_list_next(installed_files, iter); 
+                  iter; 
+                  iter = niter, niter = str_list_next(installed_files, iter)) {
 	       char *installed_file = (char *) iter->data;
 	       // opkg_message(conf, OPKG_DEBUG2, "pkg %s: file=%s\n", pkg->name, installed_file);
 	       file_hash_set_file_owner(conf, installed_file, pkg);
