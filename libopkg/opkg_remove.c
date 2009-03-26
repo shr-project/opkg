@@ -350,7 +350,7 @@ int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
 	  file_name = (char *)iter->data;
 
 	  if (file_is_dir(file_name)) {
-	       str_list_append(&installed_dirs, strdup(file_name));
+	       str_list_append(&installed_dirs, file_name);
 	       continue;
 	  }
 

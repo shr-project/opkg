@@ -1064,6 +1064,7 @@ int opkg_repository_accessibility_check(opkg_t *opkg)
     free(stmp);
 
     str_list_append(src, repo_ptr);
+    free(repo_ptr);
     repositories++;
   }
   while (repositories > 0) 

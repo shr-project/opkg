@@ -37,7 +37,6 @@ int pkg_extract_control_file_to_stream(pkg_t *pkg, FILE *stream)
 	return EINVAL;
     }
 
-    /* XXX: QUESTION: Is there a way to do this directly with deb_extract now? */
     fputs(buffer, stream);
     free(buffer);
 
@@ -54,10 +53,11 @@ int pkg_extract_control_files_to_dir_with_prefix(pkg_t *pkg,
 						 const char *prefix)
 {
     char *dir_with_prefix;
+    char *buffer = NULL;
 
     sprintf_alloc(&dir_with_prefix, "%s/%s", dir, prefix);
 
-    deb_extract(pkg->local_filename, stderr,
+    buffer = deb_extract(pkg->local_filename, stderr,
 		extract_control_tar_gz
                 | extract_all_to_fs| extract_preserve_date
 		| extract_unconditional,
@@ -65,23 +65,26 @@ int pkg_extract_control_files_to_dir_with_prefix(pkg_t *pkg,
 
     free(dir_with_prefix);
 
-    /* XXX: BUG: how do we know if deb_extract worked or not? This is
-       a defect in the current deb_extract from what I can tell.
-
-       Once this is fixed, audit all calls to deb_extract. */
+    if (buffer == NULL) {
+        return EINVAL;
+    }
+    free(buffer);
     return 0;
 }
 
 int pkg_extract_data_files_to_dir(pkg_t *pkg, const char *dir)
 {
-    deb_extract(pkg->local_filename, stderr,
+    char *buffer = NULL;
+    buffer = deb_extract(pkg->local_filename, stderr,
 		extract_data_tar_gz
                 | extract_all_to_fs| extract_preserve_date
 		| extract_unconditional,
 		dir, NULL);
 
-    /* BUG: How do we know if deb_extract worked or not? This is a
-       defect in the current deb_extract from what I can tell. */
+    if (buffer == NULL) {
+        return EINVAL;
+    }
+    free(buffer);
     return 0;
 }
 
@@ -148,6 +151,7 @@ int pkg_extract_data_file_names_to_file(pkg_t *pkg, const char *file_name)
 
 int pkg_extract_data_file_names_to_stream(pkg_t *pkg, FILE *file)
 {
+    char *buffer = NULL;
     /* XXX: DPKG_INCOMPATIBILITY: deb_extract will extract all of the
        data file names with a '.' as the first character. I've taught
        opkg how to cope with the presence or absence of the '.', but
@@ -160,11 +164,15 @@ int pkg_extract_data_file_names_to_stream(pkg_t *pkg, FILE *file)
        If we wanted to, we could workaround the deb_extract behavior
        right here, by writing to a tmpfile, then munging things as we
        wrote to the actual stream. */
-     deb_extract(pkg->local_filename, file,
+    buffer = deb_extract(pkg->local_filename, file,
 		 extract_quiet | extract_data_tar_gz | extract_list,
 		 NULL, NULL);
 
     /* BUG: How do we know if deb_extract worked or not? This is a
        defect in the current deb_extract from what I can tell. */
+    if (buffer == NULL) {
+        return EINVAL;
+    }
+    free(buffer);
     return 0;
 }

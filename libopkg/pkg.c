@@ -1412,6 +1412,7 @@ str_list_t *pkg_get_installed_files(pkg_t *pkg)
 	       sprintf_alloc(&installed_file_name, "%s", file_name);
 	  }
 	  str_list_append(pkg->installed_files, installed_file_name);
+          free(installed_file_name);
 	  free(line);
      }
 
@@ -1433,7 +1434,7 @@ int pkg_free_installed_files(pkg_t *pkg)
 	  return 0;
 
      if (pkg->installed_files) {
-         str_list_deinit(pkg->installed_files);
+         str_list_purge(pkg->installed_files);
      }
 
      pkg->installed_files = NULL;
