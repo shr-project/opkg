@@ -111,7 +111,7 @@ int opkg_download(opkg_conf_t *conf, const char *src,
 	{
 	    long error_code;
 	    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &error_code);
-	    opkg_message(conf, OPKG_ERROR, "Failed to download %s, error %d\n", src, error_code);
+	    opkg_message(conf, OPKG_ERROR, "Failed to download %s. \nerror detail: %s\n", src, curl_easy_strerror(res));
 	    free(tmp_file_location);
             free(src_basec);
 	    curl_easy_cleanup (curl);
