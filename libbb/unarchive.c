@@ -754,6 +754,10 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 			if (strcmp(ared_file, ar_header->name) == 0) {
 				/* open a stream of decompressed data */
 				uncompressed_stream = gz_open(deb_stream, &gunzip_pid);
+				if (uncompressed_stream == NULL) {
+					return(NULL);
+				}
+
 				archive_offset = 0;
 				output_buffer = unarchive(uncompressed_stream, out_stream, get_header_tar, free_header_tar, extract_function, prefix, file_list);
 			}
@@ -774,6 +778,9 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 		archive_offset = 0;
 		fseek(deb_stream, 0, SEEK_SET);
 		unzipped_opkg_stream = gz_open(deb_stream, &unzipped_opkg_pid);
+		if (unzipped_opkg_stream == NULL) {
+			return(NULL);
+		}
 		
                 /*fprintf(stderr, __FUNCTION__ ": processing opkg %s -- ared_file=%s\n", package_filename, ared_file);*/
 		/* walk through outer tar file to find ared_file */
@@ -784,6 +791,9 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 			if (strcmp(ared_file, tar_header->name+name_offset) == 0) {
 				/* open a stream of decompressed data */
 				uncompressed_stream = gz_open(unzipped_opkg_stream, &gunzip_pid);
+				if (uncompressed_stream == NULL) {
+					return(NULL);
+				}
 				archive_offset = 0;
                                 /*fprintf(stderr, __FUNCTION__ ":%d: here -- found file\n", __LINE__);*/
 				output_buffer = unarchive(uncompressed_stream, 
