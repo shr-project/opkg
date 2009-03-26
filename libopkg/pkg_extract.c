@@ -65,10 +65,12 @@ int pkg_extract_control_files_to_dir_with_prefix(pkg_t *pkg,
 
     free(dir_with_prefix);
 
-    if (buffer == NULL) {
-        return EINVAL;
+    /* BUG: How do we know if deb_extract worked or not? This is a
+       defect in the current deb_extract from what I can tell. */
+
+    if (buffer) {
+        free(buffer);
     }
-    free(buffer);
     return 0;
 }
 
@@ -81,10 +83,12 @@ int pkg_extract_data_files_to_dir(pkg_t *pkg, const char *dir)
 		| extract_unconditional,
 		dir, NULL);
 
-    if (buffer == NULL) {
-        return EINVAL;
+    /* BUG: How do we know if deb_extract worked or not? This is a
+       defect in the current deb_extract from what I can tell. */
+
+    if (buffer) {
+        free(buffer);
     }
-    free(buffer);
     return 0;
 }
 
@@ -170,9 +174,8 @@ int pkg_extract_data_file_names_to_stream(pkg_t *pkg, FILE *file)
 
     /* BUG: How do we know if deb_extract worked or not? This is a
        defect in the current deb_extract from what I can tell. */
-    if (buffer == NULL) {
-        return EINVAL;
+    if (buffer) {
+        free(buffer);
     }
-    free(buffer);
     return 0;
 }
