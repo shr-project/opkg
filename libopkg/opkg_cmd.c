@@ -379,6 +379,7 @@ static int opkg_finalize_intercepts(opkg_intercept_t ctx)
 	    }
 	    free (path);
 	}
+        closedir(dir);
     } else
 	perror (ctx->statedir);
 	
