@@ -475,9 +475,11 @@ static int verify_pkg_installable(opkg_conf_t *conf, pkg_t *pkg)
      * 3) return a proper error code instead of 1
      */
      int comp_size, blocks_available;
+     char *root_dir;
     
      if (!conf->force_space && pkg->installed_size != NULL) {
-	  blocks_available = get_available_blocks(conf->default_dest->root_dir);
+          root_dir = pkg->dest ? pkg->dest->root_dir : conf->default_dest->root_dir;
+	  blocks_available = get_available_blocks(root_dir);
 
 	  comp_size = strtoul(pkg->installed_size, NULL, 0);
 	  /* round up a blocks count without doing fancy-but-slow casting jazz */ 
@@ -486,7 +488,7 @@ static int verify_pkg_installable(opkg_conf_t *conf, pkg_t *pkg)
 	  if (comp_size >= blocks_available) {
 	       opkg_message(conf, OPKG_ERROR,
 			    "Only have %d available blocks on filesystem %s, pkg %s needs %d\n", 
-			    blocks_available, conf->default_dest->root_dir, pkg->name, comp_size);
+			    blocks_available, root_dir, pkg->name, comp_size);
 	       return ENOSPC;
 	  }
      }
