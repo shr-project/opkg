@@ -26,16 +26,24 @@
 
 void print_pkg_status(pkg_t * pkg, FILE * file);
 
-int get_available_blocks(char * filesystem)
+long unsigned int get_available_blocks(char * filesystem)
 {
-     struct statfs sfs;
+    struct statfs sfs;
 
-     if(statfs(filesystem, &sfs)){
-	  fprintf(stderr, "bad statfs\n");
-	  return 0;
-     }
-     /*    fprintf(stderr, "reported fs type %x\n", sfs.f_type); */
-     return ((sfs.f_bavail * sfs.f_bsize) / 1024);
+    if(statfs(filesystem, &sfs)){
+        fprintf(stderr, "bad statfs\n");
+        return 0;
+    }
+    /*    fprintf(stderr, "reported fs type %x\n", sfs.f_type); */
+
+    // Actually ((sfs.f_bavail * sfs.f_bsize) / 1024) 
+    // and here we try to avoid overflow. 
+    if (sfs.f_bsize >= 1024) 
+        return (sfs.f_bavail * (sfs.f_bsize / 1024));
+    else if (sfs.f_bsize > 0)
+        return sfs.f_bavail / (1024 / sfs.f_bsize);
+    fprintf(stderr, "bad statfs f_bsize == 0\n");
+    return 0;
 }
 
 char **read_raw_pkgs_from_file(const char *file_name)

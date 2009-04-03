@@ -25,7 +25,7 @@ void push_error_list(struct errlist **errors,char * msg);
 void reverse_error_list(struct errlist **errors);
 void free_error_list();
 
-int get_available_blocks(char * filesystem);
+long unsigned int get_available_blocks(char * filesystem);
 char **read_raw_pkgs_from_file(const char *file_name);
 char **read_raw_pkgs_from_stream(FILE *fp);
 char *trim_alloc(char * line);
