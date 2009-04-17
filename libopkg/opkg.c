@@ -249,6 +249,7 @@ opkg_re_read_config_files (opkg_t *opkg)
   a->autoremove = c->autoremove;
   a->force_depends = c->force_depends;
   a->force_defaults = c->force_defaults;
+  a->force_maintainer = c->force_maintainer;
   a->force_overwrite = c->force_overwrite;
   a->force_downgrade = c->force_downgrade;
   a->force_reinstall = c->force_reinstall;

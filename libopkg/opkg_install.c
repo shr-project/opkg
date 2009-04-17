@@ -1590,18 +1590,20 @@ static int resolve_conffiles(opkg_conf_t *conf, pkg_t *pkg)
 	  cf_backup = backup_filename_alloc(root_filename);
 
 
-	  if (file_exists(cf_backup)) {
- /* Let's compute md5 to test if files are changed */
-	      md5sum = file_md5sum_alloc(cf_backup);
-               if (strcmp( cf->value,md5sum) != 0 ) {
-	          if (conf->force_defaults
-		      || user_prefers_old_conffile(cf->name, cf_backup) ) {
-		       rename(cf_backup, root_filename);
-	          }
-	       }
-	       unlink(cf_backup);
-	       free(md5sum);
-	  }
+          if (file_exists(cf_backup)) {
+              /* Let's compute md5 to test if files are changed */
+              md5sum = file_md5sum_alloc(cf_backup);
+              if (strcmp( cf->value,md5sum) != 0 ) {
+                  if (conf->force_maintainer) {
+                      opkg_message(conf, OPKG_NOTICE, "Conffile %s using maintainer's setting.\n", cf_backup);
+                  } else if (conf->force_defaults
+                          || user_prefers_old_conffile(cf->name, cf_backup) ) {
+                      rename(cf_backup, root_filename);
+                  }
+              }
+              unlink(cf_backup);
+              free(md5sum);
+          }
 
 	  free(cf_backup);
 	  free(root_filename);

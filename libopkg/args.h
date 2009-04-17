@@ -24,6 +24,7 @@ struct args
     char *dest;
     char *tmp_dir;
     int force_defaults;
+    int force_maintainer;
     int force_depends;
     int force_overwrite;
     int force_downgrade;
@@ -51,6 +52,7 @@ typedef struct args args_t;
 #define ARGS_DEFAULT_CONF_FILE_NAME "opkg.conf"
 #define ARGS_DEFAULT_DEST NULL
 #define ARGS_DEFAULT_FORCE_DEFAULTS 0
+#define ARGS_DEFAULT_FORCE_MAINTAINER 0 
 #define ARGS_DEFAULT_FORCE_DEPENDS 0
 #define ARGS_DEFAULT_FORCE_OVERWRITE 0 
 #define ARGS_DEFAULT_FORCE_DOWNGRADE 0 

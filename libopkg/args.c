@@ -31,6 +31,7 @@ static void print_version(void);
 enum long_args_opt
 {
      ARGS_OPT_FORCE_DEFAULTS = 129,
+     ARGS_OPT_FORCE_MAINTAINER, 
      ARGS_OPT_FORCE_DEPENDS,
      ARGS_OPT_FORCE_OVERWRITE,
      ARGS_OPT_FORCE_DOWNGRADE,
@@ -65,6 +66,7 @@ int args_init(args_t *args)
 		   ARGS_DEFAULT_CONF_FILE_NAME);
 
      args->force_defaults = ARGS_DEFAULT_FORCE_DEFAULTS;
+     args->force_maintainer = ARGS_DEFAULT_FORCE_MAINTAINER;
      args->force_depends = ARGS_DEFAULT_FORCE_DEPENDS;
      args->force_overwrite = ARGS_DEFAULT_FORCE_OVERWRITE;
      args->force_downgrade = ARGS_DEFAULT_FORCE_DOWNGRADE;
@@ -114,6 +116,8 @@ int args_parse(args_t *args, int argc, char *argv[])
 	  {"dest", 1, 0, 'd'},
 	  {"force-defaults", 0, 0, ARGS_OPT_FORCE_DEFAULTS},
 	  {"force_defaults", 0, 0, ARGS_OPT_FORCE_DEFAULTS},
+          {"force-maintainer", 0, 0, ARGS_OPT_FORCE_MAINTAINER}, 
+          {"force_maintainer", 0, 0, ARGS_OPT_FORCE_MAINTAINER}, 
 	  {"force-depends", 0, 0, ARGS_OPT_FORCE_DEPENDS},
 	  {"force_depends", 0, 0, ARGS_OPT_FORCE_DEPENDS},
 	  {"force-overwrite", 0, 0, ARGS_OPT_FORCE_OVERWRITE},
@@ -197,6 +201,9 @@ int args_parse(args_t *args, int argc, char *argv[])
 	  case ARGS_OPT_FORCE_DEFAULTS:
 	       args->force_defaults = 1;
 	       break;
+          case ARGS_OPT_FORCE_MAINTAINER:
+               args->force_maintainer = 1;
+               break;
 	  case ARGS_OPT_FORCE_DEPENDS:
 	       args->force_depends = 1;
 	       break;

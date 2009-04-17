@@ -51,6 +51,7 @@ int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
      opkg_option_t tmp[] = {
 	  { "cache", OPKG_OPT_TYPE_STRING, &conf->cache},
 	  { "force_defaults", OPKG_OPT_TYPE_BOOL, &conf->force_defaults },
+          { "force_maintainer", OPKG_OPT_TYPE_BOOL, &conf->force_maintainer }, 
 	  { "force_depends", OPKG_OPT_TYPE_BOOL, &conf->force_depends },
 	  { "force_overwrite", OPKG_OPT_TYPE_BOOL, &conf->force_overwrite },
 	  { "force_downgrade", OPKG_OPT_TYPE_BOOL, &conf->force_downgrade },
@@ -237,6 +238,9 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      }
      if (args->force_defaults) {
 	  conf->force_defaults = 1;
+     }
+     if (args->force_maintainer) {
+          conf->force_maintainer = 1;
      }
      if (args->force_overwrite) {
 	  conf->force_overwrite = 1;
