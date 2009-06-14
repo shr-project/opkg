@@ -21,7 +21,7 @@
 
 #include "xregex.h"
 #include "sprintf_alloc.h"
-#include "opkg_conf.h"
+#include "args.h"
 #include "opkg_message.h"
 #include "file_util.h"
 #include "str_util.h"
@@ -32,6 +32,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
+extern char *conf_file_dir;
 
 static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 				pkg_src_list_t *pkg_src_list,
@@ -110,7 +112,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      nv_pair_list_t tmp_dest_nv_pair_list;
      char *lists_dir = NULL, *lock_file = NULL;
      glob_t globbuf;
-     char *etc_opkg_conf_pattern = "/etc/opkg/*.conf";
+     char *etc_opkg_conf_pattern;
      char *pending_dir = NULL;
 
      memset(conf, 0, sizeof(opkg_conf_t));
@@ -192,10 +194,11 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 
      if (args->offline_root) 
 	  sprintf_alloc(&etc_opkg_conf_pattern, "%s/etc/opkg/*.conf", args->offline_root);
+     else
+	  sprintf_alloc(&etc_opkg_conf_pattern, "%s/*.conf", conf_file_dir);
      memset(&globbuf, 0, sizeof(globbuf));
      err = glob(etc_opkg_conf_pattern, 0, NULL, &globbuf);
-     if (args->offline_root)
-          free (etc_opkg_conf_pattern);
+     free (etc_opkg_conf_pattern);
      if (!err) {
 	  int i;
 	  for (i = 0; i < globbuf.gl_pathc; i++) {

@@ -47,10 +47,10 @@ enum long_args_opt
      ARGS_OPT_CACHE,
 };
 
+char *conf_file_dir;
+
 int args_init(args_t *args)
 {
-     char *conf_file_dir;
-
      if (!args) {
 	  return EFAULT;
      }

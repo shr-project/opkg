@@ -127,8 +127,9 @@ opkglibdir=
 AC_ARG_WITH(opkglibdir,
 [  --with-opkglibdir=DIR   specifies directory to put status and info files.
                           "/opkg" is always added so if you want your files 
-                          to be in /usr/lib/opkg you should indicate 
-                          --with-opkglibdir=/usr/lib ],
+                          to be in /var/lib/opkg instead of /usr/lib/opkg
+                          you should indicate 
+                          --with-opkglibdir=/var/lib ],
 [case "${withval}" in
 yes)    AC_MSG_ERROR(bad value ${withval} given for opkg libs directories ) ;;
 no)     ;;
@@ -140,7 +141,27 @@ if test x$opkglibdir = x; then
         opkglibdir=/usr/lib
 fi
 
+ipkgetcdir=
+AC_ARG_WITH(opkgetcdir,
+[  --with-ipkgetcdir=DIR   specifies directory for opkg.conf file,
+                           "/opkg" is always added so if you want your files
+                           to be in /usr/etc/opkg instead of /etc/opkg
+                           you should indicate
+                           --with-ipkgetcdir=/usr/etc ],
+[case "${withval}" in
+yes)    AC_MSG_ERROR(bad value ${withval} given for opkg.conf directory ) ;;
+no)     ;;
+*)      opkgetcdir=$with_opkgetcdir ;;
+esac])
+
+# Default local prefix if it is empty
+if test x$opkgetcdir = x; then
+        opkgetcdir=/etc
+fi
+
+
 AC_SUBST(opkglibdir)
+AC_SUBST(opkgetcdir)
 
 AC_OUTPUT(
     Makefile
