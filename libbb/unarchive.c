@@ -52,11 +52,11 @@ void seek_sub_file(FILE *src_stream, const int count)
 	int i;
 	/* Try to fseek as faster */
 	archive_offset += count;
-	if (fseek(src_stream, count, SEEK_CUR) != 0 && errno == ESPIPE) {
+	// if (fseek(src_stream, count, SEEK_CUR) != 0 && errno == ESPIPE) {
 	for (i = 0; i < count; i++) {
 		fgetc(src_stream);
 		}
-	}
+	//}
 	return;
 }
 #endif	
