@@ -75,10 +75,11 @@ str_list_elt_t *str_list_pop(str_list_t *list)
 
 void str_list_remove(str_list_t *list, str_list_elt_t **iter)
 {
-    str_list_elt_t * elt = void_list_remove((void_list_t *) list,
+    char *str = void_list_remove((void_list_t *) list,
 					       (void_list_elt_t **) iter);
 
-    str_list_elt_deinit(elt);
+    if (str) 
+	free(str);
 }
 
 void str_list_remove_elt(str_list_t *list, const char *target_str)
