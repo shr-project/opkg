@@ -32,6 +32,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <errno.h>
 
 extern char *conf_file_dir;
 
@@ -108,6 +109,7 @@ static void opkg_conf_free_string(char **conf_str)
 int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 {
      int err;
+     int errno_copy;
      char *tmp_dir_base;
      nv_pair_list_t tmp_dest_nv_pair_list;
      char *lists_dir = NULL, *lock_file = NULL;
@@ -135,12 +137,19 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 
      conf->lock_fd = creat (lock_file, S_IRUSR | S_IWUSR | S_IRGRP);
      err = lockf (conf->lock_fd, F_TLOCK, 0);
+     errno_copy = errno;
 
      free (lock_file);
 
      if (err)
      {
-       opkg_message (conf, OPKG_ERROR, "Could not obtain administrative lock\n");
+       if(args->offline_root) {
+         opkg_message (conf, OPKG_ERROR, "Could not obtain administrative lock for offline root (ERR: %s)  at %s/%s/lock\n",
+                 strerror(errno_copy), args->offline_root, OPKG_STATE_DIR_PREFIX);
+       } else {
+         opkg_message (conf, OPKG_ERROR, "Could not obtain administrative lock (ERR: %s) at %s/lock\n",
+                 strerror(errno_copy), OPKG_STATE_DIR_PREFIX);
+       }
        return OPKG_CONF_ERR_LOCK;
      }
 
