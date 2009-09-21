@@ -605,8 +605,10 @@ file_header_t *get_header_tar(FILE *tar_stream)
 
                 if (tar.formated.prefix[0]) {
                         char *temp = tar_entry->name;
-                        tar_entry->name = concat_path_file(tar.formated.prefix, temp);
+                        char *prefixTemp = strndup(tar.formated.prefix, 155);
+                        tar_entry->name = concat_path_file(prefixTemp, temp);
                         free(temp);
+                        free(prefixTemp);
                 }
         }
 
@@ -621,8 +623,7 @@ file_header_t *get_header_tar(FILE *tar_stream)
 	tar_entry->gid   = strtol(tar.formated.gid, NULL, 8);
 	tar_entry->size  = strtol(tar.formated.size, NULL, 8);
 	tar_entry->mtime = strtol(tar.formated.mtime, NULL, 8);
-	tar_entry->link_name  = strlen(tar.formated.linkname) ? 
-	    xstrdup(tar.formated.linkname) : NULL;
+	tar_entry->link_name  = *tar.formated.linkname != '\0' ? xstrndup(tar.formated.linkname, 100) : NULL;
 	tar_entry->device = (strtol(tar.formated.devmajor, NULL, 8) << 8) +
 		strtol(tar.formated.devminor, NULL, 8);
 
