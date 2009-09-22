@@ -209,6 +209,10 @@ int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir)
 		pkg->name, pkg->parent->name);
 	return -1;
     }
+    if (pkg->filename == NULL) {
+	opkg_message(conf,OPKG_ERROR, "ERROR: Package %s (parent %s) does not have a valid filename field.\n",pkg->name, pkg->parent->name);
+	return -1;
+    }
 
     sprintf_alloc (&pkgid, "%s;%s;%s;", pkg->name, pkg->version, pkg->architecture);
     opkg_set_current_state (conf, OPKG_STATE_DOWNLOADING_PKG, pkgid);
