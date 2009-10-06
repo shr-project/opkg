@@ -178,6 +178,7 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pk
      abstract_pkg_vec_t *providers = abstract_pkg_vec_alloc();
      pkg_t *latest_installed_parent = NULL;
      pkg_t *latest_matching = NULL;
+     pkg_t *priorized_matching = NULL;
      pkg_t *held_pkg = NULL;
      pkg_t *good_pkg_by_name = NULL;
 
@@ -244,7 +245,9 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pk
 		    pkg_t *maybe = vec->pkgs[i];
 		    opkg_message(conf, OPKG_DEBUG, "  %s arch=%s arch_priority=%d version=%s  \n",
 				 maybe->name, maybe->architecture, maybe->arch_priority, maybe->version);
-		    if (maybe->arch_priority > 0)  {
+                    /* We make sure not to add the same package twice. Need to search for the reason why 
+                       they show up twice sometimes. */
+		    if ((maybe->arch_priority > 0) && (! pkg_vec_contains(matching_pkgs, maybe))) {
 			 max_count++;
 			 abstract_pkg_vec_insert(matching_apkgs, maybe->parent);
 			 pkg_vec_insert(matching_pkgs, maybe);
@@ -300,14 +303,17 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pk
      }
 
      if (!good_pkg_by_name && !held_pkg && !latest_installed_parent && matching_apkgs->len > 1 && !quiet) {
-	  opkg_message(conf, OPKG_ERROR, "Package=%s, %d matching providers\n",
-		       apkg->name, matching_apkgs->len);
-	  for (i = 0; i < matching_apkgs->len; i++) {
-              abstract_pkg_t *matching = matching_apkgs->pkgs[i];
-              opkg_message(conf, OPKG_ERROR, "    %s\n", matching->name);
-	  }
-	  opkg_message(conf, OPKG_ERROR, "Please select one with opkg install or opkg flag prefer\n");
-     }
+          int prio = 0;
+          for (i = 0; i < matching_pkgs->len; i++) {
+              pkg_t *matching = matching_pkgs->pkgs[i];
+                  if (matching->arch_priority > prio) {
+                      priorized_matching = matching;
+                      prio = matching->arch_priority;
+                      opkg_message(conf, OPKG_DEBUG, "Match with priority %i    %s\n", prio, matching->name);
+                  }
+              }
+          
+          }
 
      if (matching_apkgs->len > 1 && conf->verbosity > 1) {
 	  opkg_message(conf, OPKG_NOTICE, "%s: for apkg=%s, %d matching pkgs\n",
@@ -335,6 +341,11 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pk
      if (latest_installed_parent) {
 	  opkg_message(conf, OPKG_INFO, "  using latest version of installed package %s\n", latest_installed_parent->name);
 	  return latest_installed_parent;
+     }
+     if (priorized_matching) {
+	  opkg_message(conf, OPKG_INFO, "  using priorized matching %s %s %s\n",
+		       priorized_matching->name, priorized_matching->version, priorized_matching->architecture);
+	  return priorized_matching;
      }
      if (nmatching > 1) {
 	  opkg_message(conf, OPKG_INFO, "  no matching pkg out of matching_apkgs=%d\n", nmatching);
