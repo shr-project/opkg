@@ -38,6 +38,7 @@ static char *linkname = NULL;
 extern void seek_sub_file(FILE *src_stream, const int count);
 extern char *extract_archive(FILE *src_stream, FILE *out_stream, const file_header_t *file_entry,
                               const int function, const char *prefix);
+extern ssize_t seek_by_read(FILE* fd, size_t len);
 
 
 #ifdef L_archive_offset
@@ -47,16 +48,31 @@ extern off_t archive_offset;
 #endif	
 
 #ifdef L_seek_sub_file
+#define SEEK_BUF 4096
+ssize_t seek_by_read(FILE* fd, size_t len)
+{
+        ssize_t cc, total = 0;
+        char buf[SEEK_BUF];
+
+        while (len) {
+                cc = fread(buf, sizeof(buf[0]), 
+                                len > SEEK_BUF ? SEEK_BUF : len, 
+                                fd);
+
+                total += cc;
+                len -= cc;
+
+                if(feof(fd) || ferror(fd))
+                        break;
+        }
+        return total;
+}
+
 void seek_sub_file(FILE *src_stream, const int count)
 {
-	int i;
 	/* Try to fseek as faster */
 	archive_offset += count;
-	// if (fseek(src_stream, count, SEEK_CUR) != 0 && errno == ESPIPE) {
-	for (i = 0; i < count; i++) {
-		fgetc(src_stream);
-		}
-	//}
+        seek_by_read(src_stream, count);
 	return;
 }
 #endif	
