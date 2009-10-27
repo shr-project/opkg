@@ -37,6 +37,17 @@ if test "x$want_curl" = "xyes"; then
   AC_DEFINE(HAVE_CURL, 1, [Define if you want CURL support])
 fi
 
+# check for sha256
+AC_ARG_ENABLE(sha256,
+              AC_HELP_STRING([--enable-sha256], [Enable sha256sum check
+      [[default=yes]] ]),
+    [want_sha256="$enableval"], [want_sha256="yes"])
+
+if test "x$want_sha256" = "xyes"; then
+  AC_DEFINE(HAVE_SHA256, 1, [Define if you want sha256 support])
+fi
+AM_CONDITIONAL(HAVE_SHA256, test "x$want_sha256" = "xyes")
+
 
 dnl **********
 dnl GPGME

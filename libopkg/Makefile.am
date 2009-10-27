@@ -30,6 +30,10 @@ opkg_util_sources = file_util.c file_util.h opkg_message.h opkg_message.c md5.c 
 		    sprintf_alloc.c sprintf_alloc.h str_util.c str_util.h \
 		    xregex.c xregex.h xsystem.c xsystem.h
 
+if HAVE_SHA256
+opkg_util_sources += sha256.c sha256.h
+endif
+
 lib_LTLIBRARIES = libopkg.la
 libopkg_la_SOURCES = \
 	$(opkg_libcore_sources) \

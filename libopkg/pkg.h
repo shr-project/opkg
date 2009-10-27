@@ -161,6 +161,9 @@ struct pkg
      char *url;
      char *tmp_unpack_dir;
      char *md5sum;
+#if defined HAVE_SHA256
+     char *sha256sum;
+#endif
      char *size;
      char *installed_size;
      char *priority;

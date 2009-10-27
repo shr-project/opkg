@@ -41,6 +41,7 @@ enum opkg_error {
   OPKG_INSTALL_ERR_SIGNATURE,
   OPKG_INSTALL_ERR_MD5,
   OPKG_INSTALL_ERR_INTERNAL,
+  OPKG_INSTALL_ERR_SHA256,
 
 };
 typedef enum opkg_error opkg_error_t;

@@ -766,6 +766,9 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      abstract_pkg_t *ab_pkg = NULL;
      int old_state_flag;
      char* file_md5;
+#ifdef HAVE_SHA256
+     char* file_sha256;
+#endif
      char *pkgid;
     
      if ( from_upgrade ) 
@@ -873,6 +876,22 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
          }
          free(file_md5);
      }
+
+#ifdef HAVE_SHA256
+     /* Check for sha256 value */
+     if(pkg->sha256sum)
+     {
+         file_sha256 = file_sha256sum_alloc(pkg->local_filename);
+         if (strcmp(file_sha256, pkg->sha256sum))
+         {
+              opkg_message(conf, OPKG_ERROR,
+                           "Package %s sha256sum mismatch. Either the opkg or the package index are corrupt. Try 'opkg update'.\n",
+                           pkg->name);
+              free(file_sha256);
+              return OPKG_INSTALL_ERR_SHA256;
+         }
+     }
+#endif
 
      if (pkg->tmp_unpack_dir == NULL) {
 	  unpack_pkg_control_files(conf, pkg);

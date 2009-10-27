@@ -131,6 +131,9 @@ int pkg_init(pkg_t *pkg)
      pkg->local_filename = NULL;
      pkg->tmp_unpack_dir = NULL;
      pkg->md5sum = NULL;
+#if defined HAVE_SHA256
+     pkg->sha256sum = NULL;
+#endif
      pkg->size = NULL;
      pkg->installed_size = NULL;
      pkg->priority = NULL;
@@ -255,6 +258,10 @@ void pkg_deinit(pkg_t *pkg)
      pkg->tmp_unpack_dir = NULL;
      free(pkg->md5sum);
      pkg->md5sum = NULL;
+#if defined HAVE_SHA256
+     free(pkg->sha256sum);
+     pkg->sha256sum = NULL;
+#endif
      free(pkg->size);
      pkg->size = NULL;
      free(pkg->installed_size);
@@ -405,6 +412,10 @@ int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
 	  oldpkg->tmp_unpack_dir = str_dup_safe(newpkg->tmp_unpack_dir);
      if (!oldpkg->md5sum)
 	  oldpkg->md5sum = str_dup_safe(newpkg->md5sum);
+#if defined HAVE_SHA256
+     if (!oldpkg->sha256sum)
+	  oldpkg->sha256sum = str_dup_safe(newpkg->sha256sum);
+#endif
      if (!oldpkg->size)
 	  oldpkg->size = str_dup_safe(newpkg->size);
      if (!oldpkg->installed_size)
@@ -955,7 +966,7 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
 	  break;
      case 's':
      case 'S': {
-	  /* Section | Size | Source | Status | Suggests */
+	  /* Section | SHA256sum | Size | Source | Status | Suggests */
 	  if (strcasecmp(field, "Section") == 0) {
 	       /* Section */
 	       if (pkg->section) {
@@ -967,6 +978,19 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
                    temp[0]='\0';
                    snprintf(temp, (strlen(pkg->section)+11), "Section: %s\n", pkg->section);
 	       }
+#if defined HAVE_SHA256
+	  } else if (strcasecmp(field, "SHA256sum") == 0) {
+	       /* SHA256sum */
+	       if (pkg->sha256sum) {
+                   temp = (char *)realloc(temp,strlen(pkg->sha256sum)+13);
+                   if ( temp == NULL ){
+	              fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
+	              return NULL;
+                   }
+                   temp[0]='\0';
+                   snprintf(temp, (strlen(pkg->sha256sum)+13), "SHA256sum: %s\n", pkg->sha256sum);
+	       }
+#endif
 	  } else if (strcasecmp(field, "Size") == 0) {
 	       /* Size */
 	       if (pkg->size) {

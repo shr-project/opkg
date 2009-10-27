@@ -531,6 +531,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
       case OPKG_INSTALL_ERR_ALREADY_INSTALLED: return OPKG_PACKAGE_ALREADY_INSTALLED;
       case OPKG_INSTALL_ERR_SIGNATURE: return OPKG_GPG_ERROR;
       case OPKG_INSTALL_ERR_MD5: return OPKG_MD5_ERROR;
+      case OPKG_INSTALL_ERR_SHA256: return OPKG_SHA256_ERROR;
       default: return OPKG_UNKNOWN_ERROR;
     }
   }
@@ -670,6 +671,7 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
       case OPKG_INSTALL_ERR_ALREADY_INSTALLED: return OPKG_PACKAGE_ALREADY_INSTALLED;
       case OPKG_INSTALL_ERR_SIGNATURE: return OPKG_GPG_ERROR;
       case OPKG_INSTALL_ERR_MD5: return OPKG_MD5_ERROR;
+      case OPKG_INSTALL_ERR_SHA256: return OPKG_SHA256_ERROR;
       default: return OPKG_UNKNOWN_ERROR;
     }
   }

@@ -266,6 +266,10 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 	case 'S':
 	    if(isGenericFieldType("Section:", *lines))
 		pkg->section = parseGenericFieldType("Section", *lines);
+#ifdef HAVE_SHA256
+	    else if(isGenericFieldType("SHA256sum:", *lines))
+		pkg->sha256sum = parseGenericFieldType("SHA256sum", *lines);
+#endif
 	    else if(isGenericFieldType("Size:", *lines))
 		pkg->size = parseGenericFieldType("Size", *lines);
 	    else if(isGenericFieldType("Source:", *lines))

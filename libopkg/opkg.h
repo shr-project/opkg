@@ -43,7 +43,8 @@ enum _opkg_error_code_t
   OPKG_PACKAGE_NOT_FOUND,
   OPKG_PACKAGE_NOT_INSTALLED,
   OPKG_GPG_ERROR,
-  OPKG_MD5_ERROR
+  OPKG_MD5_ERROR,
+  OPKG_SHA256_ERROR
 };
 
 struct _opkg_package_t

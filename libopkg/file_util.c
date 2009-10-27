@@ -25,6 +25,10 @@
 #include "libbb/libbb.h"
 #undef strlen
 
+#if defined HAVE_SHA256
+#include "sha256.h"
+#endif
+
 int file_exists(const char *file_name)
 {
     int err;
@@ -175,3 +179,54 @@ char *file_md5sum_alloc(const char *file_name)
     return md5sum_hex;
 }
 
+#ifdef HAVE_SHA256
+char *file_sha256sum_alloc(const char *file_name)
+{
+    static const int sha256sum_bin_len = 32;
+    static const int sha256sum_hex_len = 64;
+
+    static const unsigned char bin2hex[16] = {
+	'0', '1', '2', '3',
+	'4', '5', '6', '7',
+	'8', '9', 'a', 'b',
+	'c', 'd', 'e', 'f'
+    };
+
+    int i, err;
+    FILE *file;
+    char *sha256sum_hex;
+    unsigned char sha256sum_bin[sha256sum_bin_len];
+
+    sha256sum_hex = calloc(1, sha256sum_hex_len + 1);
+    if (sha256sum_hex == NULL) {
+	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
+	return strdup("");
+    }
+
+    file = fopen(file_name, "r");
+    if (file == NULL) {
+	fprintf(stderr, "%s: Failed to open file %s: %s\n",
+		__FUNCTION__, file_name, strerror(errno));
+	return strdup("");
+    }
+
+    err = sha256_stream(file, sha256sum_bin);
+    if (err) {
+	fprintf(stderr, "%s: ERROR computing sha256sum for %s: %s\n",
+		__FUNCTION__, file_name, strerror(err));
+	return strdup("");
+    }
+
+    fclose(file);
+
+    for (i=0; i < sha256sum_bin_len; i++) {
+	sha256sum_hex[i*2] = bin2hex[sha256sum_bin[i] >> 4];
+	sha256sum_hex[i*2+1] = bin2hex[sha256sum_bin[i] & 0xf];
+    }
+    
+    sha256sum_hex[sha256sum_hex_len] = '\0';
+    
+    return sha256sum_hex;
+}
+
+#endif
