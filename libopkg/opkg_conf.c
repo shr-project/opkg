@@ -75,6 +75,8 @@ int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
 	  { "proxy_user", OPKG_OPT_TYPE_STRING, &conf->proxy_user },
 	  { "query-all", OPKG_OPT_TYPE_BOOL, &conf->query_all },
 	  { "verbosity", OPKG_OPT_TYPE_BOOL, &conf->verbosity },
+	  { "signature_ca_file", OPKG_OPT_TYPE_STRING, &conf->signature_ca_file },
+	  { "signature_ca_path", OPKG_OPT_TYPE_STRING, &conf->signature_ca_path },
 	  { NULL }
      };
 

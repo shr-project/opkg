@@ -62,7 +62,7 @@ int args_init(args_t *args)
      if (conf_file_dir == NULL || conf_file_dir[0] == '\0') {
 	  conf_file_dir = ARGS_DEFAULT_CONF_FILE_DIR;
      }
-     sprintf_alloc(&args->conf_file, "%s/%s", conf_file_dir,
+     sprintf_alloc(&args->conf_file, "%s/%s", OPKGETCDIR,
 		   ARGS_DEFAULT_CONF_FILE_NAME);
 
      args->force_defaults = ARGS_DEFAULT_FORCE_DEFAULTS;

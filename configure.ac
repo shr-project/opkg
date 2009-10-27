@@ -48,6 +48,17 @@ if test "x$want_sha256" = "xyes"; then
 fi
 AM_CONDITIONAL(HAVE_SHA256, test "x$want_sha256" = "xyes")
 
+# check for openssl
+AC_ARG_ENABLE(openssl,
+              AC_HELP_STRING([--enable-openssl], [Enable signature checking with OpenSSL
+      [[default=no]] ]),
+    [want_openssl="$enableval"], [want_openssl="no"])
+
+if test "x$want_openssl" = "xyes"; then
+  PKG_CHECK_MODULES(OPENSSL, openssl)
+  AC_DEFINE(HAVE_OPENSSL, 1, [Define if you want OpenSSL support])
+fi
+
 
 dnl **********
 dnl GPGME
@@ -169,6 +180,18 @@ esac])
 if test x$opkgetcdir = x; then
         opkgetcdir=/etc
 fi
+
+
+dnl Some special cases for the wow64 build
+if test "x$want_gpgme" = "xyes"
+then
+	if test "x$want_openssl" = "xyes"
+	then
+	AC_MSG_ERROR([--enable-gpg and --enable-openssl are mutually exclusive.
+Use --disable-gpg if you want OpenSSL smime signatures])
+	fi
+fi
+
 
 
 AC_SUBST(opkglibdir)

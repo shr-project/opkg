@@ -259,8 +259,7 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 			    list_file_name);
 	  }
 	  free(url);
-
-#ifdef HAVE_GPGME
+#if defined(HAVE_GPGME) || defined(HAVE_OPENSSL)
           if (conf->check_signature) {
               /* download detached signitures to verify the package lists */
               /* get the url for the sig file */
@@ -273,7 +272,8 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
               /* create temporary file for it */
               char *tmp_file_name;
 
-              sprintf_alloc (&tmp_file_name, "%s/%s", tmp, "Packages.sig");
+              /* Put the signature in the right place */
+              sprintf_alloc (&tmp_file_name, "%s/%s.sig", lists_dir, src->name);
 
               err = opkg_download(conf, url, tmp_file_name, NULL, NULL);
               if (err) {
@@ -287,7 +287,8 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
                   else
                       opkg_message (conf, OPKG_NOTICE, "Signature check failed\n");
               }
-              unlink (tmp_file_name);
+              /* We shouldn't unlink the signature ! */
+              // unlink (tmp_file_name);
               free (tmp_file_name);
               free (url);
           }
