@@ -852,9 +852,14 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 
        if (file_exists (sig_file_name))
        {
-         if (opkg_verify_file (conf, list_file_name, sig_file_name))
+         if (opkg_verify_file (conf, list_file_name, sig_file_name)){
+           opkg_message(conf, OPKG_ERROR, "Failed to verify the signature of: %s\n",
+                           list_file_name);
            return OPKG_INSTALL_ERR_SIGNATURE;
+         }
        }else{
+         opkg_message(conf, OPKG_ERROR, "Signature file is missing. "
+                         "Perhaps you need to run 'opkg update'?\n");
          return OPKG_INSTALL_ERR_SIGNATURE;
        }
 
