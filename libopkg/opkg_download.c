@@ -447,6 +447,10 @@ verify_file_end:
 
     return status;
 #else
+    /* mute `unused variable' warnings. */
+    (void) sig_file;
+    (void) text_file;
+    (void) conf;
     return 0;
 #endif
 }
