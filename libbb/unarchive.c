@@ -621,7 +621,7 @@ file_header_t *get_header_tar(FILE *tar_stream)
 
                 if (tar.formated.prefix[0]) {
                         char *temp = tar_entry->name;
-                        char *prefixTemp = strndup(tar.formated.prefix, 155);
+                        char *prefixTemp = xstrndup(tar.formated.prefix, 155);
                         tar_entry->name = concat_path_file(prefixTemp, temp);
                         free(temp);
                         free(prefixTemp);
