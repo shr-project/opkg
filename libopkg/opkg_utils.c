@@ -146,12 +146,26 @@ int line_is_blank(const char *line)
      return 1;
 }
 
+/*
+ * XXX: this function should not allocate memory as it may be called to
+ *      print an error because we are out of memory.
+ */
 void push_error_list(struct errlist ** errors, char * msg){
   struct errlist *err_lst_tmp;
 
+  err_lst_tmp = calloc (1,  sizeof (struct errlist) );
+  if (err_lst_tmp == NULL) {
+    fprintf(stderr, "%s: calloc: %s\n", __FUNCTION__, strerror(errno));
+    return;
+  }
 
-  err_lst_tmp = calloc (1,  sizeof (err_lst_tmp) );
-  err_lst_tmp->errmsg=strdup(msg) ;
+  err_lst_tmp->errmsg = strdup(msg);
+  if (err_lst_tmp->errmsg == NULL) {
+    fprintf(stderr, "%s: strdup: %s\n", __FUNCTION__, strerror(errno));
+    free(err_lst_tmp);
+    return;
+  }
+
   err_lst_tmp->next = *errors;
   *errors = err_lst_tmp;
 }
@@ -173,16 +187,16 @@ void reverse_error_list(struct errlist **errors){
 }
 
        
-void free_error_list(){
+void free_error_list(struct errlist **errors){
 struct errlist *err_tmp_lst;
 
-  err_tmp_lst = error_list;
+  err_tmp_lst = *errors;
 
     while (err_tmp_lst != NULL) {
       free(err_tmp_lst->errmsg);
       err_tmp_lst = error_list->next;
-      free(error_list);
-      error_list = err_tmp_lst;
+      free(*errors);
+      *errors = err_tmp_lst;
     }
 
 

@@ -128,13 +128,12 @@ opkg_op (int argc, char *argv[])
 
 
 	err = opkg_conf_init (&opkg_conf, &args);
+	args_deinit (&args);
 	if (err)
 	{
 		opkg_print_error_list (&opkg_conf);
 		return err;
 	}
-
-	args_deinit (&args);
 
  	if ( strcmp(cmd_name, "files")==0)
 	     opkg_cb_list = default_opkg_files_callback;

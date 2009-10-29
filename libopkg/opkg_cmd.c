@@ -143,17 +143,20 @@ opkg_cmd_t *opkg_cmd_find(const char *name)
 
 void opkg_print_error_list (opkg_conf_t *conf)
 {
-  if ( error_list ) {
-     reverse_error_list(&error_list);
+  struct errlist *err = error_list;
+
+  if (err) {
+     reverse_error_list(&err);
 
      printf ("Collected errors:\n");
      /* Here we print the errors collected and free the list */
-     while (error_list != NULL) {
-           printf (" * %s", error_list->errmsg);
-           error_list = error_list->next;
+     while (err != NULL) {
+           printf (" * %s", err->errmsg);
+           err = err->next;
 
      }
-     free_error_list();
+
+     free_error_list(&error_list);
   }
 
 }
@@ -785,6 +788,8 @@ static int opkg_list_installed_cmd(opkg_conf_t *conf, int argc, char **argv)
 		free(version_str);
 	  }
      }
+
+     pkg_vec_free(available);
 
      return 0;
 }
