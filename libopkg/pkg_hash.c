@@ -388,7 +388,7 @@ pkg_t * pkg_hash_fetch_by_name_version(hash_table_t *hash,
 				       const char * version)
 {
     pkg_vec_t * vec;
-    register int i;
+    int i;
     char *version_str = NULL;
     
     if(!(vec = pkg_vec_fetch_by_name(hash, pkg_name)))
@@ -414,7 +414,7 @@ pkg_t *pkg_hash_fetch_installed_by_name_dest(hash_table_t *hash,
 					     pkg_dest_t *dest)
 {
     pkg_vec_t * vec;
-    register int i;
+    int i;
 
     if(!(vec = pkg_vec_fetch_by_name(hash, pkg_name))) {
 	return NULL;
@@ -431,7 +431,7 @@ pkg_t *pkg_hash_fetch_installed_by_name(hash_table_t *hash,
 					const char *pkg_name)
 {
     pkg_vec_t * vec;
-    register int i;
+    int i;
 
     if(!(vec = pkg_vec_fetch_by_name(hash, pkg_name))){
 	return NULL;

@@ -668,7 +668,7 @@ int opkg_conf_write_status_files(opkg_conf_t *conf)
      pkg_dest_t *dest;
      pkg_vec_t *all;
      pkg_t *pkg;
-     register int i;
+     int i;
      int err;
      FILE * status_file=NULL;
 

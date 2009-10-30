@@ -56,7 +56,7 @@ int pkg_hash_fetch_unsatisfied_dependencies(opkg_conf_t *conf, pkg_t * pkg,
 					    pkg_vec_t *unsatisfied, char *** unresolved)
 {
      pkg_t * satisfier_entry_pkg;
-     register int i, j, k;
+     int i, j, k;
      int count, found;
      char ** the_lost;
      abstract_pkg_t * ab_pkg;
@@ -280,7 +280,7 @@ pkg_vec_t * pkg_hash_fetch_conflicts(hash_table_t * hash, pkg_t * pkg)
     compound_depend_t * conflicts;
     depend_t ** possible_satisfiers;
     depend_t * possible_satisfier;
-    register int i, j, k;
+    int i, j, k;
     int count;
     abstract_pkg_t * ab_pkg;
     pkg_t **pkg_scouts; 
@@ -437,7 +437,7 @@ int pkg_dependence_satisfied(opkg_conf_t *conf, depend_t *depend)
 
 static int is_pkg_in_pkg_vec(pkg_vec_t * vec, pkg_t * pkg)
 {
-    register int i;
+    int i;
     pkg_t ** pkgs = vec->pkgs;
 
     for(i = 0; i < vec->len; i++)
@@ -568,7 +568,7 @@ static char ** merge_unresolved(char ** oldstuff, char ** newstuff)
 {
     int oldlen = 0, newlen = 0;
     char ** result;
-    register int i, j;
+    int i, j;
 
     if(!newstuff)
 	return oldstuff;
@@ -617,7 +617,7 @@ char ** add_unresolved_dep(pkg_t * pkg, char ** the_lost, int ref_ndx)
 	
 void printDepends(pkg_t * pkg)
 {
-    register int i, j;
+    int i, j;
     compound_depend_t * depend;
     int count;
     
@@ -643,7 +643,7 @@ void printDepends(pkg_t * pkg)
 
 int buildProvides(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 {
-    register int i, j;
+    int i, j;
 
     /* every pkg provides itself */
     abstract_pkg_vec_insert(ab_pkg->provided_by, ab_pkg);
@@ -677,7 +677,7 @@ int buildProvides(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 /* Abhaya: added conflicts support */
 int buildConflicts(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 {
-    register int i;
+    int i;
     compound_depend_t * conflicts;
 
     if (!pkg->conflicts_count)
@@ -699,7 +699,7 @@ int buildConflicts(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 
 int buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 {
-     register int i, j;
+     int i, j;
 
      if (!pkg->replaces_count)
 	  return 0;
@@ -733,7 +733,7 @@ int buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 int buildDepends(hash_table_t * hash, pkg_t * pkg)
 {
      int count;
-     register int i;
+     int i;
      compound_depend_t * depends;
 
      if(!(count = pkg->pre_depends_count + pkg->depends_count + pkg->recommends_count + pkg->suggests_count))
@@ -839,7 +839,7 @@ void buildDependedUponBy(pkg_t * pkg, abstract_pkg_t * ab_pkg)
 {
      compound_depend_t * depends;
      int count, othercount;
-     register int i, j;
+     int i, j;
      abstract_pkg_t * ab_depend;
      abstract_pkg_t ** temp;
 
@@ -899,8 +899,8 @@ static int parseDepends(compound_depend_t *compound_depend,
 {
      char * pkg_name, buffer[2048];
      int num_of_ors = 0;
-     register int i;
-     register char * src, * dest;
+     int i;
+     char * src, * dest;
      depend_t ** possibilities;
 
      /* first count the number of ored possibilities for satisfying dependency */
