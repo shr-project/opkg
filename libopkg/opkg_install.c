@@ -897,6 +897,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
               free(file_sha256);
               return OPKG_INSTALL_ERR_SHA256;
          }
+         free(file_sha256);
      }
 #endif
 
