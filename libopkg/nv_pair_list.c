@@ -41,7 +41,7 @@ void nv_pair_list_deinit(nv_pair_list_t *list)
 	/* malloced in nv_pair_list_append */
 	free(nv_pair);
 	pos->data = NULL;
-        //free(pos);
+        free(pos);
     }
     void_list_deinit((void_list_t *) list);
 }

@@ -576,10 +576,6 @@ pkg_t *hash_insert_pkg(hash_table_t *hash, pkg_t *pkg, int set_status,opkg_conf_
      if(!ab_pkg->pkgs)
 	  ab_pkg->pkgs = pkg_vec_alloc();
     
-     /* pkg_vec_insert_merge might munge package, but it returns an unmunged pkg */
-     pkg = pkg_vec_insert_merge(ab_pkg->pkgs, pkg, set_status,conf );
-     pkg->parent = ab_pkg;
-
      if (buildProvides(hash, ab_pkg, pkg)<0){
         fprintf(stderr, "%s : This should never happen. Report this Bug in bugzilla please \n ",__FUNCTION__);
         return NULL;
@@ -595,6 +591,11 @@ pkg_t *hash_insert_pkg(hash_table_t *hash, pkg_t *pkg, int set_status,opkg_conf_
      }
     
      buildDependedUponBy(pkg, ab_pkg);
+
+     /* pkg_vec_insert_merge might munge package, but it returns an unmunged pkg */
+     pkg = pkg_vec_insert_merge(ab_pkg->pkgs, pkg, set_status,conf );
+     pkg->parent = ab_pkg;
+
      return pkg;
 }
 

@@ -30,7 +30,7 @@ int void_list_elt_init(void_list_elt_t *elt, void *data)
 
 void_list_elt_t * void_list_elt_new (void *data) {
     void_list_elt_t *elt;
-    /* freed in void_list_deinit */
+    /* freed in void_list_elt_deinit */
     elt = calloc(1, sizeof(void_list_elt_t));
     if (elt == NULL) {
 	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
@@ -44,6 +44,7 @@ void void_list_elt_deinit(void_list_elt_t *elt)
 {
     list_del_init(&elt->node);
     void_list_elt_init(elt, NULL);
+    free(elt);
 }
 
 int void_list_init(void_list_t *list)
@@ -59,8 +60,6 @@ void void_list_deinit(void_list_t *list)
     while (!void_list_empty(list)) {
 	elt = void_list_pop(list);
 	void_list_elt_deinit(elt);
-	/* malloced in void_list_append */
-	free(elt);
     }
     INIT_LIST_HEAD(&list->head);
 }
@@ -116,7 +115,6 @@ void *void_list_remove(void_list_t *list, void_list_elt_t **iter)
 
     *iter = list_entry(pos->node.prev, void_list_elt_t, node);
     void_list_elt_deinit(pos);
-    free(pos);
 
     return old_data;
 }

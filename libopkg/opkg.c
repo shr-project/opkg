@@ -1089,7 +1089,6 @@ int opkg_repository_accessibility_check(opkg_t *opkg)
 	    ret++;
     }
     str_list_elt_deinit(iter1);
-    free(iter1);
   }
   free(src);
   return ret;
