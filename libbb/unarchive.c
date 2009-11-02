@@ -141,7 +141,7 @@ char *extract_archive(FILE *src_stream, FILE *out_stream, const file_header_t *f
 			fread(buffer, 1, file_entry->size, src_stream);
 			buffer[file_entry->size] = '\0';
 			archive_offset += file_entry->size;
-			return(buffer);
+			goto cleanup;
 		}
 	}
 	else if (function & extract_all_to_fs) {
@@ -158,7 +158,7 @@ char *extract_archive(FILE *src_stream, FILE *out_stream, const file_header_t *f
 					error_msg("%s not created: newer or same age file exists", file_entry->name);
 				}
 				seek_sub_file(src_stream, file_entry->size);
-				return (NULL);
+				goto cleanup;
 			}
 		}
 		if (function & extract_create_leading_dirs) { /* Create leading directories with default umask */
@@ -184,7 +184,7 @@ char *extract_archive(FILE *src_stream, FILE *out_stream, const file_header_t *f
 				} else {
 					if ((dst_stream = wfopen(full_name, "w")) == NULL) {
 						seek_sub_file(src_stream, file_entry->size);
-						return NULL;
+						goto cleanup;
 					}
 					archive_offset += file_entry->size;
 					copy_file_chunk(src_stream, dst_stream, file_entry->size);			
@@ -205,7 +205,7 @@ char *extract_archive(FILE *src_stream, FILE *out_stream, const file_header_t *f
 					if ((function & extract_quiet) != extract_quiet) {
 						perror_msg("Cannot create symlink from %s to '%s'", file_entry->name, file_entry->link_name);
 					}
-					return NULL;
+					goto cleanup;
 				}
 				break;
 			case S_IFSOCK:
@@ -216,7 +216,7 @@ char *extract_archive(FILE *src_stream, FILE *out_stream, const file_header_t *f
 					if ((function & extract_quiet) != extract_quiet) {
 						perror_msg("Cannot create node %s", file_entry->name);
 					}
-					return NULL;
+					goto cleanup;
 				}
 				break;
                          default:
@@ -259,11 +259,12 @@ char *extract_archive(FILE *src_stream, FILE *out_stream, const file_header_t *f
 		fprintf(out_stream, "%s\n", file_entry->name);
 	}
 
+cleanup:
 	free(full_name);
         if ( full_link_name )
 	    free(full_link_name);
 
-	return(NULL); /* Maybe we should say if failed */
+	return(buffer); /* Maybe we should say if failed */
 }
 #endif
 
@@ -750,13 +751,13 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 		ared_file = xstrdup("data.tar.gz");
 	} else {
                 fprintf(stderr, "no file specified to extract -- extract_function=%x\n", extract_function);
-                return NULL;
+		goto cleanup;
         }
 
 	/* open the debian package to be worked on */
 	deb_stream = wfopen(package_filename, "r");
 	if (deb_stream == NULL) {
-		return(NULL);
+		goto cleanup;
 	}
 	/* set the buffer size */
 	setvbuf(deb_stream, NULL, _IOFBF, 0x8000);
@@ -772,7 +773,7 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 				/* open a stream of decompressed data */
 				uncompressed_stream = gz_open(deb_stream, &gunzip_pid);
 				if (uncompressed_stream == NULL) {
-					return(NULL);
+					goto cleanup;
 				}
 
 				archive_offset = 0;
@@ -786,7 +787,7 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 		fclose(deb_stream);
 		fclose(uncompressed_stream);
 		free(ared_file);
-		return(output_buffer);
+		goto cleanup;
 	} else if (strncmp(ar_magic, "\037\213", 2) == 0) {
 		/* it's a gz file, let's assume it's an opkg */
 		int unzipped_opkg_pid;
@@ -796,7 +797,7 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 		fseek(deb_stream, 0, SEEK_SET);
 		unzipped_opkg_stream = gz_open(deb_stream, &unzipped_opkg_pid);
 		if (unzipped_opkg_stream == NULL) {
-			return(NULL);
+			goto cleanup;
 		}
 		
                 /*fprintf(stderr, __FUNCTION__ ": processing opkg %s -- ared_file=%s\n", package_filename, ared_file);*/
@@ -809,7 +810,7 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 				/* open a stream of decompressed data */
 				uncompressed_stream = gz_open(unzipped_opkg_stream, &gunzip_pid);
 				if (uncompressed_stream == NULL) {
-					return(NULL);
+					goto cleanup;
 				}
 				archive_offset = 0;
                                 /*fprintf(stderr, __FUNCTION__ ":%d: here -- found file\n", __LINE__);*/
@@ -834,10 +835,17 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 		fclose(deb_stream);
 		free(ared_file);
                 /*fprintf(stderr, __FUNCTION__ ":%d: done\n", __LINE__);*/
-		return output_buffer; 
+		goto cleanup;
 	} else {
 		error_msg_and_die("invalid magic");
 	}
 
+cleanup:
+	if (file_list) {
+		free(file_list[0]);
+		free(file_list);
+	}
+
+	return output_buffer;
 }
 #endif
