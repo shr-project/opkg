@@ -278,7 +278,6 @@ int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **name
 	  err = pkg_init_from_file(pkg, tmp_file);
 	  if (err)
 	       return err;
-	  pkg->local_filename = strdup(tmp_file);
 
 	  free(tmp_file);
 	  free(file_basec);
@@ -290,7 +289,6 @@ int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **name
 	  err = pkg_init_from_file(pkg, url);
 	  if (err)
 	       return err;
-	  pkg->local_filename = strdup(url);
 	  opkg_message(conf, OPKG_DEBUG2, "Package %s provided by hand (%s).\n", pkg->name,pkg->local_filename);
           pkg->provided_by_hand = 1;
 

@@ -105,8 +105,6 @@ int opkg_install_from_file(opkg_conf_t *conf, const char *filename)
      pkg = hash_insert_pkg(&conf->pkg_hash, pkg, 1,conf);
      old = pkg_hash_fetch_installed_by_name(&conf->pkg_hash, pkg->name);
 
-     pkg->local_filename = strdup(filename);
-
      if (old) {
 	  old_version = pkg_version_str_alloc(old);
 	  new_version = pkg_version_str_alloc(pkg);
