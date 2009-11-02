@@ -455,7 +455,7 @@ static int opkg_recurse_pkgs_in_order(opkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *
             dependents = abpkg->provided_by->pkgs;
             l = 0;
             if (dependents != NULL)
-                while (dependents [l] != NULL && l < abpkg->provided_by->len) {
+                while (l < abpkg->provided_by->len && dependents[l] != NULL) {
                     opkg_message(conf, OPKG_INFO,
                                  "  Descending on pkg: %s\n", 
                                  dependents [l]->name);
