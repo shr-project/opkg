@@ -951,7 +951,7 @@ static int opkg_remove_cmd(opkg_conf_t *conf, int argc, char **argv)
 	            pkg_to_remove = pkg_hash_fetch_installed_by_name(&conf->pkg_hash, pkg->name );
                }
         
-               if (pkg == NULL) {
+               if (pkg_to_remove == NULL) {
 	            opkg_message(conf, OPKG_ERROR, "Package %s is not installed.\n", pkg->name);
 	            continue;
                }
