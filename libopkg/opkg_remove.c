@@ -269,6 +269,7 @@ int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)
 
 	       if (!conf->force_removal_of_dependent_packages
 		   && !user_prefers_removing_dependents(conf, parent_pkg, pkg, dependents)) {
+		    free(dependents);
 		    return OPKG_PKG_HAS_DEPENDENTS;
 	       }
 
