@@ -264,6 +264,9 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      if (args->force_downgrade) {
 	  conf->force_downgrade = 1;
      }
+     if (args->force_space) {
+	  conf->force_space = 1;
+     }
      if (args->force_reinstall) {
 	  conf->force_reinstall = 1;
      }
