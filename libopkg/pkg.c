@@ -284,7 +284,7 @@ void pkg_deinit(pkg_t *pkg)
 int pkg_init_from_file(pkg_t *pkg, const char *filename)
 {
      int err;
-     char **raw;
+     char **raw, **raw_start;
      FILE *control_file;
 
      err = pkg_init(pkg);
@@ -297,10 +297,16 @@ int pkg_init_from_file(pkg_t *pkg, const char *filename)
      if (err) { return err; }
 
      rewind(control_file);
-     raw = read_raw_pkgs_from_stream(control_file);
+     raw = raw_start = read_raw_pkgs_from_stream(control_file);
      pkg_parse_raw(pkg, &raw, NULL, NULL);
 
      fclose(control_file);
+
+     raw = raw_start;
+     while (*raw) {
+	  free(*raw++);
+     }
+     free(raw_start);
 
      return 0;
 }
