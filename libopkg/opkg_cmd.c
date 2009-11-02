@@ -252,6 +252,7 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 			fclose (out);
 		   unlink (tmp_file_name);
 	      }
+	      free(tmp_file_name);
 	  } else
 	      err = opkg_download(conf, url, list_file_name, NULL, NULL);
 	  if (err) {
