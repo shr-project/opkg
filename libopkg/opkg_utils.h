@@ -21,9 +21,9 @@
 #include "pkg.h"
 #include "opkg_error.h"
 
-void push_error_list(struct errlist **errors,char * msg);
-void reverse_error_list(struct errlist **errors);
-void free_error_list(struct errlist **errors);
+void push_error_list(char * msg);
+void free_error_list(void);
+void print_error_list(void);
 
 long unsigned int get_available_blocks(char * filesystem);
 char **read_raw_pkgs_from_file(const char *file_name);

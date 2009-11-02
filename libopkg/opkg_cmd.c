@@ -141,26 +141,6 @@ opkg_cmd_t *opkg_cmd_find(const char *name)
      return NULL;
 }
 
-void opkg_print_error_list (opkg_conf_t *conf)
-{
-  struct errlist *err = error_list;
-
-  if (err) {
-     reverse_error_list(&err);
-
-     printf ("Collected errors:\n");
-     /* Here we print the errors collected and free the list */
-     while (err != NULL) {
-           printf (" * %s", err->errmsg);
-           err = err->next;
-
-     }
-
-     free_error_list(&error_list);
-  }
-
-}
-
 int opkg_cmd_exec(opkg_cmd_t *cmd, opkg_conf_t *conf, int argc, const char **argv, void *userdata)
 {
 	int result;
@@ -169,11 +149,8 @@ int opkg_cmd_exec(opkg_cmd_t *cmd, opkg_conf_t *conf, int argc, const char **arg
 
 	result = (cmd->fun)(conf, argc, argv);
 
-        if ( result != 0 && !error_list) {
-           opkg_message(conf, OPKG_NOTICE, "An error occurred, return value: %d.\n", result);
-        }
-
-        opkg_print_error_list (conf);
+        print_error_list();
+	free_error_list();
 
 	p_userdata = NULL;
 	return result;

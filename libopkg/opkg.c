@@ -34,8 +34,6 @@
 
 #include <libbb/libbb.h>
 
-struct errlist* error_list;
-
 struct _opkg_t
 {
   args_t *args;

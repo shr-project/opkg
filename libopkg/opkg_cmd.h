@@ -31,6 +31,4 @@ typedef struct opkg_cmd opkg_cmd_t;
 opkg_cmd_t *opkg_cmd_find(const char *name);
 int opkg_cmd_exec(opkg_cmd_t *cmd, opkg_conf_t *conf, int argc, 
                   const char **argv, void *userdata);
-void opkg_print_error_list (opkg_conf_t *conf);
-
 #endif

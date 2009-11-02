@@ -146,60 +146,64 @@ int line_is_blank(const char *line)
      return 1;
 }
 
+static struct errlist *error_list_head, *error_list_tail;
+
 /*
  * XXX: this function should not allocate memory as it may be called to
  *      print an error because we are out of memory.
  */
-void push_error_list(struct errlist ** errors, char * msg){
-  struct errlist *err_lst_tmp;
+void push_error_list(char * msg)
+{
+	struct errlist *e;
 
-  err_lst_tmp = calloc (1,  sizeof (struct errlist) );
-  if (err_lst_tmp == NULL) {
-    fprintf(stderr, "%s: calloc: %s\n", __FUNCTION__, strerror(errno));
-    return;
-  }
+	e = calloc(1,  sizeof(struct errlist));
+	if (e == NULL) {
+		fprintf(stderr, "%s: calloc: %s\n",
+				__FUNCTION__, strerror(errno));
+		return;
+	}
 
-  err_lst_tmp->errmsg = strdup(msg);
-  if (err_lst_tmp->errmsg == NULL) {
-    fprintf(stderr, "%s: strdup: %s\n", __FUNCTION__, strerror(errno));
-    free(err_lst_tmp);
-    return;
-  }
+	e->errmsg = strdup(msg);
+	if (e->errmsg == NULL) {
+		fprintf(stderr, "%s: strdup: %s\n",
+				__FUNCTION__, strerror(errno));
+		free(e);
+		return;
+	}
 
-  err_lst_tmp->next = *errors;
-  *errors = err_lst_tmp;
+	e->next = NULL;
+
+	if (error_list_head) {
+		error_list_tail->next = e;
+		error_list_tail = e;
+	} else {
+		error_list_head = error_list_tail = e;
+	}
 }
 
+void free_error_list(void)
+{
+	struct errlist *err, *err_tmp;
 
-void reverse_error_list(struct errlist **errors){
-   struct errlist *result=NULL;
-   struct errlist *current= *errors;
-   struct errlist *next;
-
-   while ( current != NULL ) {
-      next = current->next;
-      current->next=result;
-      result=current;
-      current=next;
-   }
-   *errors=result;
-
+	err = error_list_head;
+	while (err != NULL) {
+		free(err->errmsg);
+		err_tmp = err;
+		err = err->next;
+		free(err_tmp);
+	}
 }
 
-       
-void free_error_list(struct errlist **errors){
-struct errlist *err_tmp_lst;
+void print_error_list (void)
+{
+	struct errlist *err = error_list_head;
 
-  err_tmp_lst = *errors;
-
-    while (err_tmp_lst != NULL) {
-      free(err_tmp_lst->errmsg);
-      err_tmp_lst = error_list->next;
-      free(*errors);
-      *errors = err_tmp_lst;
-    }
-
-
+	if (err) {
+		printf ("Collected errors:\n");
+		/* Here we print the errors collected and free the list */
+		while (err != NULL) {
+			printf (" * %s", err->errmsg);
+			err = err->next;
+		}
+	}
 }
-
-       

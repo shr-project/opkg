@@ -36,7 +36,7 @@ int default_opkg_message_callback(opkg_conf_t *conf, message_level_t level,
 	  return 0;
      } else {
           if ( level == OPKG_ERROR ){
-             push_error_list(&error_list, msg); 
+             push_error_list(msg); 
           } else
 	    printf("%s",msg);
      }
@@ -131,7 +131,8 @@ opkg_op (int argc, char *argv[])
 	args_deinit (&args);
 	if (err)
 	{
-		opkg_print_error_list (&opkg_conf);
+		print_error_list();
+		free_error_list();
 		return err;
 	}
 
