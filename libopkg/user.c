@@ -23,30 +23,21 @@
 #include "str_util.h"
 #include "user.h"
 
-static char *question = NULL;
-static int question_len = 255;
-
-opkg_response_callback opkg_cb_response = NULL;
-
 char *get_user_response(const char *format, ...)
 {
-     int len = question_len;
-     va_list ap;
-     char *response;
+	va_list ap;
+	char *response;
 
-     do {
-	  if (question == NULL || len > question_len) {
-	       question = realloc(question, len + 1);
-	       question_len = len;
-	  }
+	va_start(ap, format);
+	vprintf(format, ap);
+	va_end(ap);
 
-          va_start(ap, format);
-	  len = vsnprintf(question,question_len,format,ap);
-          va_end(ap);
-     } while (len > question_len);
-     response = strdup(opkg_cb_response(question));
-     str_chomp(response);
-     str_tolower(response);
+	response = (char *)file_read_line_alloc(stdin);
+	if (response == NULL)
+		return NULL;
 
-     return response;
+	str_chomp(response);
+	str_tolower(response);
+
+	return response;
 }
