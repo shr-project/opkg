@@ -26,59 +26,6 @@
 #include "opkg_message.h"
 #include "opkg_error.h"
 
-opkg_status_callback opkg_cb_status = NULL;
-opkg_list_callback opkg_cb_list = NULL;
-
-int default_opkg_message_callback(opkg_conf_t *conf, message_level_t level, 
-				  char *msg)
-{
-     if (conf && (conf->verbosity < level)) {
-	  return 0;
-     } else {
-          if ( level == OPKG_ERROR ){
-             push_error_list(msg); 
-          } else
-	    printf("%s",msg);
-     }
-     return 0;
-}
-
-int default_opkg_list_callback(char *name, char *desc, char *version, 
-			       pkg_state_status_t status, void *userdata)
-{
-     if (desc)
-	  printf("%s - %s - %s\n", name, version, desc);
-     else
-	  printf("%s - %s\n", name, version);
-     return 0;
-}
-
-int default_opkg_files_callback(char *name, char *desc, char *version,
-                   pkg_state_status_t status, void *userdata)
-{
-     if (desc)
-	  printf("%s\n", desc);
-     return 0;
-}
-
-int default_opkg_status_callback(char *name, int istatus, char *desc,
-				 void *userdata)
-{
-     printf("%s\n", desc);
-     return 0;
-}
-
-char* default_opkg_response_callback(char *question)
-{
-     char *response = NULL;
-     printf("%s",question);
-     fflush(stdout);
-     do {
-	  response = (char *)file_read_line_alloc(stdin);
-     } while (response == NULL);
-     return response;
-}
-
 /* This is used for backward compatibility */
 int
 opkg_op (int argc, char *argv[])
@@ -122,10 +69,6 @@ opkg_op (int argc, char *argv[])
              !strcmp(cmd_name,"status") )
            args.noreadfeedsfile = 1;
 
-	opkg_cb_message = default_opkg_message_callback;
-	opkg_cb_response = default_opkg_response_callback;
-	opkg_cb_status = default_opkg_status_callback;
-
 
 	err = opkg_conf_init (&opkg_conf, &args);
 	args_deinit (&args);
@@ -135,11 +78,6 @@ opkg_op (int argc, char *argv[])
 		free_error_list();
 		return err;
 	}
-
- 	if ( strcmp(cmd_name, "files")==0)
-	     opkg_cb_list = default_opkg_files_callback;
- 	else
-	     opkg_cb_list = default_opkg_list_callback;
 
 	cmd = opkg_cmd_find (cmd_name);
 	if (cmd == NULL)

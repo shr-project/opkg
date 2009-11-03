@@ -33,7 +33,7 @@ opkg_message (opkg_conf_t * conf, message_level_t level, char *fmt, ...)
 	if (level == OPKG_ERROR) {
 		char msg[256];
 		vsnprintf(msg, 256, fmt, ap);
-		push_error_list(&error_list, msg);
+		push_error_list(msg);
 	} else
 		vprintf(fmt, ap);
 

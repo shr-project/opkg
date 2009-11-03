@@ -31,17 +31,6 @@
 #include "pkg.h"
 #include "user.h"
 
-typedef int (*opkg_status_callback)(char *name, int istatus, char *desc,
-	void *userdata);
-typedef int (*opkg_list_callback)(char *name, char *desc, char *version, 
-	pkg_state_status_t status, void *userdata);
-typedef void (*opkg_progress_callback)(int complete, int total, void *userdata);
 extern int opkg_op(int argc, char *argv[]); /* opkglib.c */
 
-extern opkg_message_callback opkg_cb_message; /* opkg_message.c */
-extern opkg_response_callback opkg_cb_response; /* user.c */
-extern opkg_status_callback opkg_cb_status;
-extern opkg_list_callback opkg_cb_list;
-extern opkg_download_progress_callback opkg_cb_download_progress; /* opkg_download.c */
-extern opkg_state_changed_callback opkg_cb_state_changed; /* opkg_state.c */
 #endif
