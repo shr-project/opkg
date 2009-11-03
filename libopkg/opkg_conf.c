@@ -704,9 +704,6 @@ int opkg_conf_write_status_files(opkg_conf_t *conf)
 		  || pkg->state_want == SW_PURGE)) {
 	       continue;
 	  }
-	  if (!pkg) {
-	    fprintf(stderr, "Null package\n");
-	  }
 	  if (pkg->dest == NULL) {
 	       fprintf(stderr, "%s: ERROR: Can't write status for "
 		       "package %s since it has a NULL dest\n",
