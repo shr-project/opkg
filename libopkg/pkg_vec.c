@@ -73,12 +73,9 @@ pkg_t *pkg_vec_insert_merge(pkg_vec_t *vec, pkg_t *pkg, int set_status,opkg_conf
 
      /* we didn't find one, add it */
      if (!found){   
-         opkg_message(conf, OPKG_DEBUG2, "Function: %s. Adding new pkg=%s version=%s arch=%s\n",
+          opkg_message(conf, OPKG_DEBUG2, "Function: %s. Adding new pkg=%s version=%s arch=%s\n",
                       __FUNCTION__, pkg->name, pkg->version, pkg->architecture);
-
-	  vec->pkgs = (pkg_t **)realloc(vec->pkgs, (vec->len + 1) * sizeof(pkg_t *));
-	  vec->pkgs[vec->len] = pkg;
-	  vec->len++;
+          pkg_vec_insert(vec, pkg);
 	  return pkg;
      }
      /* update the one that we have */
@@ -186,7 +183,13 @@ void abstract_pkg_vec_free(abstract_pkg_vec_t *vec)
  */
 void abstract_pkg_vec_insert(abstract_pkg_vec_t *vec, abstract_pkg_t *pkg)
 {
-    vec->pkgs = (abstract_pkg_t **) realloc(vec->pkgs, (vec->len + 1) * sizeof(abstract_pkg_t *));
+    abstract_pkg_t **tmp;
+    tmp = realloc(vec->pkgs, (vec->len + 1) * sizeof(abstract_pkg_t *));
+    if (tmp == NULL) {
+        fprintf(stderr, "%s: %s\n", __FUNCTION__, strerror(errno));
+	return;
+    }
+    vec->pkgs = tmp;
     vec->pkgs[vec->len] = pkg;
     vec->len++;
 }
