@@ -763,7 +763,6 @@ static int opkg_info_status_cmd(opkg_conf_t *conf, int argc, char **argv, int in
      pkg_vec_t *available;
      pkg_t *pkg;
      char *pkg_name = NULL;
-     char *pkg_info; 
 
      if (argc > 0) {
 	  pkg_name = argv[0];
@@ -781,12 +780,7 @@ static int opkg_info_status_cmd(opkg_conf_t *conf, int argc, char **argv, int in
 	       continue;
 	  }
 
-	  pkg_info = pkg_formatted_info(pkg);
-          if (pkg_info == NULL)
-		  break;
-
-          printf("%s\n", pkg_info);
-          free(pkg_info);
+	  pkg_formatted_info(stdout, pkg);
 
 	  if (conf->verbosity > 1) {
 	       conffile_list_elt_t *iter;

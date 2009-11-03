@@ -206,12 +206,11 @@ int pkg_compare_versions(const pkg_t *pkg, const pkg_t *ref_pkg);
 int pkg_name_version_and_architecture_compare(const void *a, const void *b);
 int abstract_pkg_name_compare(const void *a, const void *b);
 
-char * pkg_formatted_info(pkg_t *pkg );
-char * pkg_formatted_field(pkg_t *pkg, const char *field );
+void pkg_formatted_info(FILE *fp, pkg_t *pkg);
+void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field);
 
 void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg);
 
-void pkg_print_info(pkg_t *pkg, FILE *file);
 void pkg_print_status(pkg_t * pkg, FILE * file);
 void pkg_print_field(pkg_t *pkg, FILE *file, const char *field);
 str_list_t *pkg_get_installed_files(pkg_t *pkg);

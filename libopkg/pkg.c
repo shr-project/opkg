@@ -512,173 +512,26 @@ void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){
 
 }
 
-#define CHECK_BUFF_SIZE(buff, line, buf_size, page_size) do { \
-        if (strlen(buff) + strlen(line) >= (buf_size)) { \
-            buf_size += page_size; \
-            buff = realloc(buff, buf_size); \
-        } \
-    } while(0)
-char * pkg_formatted_info(pkg_t *pkg )
+void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
 {
-     char *line;
-     char * buff;
-     const size_t page_size = 8192;
-     size_t buff_size = page_size;
-
-     buff = calloc(1, buff_size);
-     if (buff == NULL) {
-	  fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	  return NULL;
-     }
-
-     line = pkg_formatted_field(pkg, "Package");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Version");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Depends");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-     
-     line = pkg_formatted_field(pkg, "Recommends");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Suggests");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Provides");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Replaces");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Conflicts");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Status");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Section");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Essential"); /* @@@@ should be removed in future release. *//* I do not agree with this Pigi*/
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Architecture");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Maintainer");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "MD5sum");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Size");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Filename");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Conffiles");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Source");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Description");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Installed-Time");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     line = pkg_formatted_field(pkg, "Tags");
-     CHECK_BUFF_SIZE(buff, line, buff_size, page_size);
-     strncat(buff ,line, strlen(line));
-     free(line);
-
-     return buff;
-}
-
-char * pkg_formatted_field(pkg_t *pkg, const char *field )
-{
-     static size_t LINE_LEN = 128;
-     char * temp = (char *)malloc(1);
-     int len = 0;
+     int i;
      int flag_provide_false = 0;
-
-/*
-  Pigi: After some discussion with Florian we decided to modify the full procedure in 
-        dynamic memory allocation. This should avoid any other segv in this area ( except for bugs )
-*/
 
      if (strlen(field) < PKG_MINIMUM_FIELD_NAME_LEN) {
 	  goto UNKNOWN_FMT_FIELD;
      }
-
-     temp[0]='\0'; 
 
      switch (field[0])
      {
      case 'a':
      case 'A':
 	  if (strcasecmp(field, "Architecture") == 0) {
-	       /* Architecture */
 	       if (pkg->architecture) {
-                   temp = (char *)realloc(temp,strlen(pkg->architecture)+17);
-                   if ( temp == NULL ){
-	              fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	              return NULL;
-                   }
-                   temp[0]='\0';
-                   snprintf(temp, (strlen(pkg->architecture)+17), "Architecture: %s\n", pkg->architecture);
+                   fprintf(fp, "Architecture: %s\n", pkg->architecture);
 	       }
 	  } else if (strcasecmp(field, "Auto-Installed") == 0) {
-		/* Auto-Installed flag */
-		if (pkg->auto_installed) {
-		    char * s = "Auto-Installed: yes\n";
-		    temp = (char *)realloc(temp, strlen(s) + 1);
-		    strcpy (temp, s);
-		}
+		if (pkg->auto_installed)
+		    fprintf(fp, "Auto-Installed: yes\n");
 	  } else {
 	       goto UNKNOWN_FMT_FIELD;
 	  }
@@ -686,56 +539,26 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
      case 'c':
      case 'C':
 	  if (strcasecmp(field, "Conffiles") == 0) {
-	       /* Conffiles */
 	       conffile_list_elt_t *iter;
-               char confstr[LINE_LEN];
 
-	       if (nv_pair_list_empty(&pkg->conffiles)) {
-		    return temp;
-	       }
+	       if (nv_pair_list_empty(&pkg->conffiles))
+		    return;
 
-               len = 14 ;
+               fprintf(fp, "Conffiles:\n");
 	       for (iter = nv_pair_list_first(&pkg->conffiles); iter; iter = nv_pair_list_next(&pkg->conffiles, iter)) {
 		    if (((conffile_t *)iter->data)->name && ((conffile_t *)iter->data)->value) {
-                       len = len + (strlen(((conffile_t *)iter->data)->name)+strlen(((conffile_t *)iter->data)->value)+5);
-		    }
-	       }
-               temp = (char *)realloc(temp,len);
-               if ( temp == NULL ){
-	          fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	          return NULL;
-               }
-               temp[0]='\0';
-               strncpy(temp, "Conffiles:\n", 12);
-	       for (iter = nv_pair_list_first(&pkg->conffiles); iter; iter = nv_pair_list_next(&pkg->conffiles, iter)) {
-		    if (((conffile_t *)iter->data)->name && ((conffile_t *)iter->data)->value) {
-                         snprintf(confstr, LINE_LEN, "%s %s\n", 
+                         fprintf(fp, "%s %s\n", 
                                  ((conffile_t *)iter->data)->name, 
                                  ((conffile_t *)iter->data)->value);
-                         strncat(temp, confstr, strlen(confstr));           
 		    }
 	       }
 	  } else if (strcasecmp(field, "Conflicts") == 0) {
-	       int i;
-
 	       if (pkg->conflicts_count) {
-                    char conflictstr[LINE_LEN];
-                    len = 14 ;
+                    fprintf(fp, "Conflicts:");
 		    for(i = 0; i < pkg->conflicts_count; i++) {
-                        len = len + (strlen(pkg->conflicts_str[i])+5);
+                        fprintf(fp, "%s %s", i == 0 ? "" : ",", pkg->conflicts_str[i]);
                     }
-                    temp = (char *)realloc(temp,len);
-                    if ( temp == NULL ){
-	               fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	               return NULL;
-                    }
-                    temp[0]='\0';
-                    strncpy(temp, "Conflicts:", 11);
-		    for(i = 0; i < pkg->conflicts_count; i++) {
-                        snprintf(conflictstr, LINE_LEN, "%s %s", i == 0 ? "" : ",", pkg->conflicts_str[i]);
-                        strncat(temp, conflictstr, strlen(conflictstr));           
-                    }
-                    strncat(temp, "\n", strlen("\n")); 
+                    fprintf(fp, "\n");
 	       }
 	  } else {
 	       goto UNKNOWN_FMT_FIELD;
@@ -744,147 +567,62 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
      case 'd':
      case 'D':
 	  if (strcasecmp(field, "Depends") == 0) {
-	       /* Depends */
-	       int i;
-
 	       if (pkg->depends_count) {
-                    char depstr[LINE_LEN];
-                    len = 14 ;
+                    fprintf(fp, "Depends:");
 		    for(i = 0; i < pkg->depends_count; i++) {
-                        len = len + (strlen(pkg->depends_str[i])+4);
+                        fprintf(fp, "%s %s", i == 0 ? "" : ",", pkg->depends_str[i]);
                     }
-                    temp = (char *)realloc(temp,len);
-                    if ( temp == NULL ){
-	               fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	               return NULL;
-                    }
-                    temp[0]='\0';
-                    strncpy(temp, "Depends:", 10);
-		    for(i = 0; i < pkg->depends_count; i++) {
-                        snprintf(depstr, LINE_LEN, "%s %s", i == 0 ? "" : ",", pkg->depends_str[i]);
-                        strncat(temp, depstr, strlen(depstr));           
-                    }
-                    strncat(temp, "\n", strlen("\n")); 
+		    fprintf(fp, "\n");
 	       }
 	  } else if (strcasecmp(field, "Description") == 0) {
-	       /* Description */
 	       if (pkg->description) {
-                   temp = (char *)realloc(temp,strlen(pkg->description)+16);
-                   if ( temp == NULL ){
-	              fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	              return NULL;
-                   }
-                   temp[0]='\0';
-                   snprintf(temp, (strlen(pkg->description)+16), "Description: %s\n", pkg->description);
+                   fprintf(fp, "Description: %s\n", pkg->description);
 	       }
 	  } else {
 	       goto UNKNOWN_FMT_FIELD;
 	  }
-      break;
+          break;
      case 'e':
-     case 'E': {
-	  /* Essential */
+     case 'E':
 	  if (pkg->essential) {
-              temp = (char *)realloc(temp,16);
-              if ( temp == NULL ){
-	         fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	         return NULL;
-              }
-              temp[0]='\0';
-              snprintf(temp, (16), "Essential: yes\n");
+              fprintf(fp, "Essential: yes\n");
 	  }
-     }
 	  break;
      case 'f':
-     case 'F': {
-	  /* Filename */
+     case 'F':
 	  if (pkg->filename) {
-              temp = (char *)realloc(temp,strlen(pkg->filename)+12);
-              if ( temp == NULL ){
-	          fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	          return NULL;
-              }
-              temp[0]='\0';
-              snprintf(temp, (strlen(pkg->filename)+12), "Filename: %s\n", pkg->filename);
+              fprintf(fp, "Filename: %s\n", pkg->filename);
 	  }
-     }
 	  break;
      case 'i':
-     case 'I': {
+     case 'I':
 	  if (strcasecmp(field, "Installed-Size") == 0) {
-	       /* Installed-Size */
-               temp = (char *)realloc(temp,strlen(pkg->installed_size)+17);
-               if ( temp == NULL ){
-	           fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	           return NULL;
-               }
-               temp[0]='\0';
-               snprintf(temp, (strlen(pkg->installed_size)+17), "Installed-Size: %s\n", pkg->installed_size);
+               fprintf(fp, "Installed-Size: %s\n", pkg->installed_size);
 	  } else if (strcasecmp(field, "Installed-Time") == 0 && pkg->installed_time) {
-               temp = (char *)realloc(temp,29);
-               if ( temp == NULL ){
-	          fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	          return NULL;
-               }
-               temp[0]='\0';
-               snprintf(temp, 29, "Installed-Time: %lu\n", pkg->installed_time);
+               fprintf(fp, "Installed-Time: %lu\n", pkg->installed_time);
 	  }
-     }
 	  break;
      case 'm':
-     case 'M': {
-	  /* Maintainer | MD5sum */
+     case 'M':
 	  if (strcasecmp(field, "Maintainer") == 0) {
-	       /* Maintainer */
 	       if (pkg->maintainer) {
-                   temp = (char *)realloc(temp,strlen(pkg->maintainer)+14);
-                   if ( temp == NULL ){
-	              fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	              return NULL;
-                   }
-                   temp[0]='\0';
-                   snprintf(temp, (strlen(pkg->maintainer)+14), "maintainer: %s\n", pkg->maintainer);
+                   fprintf(fp, "maintainer: %s\n", pkg->maintainer);
 	       }
 	  } else if (strcasecmp(field, "MD5sum") == 0) {
-	       /* MD5sum */
 	       if (pkg->md5sum) {
-                   temp = (char *)realloc(temp,strlen(pkg->md5sum)+11);
-                   if ( temp == NULL ){
-	              fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	              return NULL;
-                   }
-                   temp[0]='\0';
-                   snprintf(temp, (strlen(pkg->md5sum)+11), "MD5Sum: %s\n", pkg->md5sum);
+                   fprintf(fp, "MD5Sum: %s\n", pkg->md5sum);
 	       }
 	  } else {
 	       goto UNKNOWN_FMT_FIELD;
 	  }
-     }
 	  break;
      case 'p':
-     case 'P': {
+     case 'P':
 	  if (strcasecmp(field, "Package") == 0) {
-	       /* Package */
-               temp = (char *)realloc(temp,strlen(pkg->name)+11);
-               if ( temp == NULL ){
-	          fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	          return NULL;
-               }
-               temp[0]='\0';
-               snprintf(temp, (strlen(pkg->name)+11), "Package: %s\n", pkg->name);
+               fprintf(fp, "Package: %s\n", pkg->name);
 	  } else if (strcasecmp(field, "Priority") == 0) {
-	       /* Priority */
-               temp = (char *)realloc(temp,strlen(pkg->priority)+12);
-               if ( temp == NULL ){
-	          fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	          return NULL;
-               }
-               temp[0]='\0';
-               snprintf(temp, (strlen(pkg->priority)+12), "Priority: %s\n", pkg->priority);
+               fprintf(fp, "Priority: %s\n", pkg->priority);
 	  } else if (strcasecmp(field, "Provides") == 0) {
-	       /* Provides */
-	       int i;
-
 	       if (pkg->provides_count) {
                /* Here we check if the opkg_internal_use_only is used, and we discard it.*/
                   for ( i=0; i < pkg->provides_count; i++ ){
@@ -895,239 +633,138 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
                   }
                   if ( !flag_provide_false ||                                             /* Pigi there is not my trick flag */
                      ((flag_provide_false) &&  (pkg->provides_count > 1))){             /* Pigi There is, but we also have others Provides */
-                     char provstr[LINE_LEN];
-                     len = 15;
+                     fprintf(fp, "Provides:");
 		     for(i = 0; i < pkg->provides_count; i++) {
-                         len = len + (strlen(pkg->provides_str[i])+5);
-                     }
-                     temp = (char *)realloc(temp,len);
-                     if ( temp == NULL ){
-	                fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	                return NULL;
-                     }
-                     temp[0]='\0';
-                     strncpy(temp, "Provides:", 12);
-		     for(i = 0; i < pkg->provides_count; i++) {
-                         if (strlen(pkg->provides_str[i])>0){;
-                            snprintf(provstr, LINE_LEN, "%s %s", i == 1 ? "" : ",", pkg->provides_str[i]);
-                            strncat(temp, provstr, strlen(provstr));           
+                         if (strlen(pkg->provides_str[i])>0) {
+                            fprintf(fp, "%s %s", i == 1 ? "" : ",", pkg->provides_str[i]);
                          }
                      }
-                     strncat(temp, "\n", strlen("\n")); 
+                     fprintf(fp, "\n");
                   }
                }
 	  } else {
 	       goto UNKNOWN_FMT_FIELD;
 	  }
-     }
 	  break;
      case 'r':
-     case 'R': {
-	  int i;
-	  /* Replaces | Recommends*/
+     case 'R':
 	  if (strcasecmp (field, "Replaces") == 0) {
 	       if (pkg->replaces_count) {
-                    char replstr[LINE_LEN];
-                    len = 14;
+                    fprintf(fp, "Replaces:");
 		    for (i = 0; i < pkg->replaces_count; i++) {
-                        len = len + (strlen(pkg->replaces_str[i])+5);
+                        fprintf(fp, "%s %s", i == 0 ? "" : ",", pkg->replaces_str[i]);
                     }
-                    temp = (char *)realloc(temp,len);
-                    if ( temp == NULL ){
-	               fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	               return NULL;
-                    }
-                    temp[0]='\0';
-                    strncpy(temp, "Replaces:", 12);
-		    for (i = 0; i < pkg->replaces_count; i++) {
-                        snprintf(replstr, LINE_LEN, "%s %s", i == 0 ? "" : ",", pkg->replaces_str[i]);
-                        strncat(temp, replstr, strlen(replstr));           
-                    }
-                    strncat(temp, "\n", strlen("\n")); 
+                    fprintf(fp, "\n");
 	       }
 	  } else if (strcasecmp (field, "Recommends") == 0) {
 	       if (pkg->recommends_count) {
-                    char recstr[LINE_LEN];
-                    len = 15;
+                    fprintf(fp, "Recommends:");
 		    for(i = 0; i < pkg->recommends_count; i++) {
-                         len = len + (strlen( pkg->recommends_str[i])+5);
+                        fprintf(fp, "%s %s", i == 0 ? "" : ",", pkg->recommends_str[i]);
                     }
-                    temp = (char *)realloc(temp,len);
-                   if ( temp == NULL ){
-	              fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	              return NULL;
-                   }
-                    temp[0]='\0';
-                    strncpy(temp, "Recommends:", 13);
-		    for(i = 0; i < pkg->recommends_count; i++) {
-                        snprintf(recstr, LINE_LEN, "%s %s", i == 0 ? "" : ",", pkg->recommends_str[i]);
-                        strncat(temp, recstr, strlen(recstr));           
-                    }
-                    strncat(temp, "\n", strlen("\n")); 
+                    fprintf(fp, "\n");
 	       }
 	  } else {
 	       goto UNKNOWN_FMT_FIELD;
 	  }
-     }
 	  break;
      case 's':
-     case 'S': {
-	  /* Section | SHA256sum | Size | Source | Status | Suggests */
+     case 'S':
 	  if (strcasecmp(field, "Section") == 0) {
-	       /* Section */
 	       if (pkg->section) {
-                   temp = (char *)realloc(temp,strlen(pkg->section)+11);
-                   if ( temp == NULL ){
-	              fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	              return NULL;
-                   }
-                   temp[0]='\0';
-                   snprintf(temp, (strlen(pkg->section)+11), "Section: %s\n", pkg->section);
+                   fprintf(fp, "Section: %s\n", pkg->section);
 	       }
 #if defined HAVE_SHA256
 	  } else if (strcasecmp(field, "SHA256sum") == 0) {
-	       /* SHA256sum */
 	       if (pkg->sha256sum) {
-                   temp = (char *)realloc(temp,strlen(pkg->sha256sum)+13);
-                   if ( temp == NULL ){
-	              fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	              return NULL;
-                   }
-                   temp[0]='\0';
-                   snprintf(temp, (strlen(pkg->sha256sum)+13), "SHA256sum: %s\n", pkg->sha256sum);
+                   fprintf(fp, "SHA256sum: %s\n", pkg->sha256sum);
 	       }
 #endif
 	  } else if (strcasecmp(field, "Size") == 0) {
-	       /* Size */
 	       if (pkg->size) {
-                   temp = (char *)realloc(temp,strlen(pkg->size)+8);
-                   if ( temp == NULL ){
-	              fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	              return NULL;
-                   }
-                   temp[0]='\0';
-                   snprintf(temp, (strlen(pkg->size)+8), "Size: %s\n", pkg->size);
+                   fprintf(fp, "Size: %s\n", pkg->size);
 	       }
 	  } else if (strcasecmp(field, "Source") == 0) {
-	       /* Source */
 	       if (pkg->source) {
-                   temp = (char *)realloc(temp,strlen(pkg->source)+10);
-                   if ( temp == NULL ){
-	              fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	              return NULL;
-                   }
-                   temp[0]='\0';
-                   snprintf(temp, (strlen(pkg->source)+10), "Source: %s\n", pkg->source);
+                   fprintf(fp, "Source: %s\n", pkg->source);
                }
 	  } else if (strcasecmp(field, "Status") == 0) {
-	       /* Status */
-               /* Benjamin Pineau note: we should avoid direct usage of 
-                * strlen(arg) without keeping "arg" for later free()
-                */
-               char *pflag=pkg_state_flag_to_str(pkg->state_flag);
-               char *pstat=pkg_state_status_to_str(pkg->state_status);
-               char *pwant=pkg_state_want_to_str(pkg->state_want);
+               char *pflag = pkg_state_flag_to_str(pkg->state_flag);
+               char *pstat = pkg_state_status_to_str(pkg->state_status);
+               char *pwant = pkg_state_want_to_str(pkg->state_want);
 
-               size_t sum_of_sizes = (size_t) ( strlen(pwant)+ strlen(pflag)+ strlen(pstat) + 12 );
-               temp = (char *)realloc(temp,sum_of_sizes);
-               if ( temp == NULL ){
-                   fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-                   return NULL;
-                }
-                temp[0]='\0';
-                snprintf(temp, sum_of_sizes , "Status: %s %s %s\n", pwant, pflag, pstat);
-                free(pflag);
-                free(pwant);
-               if(pstat) /* pfstat can be NULL if ENOMEM */
-                   free(pstat);
+	       if (pflag == NULL || pstat == NULL || pwant == NULL)
+		       return;
+
+               fprintf(fp, "Status: %s %s %s\n", pwant, pflag, pstat);
+
+               free(pflag);
+               free(pwant);
+               free(pstat);
 	  } else if (strcasecmp(field, "Suggests") == 0) {
 	       if (pkg->suggests_count) {
-		    int i;
-                    char sugstr[LINE_LEN];
-                    len = 13;
+                    fprintf(fp, "Suggests:");
 		    for(i = 0; i < pkg->suggests_count; i++) {
-                        len = len + (strlen(pkg->suggests_str[i])+5);
+                        fprintf(fp, "%s %s", i == 0 ? "" : ",", pkg->suggests_str[i]);
                     }
-                    temp = (char *)realloc(temp,len);
-                    if ( temp == NULL ){
-	               fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	               return NULL;
-                    }
-                    temp[0]='\0';
-                    strncpy(temp, "Suggests:", 10);
-		    for(i = 0; i < pkg->suggests_count; i++) {
-                        snprintf(sugstr, LINE_LEN, "%s %s", i == 0 ? "" : ",", pkg->suggests_str[i]);
-                        strncat(temp, sugstr, strlen(sugstr));           
-                    }
-                    strncat(temp, "\n", strlen("\n")); 
+                    fprintf(fp, "\n");
 	       }
 	  } else {
 	       goto UNKNOWN_FMT_FIELD;
 	  }
-     }
 	  break;
      case 't':
      case 'T':
 	  if (strcasecmp(field, "Tags") == 0) {
-	       /* Tags */
 	       if (pkg->tags) {
-                   temp = (char *)realloc(temp,strlen(pkg->tags)+8);
-                   if ( temp == NULL ){
-	              fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	              return NULL;
-                   }
-                   temp[0]='\0';
-                   snprintf(temp, (strlen(pkg->tags)+8), "Tags: %s\n", pkg->tags);
+                   fprintf(fp, "Tags: %s\n", pkg->tags);
 	       }
 	  }
 	  break;
      case 'v':
-     case 'V': {
-	  /* Version */
-	  char *version = pkg_version_str_alloc(pkg);
-          temp = (char *)realloc(temp,strlen(version)+14);
-          if ( temp == NULL ){
-	      fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	      return NULL;
+     case 'V':
+	  {
+	       char *version = pkg_version_str_alloc(pkg);
+	       if (version == NULL)
+	            return;
+               fprintf(fp, "Version: %s\n", version);
+	       free(version);
           }
-          temp[0]='\0';
-          snprintf(temp, (strlen(version)+12), "Version: %s\n", version);
-	  free(version);
-     }
 	  break;
      default:
 	  goto UNKNOWN_FMT_FIELD;
      }
 
-     if ( strlen(temp)<2 ) {
-          temp[0]='\0';
-     }
-     return temp;
+     return;
 
- UNKNOWN_FMT_FIELD:
+UNKNOWN_FMT_FIELD:
      fprintf(stderr, "%s: ERROR: Unknown field name: %s\n", __FUNCTION__, field);
-     if ( strlen(temp)<2 ) {
-          temp[0]='\0';
-     }
-
-     return temp;
 }
 
-void pkg_print_info(pkg_t *pkg, FILE *file)
+void pkg_formatted_info(FILE *fp, pkg_t *pkg)
 {
-  int t=0;
-     char * buff;
-     if (pkg == NULL) {
-	return;
-     }
-
-     buff = pkg_formatted_info(pkg);
-     if ( buff == NULL ) 
-         return;
-     if (strlen(buff)>2){
-       t = fwrite(buff, 1, strlen(buff), file); //#~rzr:TODO
-     } 
-     free(buff);
+	pkg_formatted_field(fp, pkg, "Package");
+	pkg_formatted_field(fp, pkg, "Version");
+	pkg_formatted_field(fp, pkg, "Depends");
+	pkg_formatted_field(fp, pkg, "Recommends");
+	pkg_formatted_field(fp, pkg, "Suggests");
+	pkg_formatted_field(fp, pkg, "Provides");
+	pkg_formatted_field(fp, pkg, "Replaces");
+	pkg_formatted_field(fp, pkg, "Conflicts");
+	pkg_formatted_field(fp, pkg, "Status");
+	pkg_formatted_field(fp, pkg, "Section");
+	pkg_formatted_field(fp, pkg, "Essential");
+	pkg_formatted_field(fp, pkg, "Architecture");
+	pkg_formatted_field(fp, pkg, "Maintainer");
+	pkg_formatted_field(fp, pkg, "MD5sum");
+	pkg_formatted_field(fp, pkg, "Size");
+	pkg_formatted_field(fp, pkg, "Filename");
+	pkg_formatted_field(fp, pkg, "Conffiles");
+	pkg_formatted_field(fp, pkg, "Source");
+	pkg_formatted_field(fp, pkg, "Description");
+	pkg_formatted_field(fp, pkg, "Installed-Time");
+	pkg_formatted_field(fp, pkg, "Tags");
+	fputs("\n", fp);
 }
 
 void pkg_print_status(pkg_t * pkg, FILE * file)
@@ -1156,37 +793,21 @@ void pkg_print_status(pkg_t * pkg, FILE * file)
 	local storage without requiring a Packages file from any feed.
 	-Jamey
      */
-     pkg_print_field(pkg, file, "Package");
-     pkg_print_field(pkg, file, "Version");
-     pkg_print_field(pkg, file, "Depends");
-     pkg_print_field(pkg, file, "Recommends");
-     pkg_print_field(pkg, file, "Suggests");
-     pkg_print_field(pkg, file, "Provides");
-     pkg_print_field(pkg, file, "Replaces");
-     pkg_print_field(pkg, file, "Conflicts");
-     pkg_print_field(pkg, file, "Status");
-     pkg_print_field(pkg, file, "Essential"); /* @@@@ should be removed in future release. */
-     pkg_print_field(pkg, file, "Architecture");
-     pkg_print_field(pkg, file, "Conffiles");
-     pkg_print_field(pkg, file, "Installed-Time");
-     pkg_print_field(pkg, file, "Auto-Installed");
+     pkg_formatted_field(file, pkg, "Package");
+     pkg_formatted_field(file, pkg, "Version");
+     pkg_formatted_field(file, pkg, "Depends");
+     pkg_formatted_field(file, pkg, "Recommends");
+     pkg_formatted_field(file, pkg, "Suggests");
+     pkg_formatted_field(file, pkg, "Provides");
+     pkg_formatted_field(file, pkg, "Replaces");
+     pkg_formatted_field(file, pkg, "Conflicts");
+     pkg_formatted_field(file, pkg, "Status");
+     pkg_formatted_field(file, pkg, "Essential");
+     pkg_formatted_field(file, pkg, "Architecture");
+     pkg_formatted_field(file, pkg, "Conffiles");
+     pkg_formatted_field(file, pkg, "Installed-Time");
+     pkg_formatted_field(file, pkg, "Auto-Installed");
      fputs("\n", file);
-}
-
-void pkg_print_field(pkg_t *pkg, FILE *file, const char *field)
-{
-     char *buff;
-     if (strlen(field) < PKG_MINIMUM_FIELD_NAME_LEN) {
-       fprintf(stderr, "%s: ERROR: Unknown field name: %s\n",
-	     __FUNCTION__, field);
-     }
-     buff = pkg_formatted_field(pkg, field);
-     if (strlen(buff)>2) {
-       fprintf(file, "%s", buff);
-       fflush(file);
-     }
-     free(buff);
-     return;
 }
 
 /*
