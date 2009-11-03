@@ -65,7 +65,6 @@ opkg_op (int argc, char *argv[])
              !strcmp(cmd_name,"compare_versions") ||
              !strcmp(cmd_name,"compare-versions") ||
              !strcmp(cmd_name,"list_installed") ||
-             !strcmp(cmd_name,"list-installed") ||
              !strcmp(cmd_name,"status") )
            args.noreadfeedsfile = 1;
 
