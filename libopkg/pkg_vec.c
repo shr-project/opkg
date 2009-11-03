@@ -104,12 +104,16 @@ pkg_t *pkg_vec_insert_merge(pkg_vec_t *vec, pkg_t *pkg, int set_status,opkg_conf
      }
 }
 
-int pkg_vec_insert_called=0;
 void pkg_vec_insert(pkg_vec_t *vec, const pkg_t *pkg)
 {
-    vec->pkgs = (pkg_t **)realloc(vec->pkgs, (vec->len + 1) * sizeof(pkg_t *));
-    pkg_vec_insert_called++;
-    *(const pkg_t **)&vec->pkgs[vec->len] = pkg;
+    pkg_t **tmp;
+    tmp = realloc(vec->pkgs, (vec->len + 1) * sizeof(pkg_t *));
+    if (tmp == NULL) {
+        fprintf(stderr, "%s: %s\n", __FUNCTION__, strerror(errno));
+	return;
+    }
+    vec->pkgs = tmp;
+    vec->pkgs[vec->len] = (pkg_t *)pkg;
     vec->len++;
 }
 
