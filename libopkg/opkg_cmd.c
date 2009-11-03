@@ -45,7 +45,6 @@
 #include "opkg_message.h"
 
 #include "libopkg.h"
-static void *p_userdata = NULL;
 
 static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_upgrade_cmd(opkg_conf_t *conf, int argc, char **argv);
@@ -110,6 +109,16 @@ static opkg_cmd_t cmds[] = {
      {"whatconflicts", 1, (opkg_cmd_fun_t)opkg_whatconflicts_cmd},
 };
 
+static void print_pkg(pkg_t *pkg)
+{
+	char *version = pkg_version_str_alloc(pkg);
+	if (pkg->description)
+		printf("%s - %s - %s\n", pkg->name, version, pkg->description);
+	else
+		printf("%s - %s\n", pkg->name, version);
+	free(version);
+}
+
 int opkg_state_changed;
 static void write_status_files_if_changed(opkg_conf_t *conf)
 {
@@ -144,15 +153,12 @@ opkg_cmd_t *opkg_cmd_find(const char *name)
 int opkg_cmd_exec(opkg_cmd_t *cmd, opkg_conf_t *conf, int argc, const char **argv, void *userdata)
 {
 	int result;
-	p_userdata = userdata;
-      
 
 	result = (cmd->fun)(conf, argc, argv);
 
-        print_error_list();
+	print_error_list();
 	free_error_list();
 
-	p_userdata = NULL;
 	return result;
 }
 
@@ -682,13 +688,10 @@ static int opkg_download_cmd(opkg_conf_t *conf, int argc, char **argv)
 
 static int opkg_list_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
-     int i ;
+     int i;
      pkg_vec_t *available;
      pkg_t *pkg;
-     char desc_short[OPKG_LIST_DESCRIPTION_LENGTH];
-     char *newline;
      char *pkg_name = NULL;
-     char *version_str;
 
      if (argc > 0) {
 	  pkg_name = argv[0];
@@ -701,24 +704,7 @@ static int opkg_list_cmd(opkg_conf_t *conf, int argc, char **argv)
 	  /* if we have package name or pattern and pkg does not match, then skip it */
 	  if (pkg_name && fnmatch(pkg_name, pkg->name, 0)) 
 	       continue;
-	  if (pkg->description) {
-	       strncpy(desc_short, pkg->description, OPKG_LIST_DESCRIPTION_LENGTH);
-	  } else {
-	       desc_short[0] = '\0';
-	  }
-	  desc_short[OPKG_LIST_DESCRIPTION_LENGTH - 1] = '\0';
-	  newline = strchr(desc_short, '\n');
-	  if (newline) {
-	       *newline = '\0';
-	  }
-	  if (opkg_cb_list) {
-	  	version_str = pkg_version_str_alloc(pkg);
-	  	opkg_cb_list(pkg->name,desc_short,
-		                             version_str,
-	                                 pkg->state_status,
-	                                 p_userdata);
-		free(version_str);
-	  }
+          print_pkg(pkg);
      }
      pkg_vec_free(available);
 
@@ -731,10 +717,7 @@ static int opkg_list_installed_cmd(opkg_conf_t *conf, int argc, char **argv)
      int i ;
      pkg_vec_t *available;
      pkg_t *pkg;
-     char desc_short[OPKG_LIST_DESCRIPTION_LENGTH];
-     char *newline;
      char *pkg_name = NULL;
-     char *version_str;
 
      if (argc > 0) {
 	  pkg_name = argv[0];
@@ -747,24 +730,7 @@ static int opkg_list_installed_cmd(opkg_conf_t *conf, int argc, char **argv)
 	  /* if we have package name or pattern and pkg does not match, then skip it */
 	  if (pkg_name && fnmatch(pkg_name, pkg->name, 0)) 
 	       continue;
-	  if (pkg->description) {
-	       strncpy(desc_short, pkg->description, OPKG_LIST_DESCRIPTION_LENGTH);
-	  } else {
-	       desc_short[0] = '\0';
-	  }
-	  desc_short[OPKG_LIST_DESCRIPTION_LENGTH - 1] = '\0';
-	  newline = strchr(desc_short, '\n');
-	  if (newline) {
-	       *newline = '\0';
-	  }
-	  if (opkg_cb_list) {
-	  	version_str = pkg_version_str_alloc(pkg);
-	  	opkg_cb_list(pkg->name,desc_short,
-		                             version_str,
-	                                 pkg->state_status,
-	                                 p_userdata);
-		free(version_str);
-	  }
+          print_pkg(pkg);
      }
 
      pkg_vec_free(available);
@@ -783,8 +749,7 @@ static int opkg_list_upgradable_cmd(opkg_conf_t *conf, int argc, char **argv)
         _new_pkg = pkg_hash_fetch_best_installation_candidate_by_name(conf, _old_pkg->name, NULL);
         old_v = pkg_version_str_alloc(_old_pkg);
         new_v = pkg_version_str_alloc(_new_pkg);
-        if (opkg_cb_list)
-            opkg_cb_list(_old_pkg->name, new_v, old_v, _old_pkg->state_status, p_userdata);
+        printf("%s - %s - %s\n", _old_pkg->name, old_v, new_v);
         free(old_v);
         free(new_v);
     }
@@ -798,16 +763,10 @@ static int opkg_info_status_cmd(opkg_conf_t *conf, int argc, char **argv, int in
      pkg_vec_t *available;
      pkg_t *pkg;
      char *pkg_name = NULL;
-     char **pkg_fields = NULL;
-     int n_fields = 0;
-     char *buff = NULL; 
+     char *pkg_info; 
 
      if (argc > 0) {
 	  pkg_name = argv[0];
-     }
-     if (argc > 1) {
-	  pkg_fields = &argv[1];
-	  n_fields = argc - 1;
      }
 
      available = pkg_vec_alloc();
@@ -815,25 +774,20 @@ static int opkg_info_status_cmd(opkg_conf_t *conf, int argc, char **argv, int in
 	  pkg_hash_fetch_all_installed(&conf->pkg_hash, available);
      else
 	  pkg_hash_fetch_available(&conf->pkg_hash, available);
+
      for (i=0; i < available->len; i++) {
 	  pkg = available->pkgs[i];
 	  if (pkg_name && fnmatch(pkg_name, pkg->name, 0)) {
 	       continue;
 	  }
 
-	  buff = pkg_formatted_info(pkg);
-          if ( buff ) {
-	       if (opkg_cb_status) opkg_cb_status(pkg->name,
-						  pkg->state_status,
-						  buff,
-						  p_userdata);
-/* 
-   We should not forget that actually the pointer is allocated. 
-   We need to free it :)  ( Thanks florian for seeing the error )
-*/
-               free(buff);
-               buff = NULL;
-          }
+	  pkg_info = pkg_formatted_info(pkg);
+          if (pkg_info == NULL)
+		  break;
+
+          printf("%s\n", pkg_info);
+          free(pkg_info);
+
 	  if (conf->verbosity > 1) {
 	       conffile_list_elt_t *iter;
 	       for (iter = nv_pair_list_first(&pkg->conffiles); iter; iter = nv_pair_list_next(&pkg->conffiles, iter)) {
@@ -1090,19 +1044,10 @@ static int opkg_flag_cmd(opkg_conf_t *conf, int argc, char **argv)
 static int opkg_files_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      pkg_t *pkg;
-     str_list_t *installed_files;
+     str_list_t *files;
      str_list_elt_t *iter;
      char *pkg_version;
-     size_t buff_len = 8192;
-     size_t used_len;
-     char *buff ;
 
-     buff = (char *)calloc(1, buff_len);
-     if ( buff == NULL ) {
-        fprintf( stderr,"%s: Unable to allocate memory \n",__FUNCTION__);
-        return ENOMEM;
-     }
- 
      if (argc < 1) {
 	  return EINVAL;
      }
@@ -1115,34 +1060,14 @@ static int opkg_files_cmd(opkg_conf_t *conf, int argc, char **argv)
 	  return 0;
      }
 
-     installed_files = pkg_get_installed_files(pkg);
+     files = pkg_get_installed_files(pkg);
      pkg_version = pkg_version_str_alloc(pkg);
 
-     if (buff) {
-     try_again:
-	  used_len = snprintf(buff, buff_len, "Package %s (%s) is installed on %s and has the following files:\n",
-			      pkg->name, pkg_version, pkg->dest->name) + 1;
-	  if (used_len > buff_len) {
-	       buff_len *= 2;
-	       buff = realloc (buff, buff_len);
-	       goto try_again;
-	  }
-	  for (iter = str_list_first(installed_files); iter; iter = str_list_next(installed_files, iter)) {
-	       used_len += strlen (iter->data) + 1;
-	       while (buff_len <= used_len) {
-		    buff_len *= 2;
-		    buff = realloc (buff, buff_len);
-	       }
-	       strncat(buff, iter->data, buff_len);
-	       strncat(buff, "\n", buff_len);
-	  } 
-	  if (opkg_cb_list) opkg_cb_list(pkg->name,
-					 buff,
-					 pkg_version_str_alloc(pkg),
-					 pkg->state_status,
-					 p_userdata);
-	  free(buff);
-     }
+     printf("Package %s (%s) is installed on %s and has the following files:\n",
+		pkg->name, pkg_version, pkg->dest->name);
+
+     for (iter=str_list_first(files); iter; iter=str_list_next(files, iter))
+          printf("%s\n", (char *)iter->data);
 
      free(pkg_version);
      pkg_free_installed_files(pkg);
@@ -1436,12 +1361,8 @@ static int opkg_search_cmd(opkg_conf_t *conf, int argc, char **argv)
 
 	  for (iter = str_list_first(installed_files); iter; iter = str_list_next(installed_files, iter)) {
 	       installed_file = (char *)iter->data;
-	       if (fnmatch(argv[0], installed_file, 0)==0)  {
-			if (opkg_cb_list) opkg_cb_list(pkg->name, 
-						       installed_file, 
-			                               pkg_version_str_alloc(pkg), 
-			                               pkg->state_status, p_userdata);
-	       }		
+	       if (fnmatch(argv[0], installed_file, 0)==0)
+	            print_pkg(pkg);
 	  }
 
 	  pkg_free_installed_files(pkg);
@@ -1468,12 +1389,6 @@ static int opkg_compare_versions_cmd(opkg_conf_t *conf, int argc, char **argv)
      }
 }
 
-#ifndef HOST_CPU_STR
-#define HOST_CPU_STR__(X) #X
-#define HOST_CPU_STR_(X) HOST_CPU_STR__(X)
-#define HOST_CPU_STR HOST_CPU_STR_(HOST_CPU_FOO)
-#endif
-
 static int opkg_print_architecture_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
      nv_pair_list_elt_t *l;
@@ -1484,5 +1399,3 @@ static int opkg_print_architecture_cmd(opkg_conf_t *conf, int argc, char **argv)
      }
      return 0;
 }
-
-
