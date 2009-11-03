@@ -75,6 +75,22 @@ struct opkg_conf
      int noaction;
      char *cache;
 
+#ifdef HAVE_SSLCURL
+     /* some options could be used by
+      * wget if curl support isn't builtin
+      * If someone want to try...
+      */
+     char *ssl_engine;
+     char *ssl_cert;
+     char *ssl_cert_type;
+     char *ssl_key;
+     char *ssl_key_type;
+     char *ssl_key_passwd;
+     char *ssl_ca_file;
+     char *ssl_ca_path;
+     int ssl_dont_verify_peer;
+#endif
+
      /* proxy options */
      char *http_proxy;
      char *ftp_proxy;

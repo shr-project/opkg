@@ -15,6 +15,9 @@ for top_builddir in . .. ../.. $ac_auxdir $ac_auxdir/..; do
   test -f $top_builddir/configure && break
 done
 
+# large file support can be useful for gpgme
+AC_SYS_LARGEFILE
+
 
 # Checks for programs
 AC_PROG_AWK
@@ -55,8 +58,44 @@ AC_ARG_ENABLE(openssl,
     [want_openssl="$enableval"], [want_openssl="no"])
 
 if test "x$want_openssl" = "xyes"; then
-  PKG_CHECK_MODULES(OPENSSL, openssl)
   AC_DEFINE(HAVE_OPENSSL, 1, [Define if you want OpenSSL support])
+  NEED_SSL_LIBS="yes"
+fi
+
+# check for libssl-curl
+AC_ARG_ENABLE(ssl-curl,
+              AC_HELP_STRING([--enable-ssl-curl], [Enable certificate authentication with curl
+                              [[default="$default_sslcurl"]] ]),
+                              [want_sslcurl="$enableval"], [want_sslcurl="yes"])
+
+if test "x$want_curl" = "xyes" -a "x$want_sslcurl" = "xyes"; then
+  AC_DEFINE(HAVE_CURL, 1, [Define if you want CURL support])
+  AC_DEFINE(HAVE_SSLCURL, 1, [Define if you want certificate authentication with curl])
+  NEED_SSL_LIBS="yes"
+fi
+
+if test "x$NEED_SSL_LIBS" = "xyes"; then
+  AC_MSG_CHECKING([if openssl is available])
+
+  PKG_CHECK_MODULES(OPENSSL, openssl, [:], [:])
+  if test "x$OPENSSL_LIBS" != "x"; then
+          AC_MSG_RESULT(yes)
+  else
+          OPENSSL_LIBS="-lcrypto -lssl"
+          dnl If pkg-config fails, run compile/link test.
+          AC_TRY_LINK([
+#include <openssl/opensslv.h>
+], [
+return OPENSSL_VERSION_NUMBER; ],
+          [
+            AC_MSG_RESULT(yes)
+
+          ], [
+            AC_MSG_RESULT(no)
+            AC_MSG_ERROR(OpenSSL not found)
+          ])
+  fi
+  AC_SUBST(OPENSSL_LIBS)
 fi
 
 

@@ -79,6 +79,17 @@ int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
 	  { "signature_ca_file", OPKG_OPT_TYPE_STRING, &conf->signature_ca_file },
 	  { "signature_ca_path", OPKG_OPT_TYPE_STRING, &conf->signature_ca_path },
 #endif
+#if defined(HAVE_SSLCURL) && defined(HAVE_CURL)
+          { "ssl_engine", OPKG_OPT_TYPE_STRING, &conf->ssl_engine },
+          { "ssl_cert", OPKG_OPT_TYPE_STRING, &conf->ssl_cert },
+          { "ssl_cert_type", OPKG_OPT_TYPE_STRING, &conf->ssl_cert_type },
+          { "ssl_key", OPKG_OPT_TYPE_STRING, &conf->ssl_key },
+          { "ssl_key_type", OPKG_OPT_TYPE_STRING, &conf->ssl_key_type },
+          { "ssl_key_passwd", OPKG_OPT_TYPE_STRING, &conf->ssl_key_passwd },
+          { "ssl_ca_file", OPKG_OPT_TYPE_STRING, &conf->ssl_ca_file },
+          { "ssl_ca_path", OPKG_OPT_TYPE_STRING, &conf->ssl_ca_path },
+          { "ssl_dont_verify_peer", OPKG_OPT_TYPE_BOOL, &conf->ssl_dont_verify_peer },
+#endif
 	  { NULL }
      };
 
@@ -374,6 +385,17 @@ void opkg_conf_deinit(opkg_conf_t *conf)
 #if defined(HAVE_OPENSSL)
      opkg_conf_free_string(&conf->signature_ca_file);
      opkg_conf_free_string(&conf->signature_ca_path);
+#endif
+
+#if defined(HAVE_SSLCURL)
+     opkg_conf_free_string(&conf->ssl_engine);
+     opkg_conf_free_string(&conf->ssl_cert);
+     opkg_conf_free_string(&conf->ssl_cert_type);
+     opkg_conf_free_string(&conf->ssl_key);
+     opkg_conf_free_string(&conf->ssl_key_type);
+     opkg_conf_free_string(&conf->ssl_key_passwd);
+     opkg_conf_free_string(&conf->ssl_ca_file);
+     opkg_conf_free_string(&conf->ssl_ca_path);
 #endif
 
      if (conf->verbosity > 1) { 

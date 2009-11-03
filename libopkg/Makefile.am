@@ -40,7 +40,7 @@ libopkg_la_SOURCES = \
 	$(opkg_cmd_sources) $(opkg_db_sources) \
 	$(opkg_util_sources) $(opkg_list_sources)
 
-libopkg_la_LIBADD = $(top_builddir)/libbb/libbb.la $(CURL_LIBS) $(GPGME_LIBS)
+libopkg_la_LIBADD = $(top_builddir)/libbb/libbb.la $(CURL_LIBS) $(GPGME_LIBS) $(OPENSSL_LIBS)
 # make sure we only export symbols that are for public use
 libopkg_la_LDFLAGS = -export-symbols-regex "^opkg_.*"
 

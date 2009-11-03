@@ -17,20 +17,25 @@
    General Public License for more details.
 */
 #include "config.h"
+
 #ifdef HAVE_CURL
 #include <curl/curl.h>
 #endif
+
+#if defined(HAVE_SSLCURL) || defined(HAVE_OPENSSL)
+#include <openssl/conf.h>
+#include <openssl/evp.h>
+#include <openssl/err.h>
+#endif
+
 #if defined(HAVE_GPGME)
 #include <gpgme.h>
 #elif defined(HAVE_OPENSSL)
 #include <openssl/bio.h>
-#include <openssl/err.h>
-#include <openssl/evp.h>
 #include <openssl/objects.h>
 #include <openssl/x509.h>
 #include <openssl/pem.h>
 #include <openssl/hmac.h>
-
 #endif
 
 #include "includes.h"
@@ -44,10 +49,22 @@
 #include "str_util.h"
 #include "opkg_defines.h"
 
+#if defined(HAVE_OPENSSL) || defined(HAVE_SSLCURL)
+static void openssl_init(void);
+#endif
 
 #ifdef HAVE_OPENSSL
 static X509_STORE *setup_verify(opkg_conf_t *conf, char *CAfile, char *CApath);
-static void init_openssl(void);
+#endif
+
+#ifdef HAVE_CURL
+/*
+ * Make curl an instance variable so we don't have to instanciate it
+ * each time
+ */
+static CURL *curl = NULL;
+static void opkg_curl_cleanup(void);
+static CURL *opkg_curl_init(opkg_conf_t *conf, curl_progress_func cb, void *data);
 #endif
 
 int opkg_download(opkg_conf_t *conf, const char *src,
@@ -99,27 +116,12 @@ int opkg_download(opkg_conf_t *conf, const char *src,
     CURLcode res;
     FILE * file = fopen (tmp_file_location, "w");
 
-    curl = curl_easy_init ();
+    curl = opkg_curl_init (conf, cb, data);
     if (curl)
     {
 	curl_easy_setopt (curl, CURLOPT_URL, src);
 	curl_easy_setopt (curl, CURLOPT_WRITEDATA, file);
-	curl_easy_setopt (curl, CURLOPT_NOPROGRESS, (cb == NULL));
-	if (cb)
-	{
-		curl_easy_setopt (curl, CURLOPT_PROGRESSDATA, data);
-		curl_easy_setopt (curl, CURLOPT_PROGRESSFUNCTION, cb);
-	}
-	curl_easy_setopt (curl, CURLOPT_FOLLOWLOCATION, 1);
-	curl_easy_setopt (curl, CURLOPT_FAILONERROR, 1);
-	if (conf->http_proxy || conf->ftp_proxy)
-	{
-	    char *userpwd;
-	    sprintf_alloc (&userpwd, "%s:%s", conf->proxy_user,
-		    conf->proxy_passwd);
-	    curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, userpwd);
-	    free (userpwd);
-	}
+
 	res = curl_easy_perform (curl);
 	fclose (file);
 	if (res)
@@ -129,10 +131,8 @@ int opkg_download(opkg_conf_t *conf, const char *src,
 	    opkg_message(conf, OPKG_ERROR, "Failed to download %s. \nerror detail: %s\n", src, curl_easy_strerror(res));
 	    free(tmp_file_location);
             free(src_basec);
-	    curl_easy_cleanup (curl);
 	    return res;
 	}
-	curl_easy_cleanup (curl);
 
     }
     else
@@ -396,7 +396,7 @@ opkg_verify_file (opkg_conf_t *conf, char *text_file, char *sig_file)
     // Sig check failed by default !
     int status = -1;
 
-    init_openssl();
+    openssl_init();
 
     // Set-up the key store
     if(!(store = setup_verify(conf, conf->signature_ca_file, conf->signature_ca_path))){
@@ -454,6 +454,21 @@ verify_file_end:
 }
 
 
+#if defined(HAVE_OPENSSL) || defined(HAVE_SSLCURL)
+static void openssl_init(void){
+    static int init = 0;
+
+    if(!init){
+	OPENSSL_config(NULL);
+        OpenSSL_add_all_algorithms();
+        ERR_load_crypto_strings();
+        init = 1;
+    }
+}
+
+#endif
+
+
 #if defined HAVE_OPENSSL
 static X509_STORE *setup_verify(opkg_conf_t *conf, char *CAfile, char *CApath){
     X509_STORE *store = NULL;
@@ -509,13 +524,120 @@ end:
 
 }
 
-static void init_openssl(void){
-    static int init = 0;
+#endif
 
-    if(!init){      
-        OpenSSL_add_all_algorithms();       
-        ERR_load_crypto_strings();
-        init = 1;
+#ifdef HAVE_CURL
+static void opkg_curl_cleanup(void){
+    if(curl != NULL){
+	curl_easy_cleanup (curl);
+	curl = NULL;
     }
+}
+
+static CURL *opkg_curl_init(opkg_conf_t *conf, curl_progress_func cb, void *data){
+
+    if(curl == NULL){
+	curl = curl_easy_init();
+
+#ifdef HAVE_SSLCURL
+	openssl_init();
+
+	if (conf->ssl_engine) {
+
+	    /* use crypto engine */
+	    if (curl_easy_setopt(curl, CURLOPT_SSLENGINE, conf->ssl_engine) != CURLE_OK){
+		opkg_message(conf, OPKG_ERROR, "can't set crypto engine: '%s'\n",
+			conf->ssl_engine);
+
+		opkg_curl_cleanup();
+		return NULL;
+	    }
+	    /* set the crypto engine as default */
+	    if (curl_easy_setopt(curl, CURLOPT_SSLENGINE_DEFAULT, 1L) != CURLE_OK){
+		opkg_message(conf, OPKG_ERROR, "can't set crypto engine as default\n");
+
+		opkg_curl_cleanup();
+		return NULL;
+	    }
+	}
+
+	/* cert & key can only be in PEM case in the same file */
+	if(conf->ssl_key_passwd){
+	    if (curl_easy_setopt(curl, CURLOPT_SSLKEYPASSWD, conf->ssl_key_passwd) != CURLE_OK)
+	    {
+	        opkg_message(conf, OPKG_DEBUG, "Failed to set key password\n");
+	    }
+	}
+
+	/* sets the client certificate and its type */
+	if(conf->ssl_cert_type){
+	    if (curl_easy_setopt(curl, CURLOPT_SSLCERTTYPE, conf->ssl_cert_type) != CURLE_OK)
+	    {
+	        opkg_message(conf, OPKG_DEBUG, "Failed to set certificate format\n");
+	    }
+	}
+	/* SSL cert name isn't mandatory */
+	if(conf->ssl_cert){
+	        curl_easy_setopt(curl, CURLOPT_SSLCERT, conf->ssl_cert);
+	}
+
+	/* sets the client key and its type */
+	if(conf->ssl_key_type){
+	    if (curl_easy_setopt(curl, CURLOPT_SSLKEYTYPE, conf->ssl_key_type) != CURLE_OK)
+	    {
+	        opkg_message(conf, OPKG_DEBUG, "Failed to set key format\n");
+	    }
+	}
+	if(conf->ssl_key){
+	    if (curl_easy_setopt(curl, CURLOPT_SSLKEY, conf->ssl_key) != CURLE_OK)
+	    {
+	        opkg_message(conf, OPKG_DEBUG, "Failed to set key\n");
+	    }
+	}
+
+	/* Should we verify the peer certificate ? */
+	if(conf->ssl_dont_verify_peer){
+	    /*
+	     * CURLOPT_SSL_VERIFYPEER default is nonzero (curl => 7.10)
+	     */
+	    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+	}
+
+	/* certification authority file and/or path */
+	if(conf->ssl_ca_file){
+	    curl_easy_setopt(curl, CURLOPT_CAINFO, conf->ssl_ca_file);
+	}
+	if(conf->ssl_ca_path){
+	    curl_easy_setopt(curl, CURLOPT_CAPATH, conf->ssl_ca_path);
+	}
+#endif
+
+	curl_easy_setopt (curl, CURLOPT_FOLLOWLOCATION, 1);
+	curl_easy_setopt (curl, CURLOPT_FAILONERROR, 1);
+	if (conf->http_proxy || conf->ftp_proxy)
+	{
+	    char *userpwd;
+	    sprintf_alloc (&userpwd, "%s:%s", conf->proxy_user,
+		    conf->proxy_passwd);
+	    curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, userpwd);
+	    free (userpwd);
+	}
+
+	/* add curl cleanup callback */
+	if(!atexit(opkg_curl_cleanup)){
+	    opkg_message(conf,OPKG_DEBUG, "Failed to register atexit curl cleanup function\n");
+	}
+
+    }
+
+    curl_easy_setopt (curl, CURLOPT_NOPROGRESS, (cb == NULL));
+    if (cb)
+    {
+	curl_easy_setopt (curl, CURLOPT_PROGRESSDATA, data);
+	curl_easy_setopt (curl, CURLOPT_PROGRESSFUNCTION, cb);
+    }
+
+    return curl;
+
 }
 #endif
