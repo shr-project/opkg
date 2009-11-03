@@ -17,27 +17,25 @@
 #include "includes.h"
 #include "opkg_conf.h"
 #include "opkg_message.h"
-
-opkg_message_callback opkg_cb_message = NULL;
+#include "opkg_error.h"
+#include "opkg_utils.h"
 
 void
 opkg_message (opkg_conf_t * conf, message_level_t level, char *fmt, ...)
 {
 	va_list ap;
-	char ts[256];
+
+	if (conf && (conf->verbosity < level))
+		return;
 
 	va_start (ap, fmt);
-	vsnprintf (ts,256,fmt, ap);
-	va_end (ap);
 
-	if (opkg_cb_message)
-	{
-		opkg_cb_message(conf,level,ts);
-	}
-	else
-	{
-	  char *level_s[5] = {"ERROR", "NOTICE", "INFO", "DEBUG", "DEBUG2"};
-	  if (level <= conf->verbosity)
-	    printf ("opkg-%s: %s", level_s[level], ts);
-	}
+	if (level == OPKG_ERROR) {
+		char msg[256];
+		vsnprintf(msg, 256, fmt, ap);
+		push_error_list(&error_list, msg);
+	} else
+		vprintf(fmt, ap);
+
+	va_end (ap);
 }
