@@ -23,6 +23,7 @@
 #include "opkg_utils.h"
 #include "pkg.h"
 #include "pkg_hash.h"
+#include "libbb/libbb.h"
 
 void print_pkg_status(pkg_t * pkg, FILE * file);
 
@@ -87,7 +88,7 @@ char **read_raw_pkgs_from_stream(FILE *fp)
 	  if((scout = strchr(buf, '\n')))
 	       *scout = '\0';
 
-	  raw[count++] = strdup(buf);
+	  raw[count++] = xstrdup(buf);
      }
     
      raw = realloc(raw, (count + 1) * sizeof(char *));
@@ -163,14 +164,7 @@ void push_error_list(char * msg)
 		return;
 	}
 
-	e->errmsg = strdup(msg);
-	if (e->errmsg == NULL) {
-		fprintf(stderr, "%s: strdup: %s\n",
-				__FUNCTION__, strerror(errno));
-		free(e);
-		return;
-	}
-
+	e->errmsg = xstrdup(msg);
 	e->next = NULL;
 
 	if (error_list_head) {

@@ -21,6 +21,7 @@
 #include <string.h>
 #include "hash_table.h"
 #include "opkg_message.h"
+#include "libbb/libbb.h"
 
 
 static int hash_index(hash_table_t *hash, const char *pkg_name);
@@ -155,7 +156,7 @@ int hash_table_insert(hash_table_t *hash, const char *key, void *value)
 	  }
      }
      hash->n_elements++;
-     hash_entry->key = strdup(key);
+     hash_entry->key = xstrdup(key);
      hash_entry->data = value;
 
      return 0;

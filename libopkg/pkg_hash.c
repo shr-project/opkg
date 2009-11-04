@@ -28,6 +28,7 @@
 #include "pkg_hash.h"
 #include "pkg_parse.h"
 #include "opkg_utils.h"
+#include "libbb/libbb.h"
 
 static abstract_pkg_t * add_new_abstract_pkg_by_name(hash_table_t * hash, const char * pkg_name);
 
@@ -106,7 +107,7 @@ static char *pkg_get_default_arch(opkg_conf_t *conf)
 	  }
      }
 
-     return strdup(def_arch);
+     return xstrdup(def_arch);
 }
 
 int pkg_hash_add_from_file(opkg_conf_t *conf, const char *file_name,
@@ -610,7 +611,7 @@ static abstract_pkg_t * add_new_abstract_pkg_by_name(hash_table_t * hash, const 
   ab_pkg = abstract_pkg_new();
   if (ab_pkg == NULL) { return NULL; }
 
-  ab_pkg->name = strdup(pkg_name);
+  ab_pkg->name = xstrdup(pkg_name);
   hash_table_insert(hash, pkg_name, ab_pkg);
 
   return ab_pkg;

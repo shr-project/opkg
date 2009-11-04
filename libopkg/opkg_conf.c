@@ -26,13 +26,14 @@
 #include "file_util.h"
 #include "str_util.h"
 #include "xsystem.h"
-#include <glob.h>
 #include "opkg_defines.h"
+#include "libbb/libbb.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <glob.h>
 
 extern char *conf_file_dir;
 
@@ -109,7 +110,7 @@ static void opkg_conf_override_string(char **conf_str, char *arg_str)
 	  if (*conf_str) {
 	       free(*conf_str);
 	  }
-	  *conf_str = strdup(arg_str);
+	  *conf_str = xstrdup(arg_str);
      }
 }
 
@@ -213,8 +214,8 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      pending_dir = calloc(1, strlen(lists_dir)+strlen("/pending")+5);
      snprintf(pending_dir,strlen(lists_dir)+strlen("/pending") ,"%s%s",lists_dir,"/pending");
 
-     conf->lists_dir = strdup(lists_dir);
-     conf->pending_dir = strdup(pending_dir);
+     conf->lists_dir = xstrdup(lists_dir);
+     conf->pending_dir = xstrdup(pending_dir);
 
      if (args->offline_root) 
 	  sprintf_alloc(&etc_opkg_conf_pattern, "%s/etc/opkg/*.conf", args->offline_root);
@@ -486,7 +487,7 @@ static int set_and_load_pkg_dest_list(opkg_conf_t *conf, nv_pair_list_t *nv_pair
 	  if (conf->offline_root) {
 	       sprintf_alloc(&root_dir, "%s%s", conf->offline_root, nv_pair->value);
 	  } else {
-	       root_dir = strdup(nv_pair->value);
+	       root_dir = xstrdup(nv_pair->value);
 	  }
 	  dest = pkg_dest_list_append(&conf->pkg_dest_list, nv_pair->name, root_dir, lists_dir);
 	  free(root_dir);
@@ -629,7 +630,7 @@ static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 	       opkg_message(conf, OPKG_INFO, "supported arch %s priority (%s)\n", name, value);
 	       if (!value) {
 		    opkg_message(conf, OPKG_NOTICE, "defaulting architecture %s priority to 10\n", name);
-		    value = strdup("10");
+		    value = xstrdup("10");
 	       }
 	       nv_pair_list_append(&conf->arch_list, name, value);
 	  } else {
@@ -678,7 +679,7 @@ static int opkg_conf_set_option(const opkg_option_t *options,
 		    }		    
 	       case OPKG_OPT_TYPE_STRING:
 		    if (value) {
-			 *((char **)options[i].value) = strdup(value);
+			 *((char **)options[i].value) = xstrdup(value);
 			 return 0;
 		    } else {
 			 printf("%s: Option %s need an argument\n",

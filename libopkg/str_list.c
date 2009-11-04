@@ -16,8 +16,8 @@
 */
 
 #include "includes.h"
-
 #include "str_list.h"
+#include "libbb/libbb.h"
 
 int str_list_elt_init(str_list_elt_t *elt, char *data)
 {
@@ -60,12 +60,12 @@ void str_list_deinit(str_list_t *list)
 
 int str_list_append(str_list_t *list, char *data)
 {
-    return void_list_append((void_list_t *) list, strdup(data));
+    return void_list_append((void_list_t *) list, xstrdup(data));
 }
 
 int str_list_push(str_list_t *list, char *data)
 {
-    return void_list_push((void_list_t *) list, strdup(data));
+    return void_list_push((void_list_t *) list, xstrdup(data));
 }
 
 str_list_elt_t *str_list_pop(str_list_t *list)

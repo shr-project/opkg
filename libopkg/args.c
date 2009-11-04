@@ -25,6 +25,7 @@
 #include "config.h"
 #include "args.h"
 #include "sprintf_alloc.h"
+#include "libbb/libbb.h"
 
 static void print_version(void);
 
@@ -163,23 +164,23 @@ int args_parse(args_t *args, int argc, char *argv[])
 	       args->query_all = 1;
 	       break;
 	  case 'd':
-	       args->dest = strdup (optarg);
+	       args->dest = xstrdup(optarg);
 	       break;
 	  case 'f':
 	       free(args->conf_file);
-	       args->conf_file = strdup(optarg);
+	       args->conf_file = xstrdup(optarg);
 	       break;
 	  case 'o':
-	       args->offline_root = strdup (optarg);
+	       args->offline_root = xstrdup(optarg);
 	       break;
 	  case 'p':
-	       args->offline_root_path = strdup (optarg);
+	       args->offline_root_path = xstrdup(optarg);
 	       break;
 	  case 'n':
 	       args->noaction = 1;
 	       break;
 	  case 't':
-	       args->tmp_dir = strdup(optarg);
+	       args->tmp_dir = xstrdup(optarg);
 	       break;
 	  case 'v':
 	       print_version();
@@ -196,7 +197,7 @@ int args_parse(args_t *args, int argc, char *argv[])
 	       break;
 	  case ARGS_OPT_CACHE:
 	       free(args->cache);
-	       args->cache = strdup(optarg);
+	       args->cache = xstrdup(optarg);
 	       break;
 	  case ARGS_OPT_FORCE_DEFAULTS:
 	       args->force_defaults = 1;

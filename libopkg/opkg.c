@@ -60,18 +60,14 @@ pkg_t_to_opkg_package_t (pkg_t *old)
 
   new = opkg_package_new ();
 
-#define sstrdup(x) (x) ? strdup (x) : NULL;
-
-  new->name = sstrdup (old->name);
+  new->name = xstrdup(old->name);
   new->version = pkg_version_str_alloc (old);
-  new->architecture = sstrdup (old->architecture);
+  new->architecture = xstrdup(old->architecture);
   if (old->src)
-    new->repository = sstrdup (old->src->name);
-  new->description = sstrdup (old->description);
-  new->tags = sstrdup (old->tags);
-  new->url = sstrdup (old->url);
-
-#undef sstrdup
+    new->repository = xstrdup(old->src->name);
+  new->description = xstrdup(old->description);
+  new->tags = xstrdup(old->tags);
+  new->url = xstrdup(old->url);
 
   new->size = (old->size) ? atoi (old->size) : 0;
   new->installed = (old->state_status == SS_INSTALLED);
@@ -261,25 +257,25 @@ opkg_re_read_config_files (opkg_t *opkg)
   if (c->offline_root)
   {
     if (a->offline_root) free (a->offline_root);
-    a->offline_root = strdup (c->offline_root);
+    a->offline_root = xstrdup(c->offline_root);
   }
 
   if (c->offline_root_pre_script_cmd)
   {
     if (a->offline_root_pre_script_cmd) free (a->offline_root_pre_script_cmd);
-    a->offline_root_pre_script_cmd = strdup (c->offline_root_pre_script_cmd);
+    a->offline_root_pre_script_cmd = xstrdup(c->offline_root_pre_script_cmd);
   }
 
   if (c->offline_root_post_script_cmd)
   {
     if (a->offline_root_post_script_cmd) free (a->offline_root_post_script_cmd);
-    a->offline_root_post_script_cmd = strdup (c->offline_root_post_script_cmd);
+    a->offline_root_post_script_cmd = xstrdup(c->offline_root_post_script_cmd);
   }
 
   if (c->cache) {
     if (a->cache)
 	free (a->cache);
-    a->cache = strdup(c->cache);
+    a->cache = xstrdup(c->cache);
   }
 
   /* throw away old opkg_conf and start again */
@@ -328,7 +324,7 @@ opkg_get_option (opkg_t *opkg, char *option, void **value)
     return;
 
   case OPKG_OPT_TYPE_STRING:
-    *((char **)value) = strdup (options[i].value);
+    *((char **)value) = xstrdup(options[i].value);
     return;
   }
 
@@ -380,7 +376,7 @@ opkg_set_option (opkg_t *opkg, char *option, void *value)
     return;
 
   case OPKG_OPT_TYPE_STRING:
-    *((char **)options[i].value) = strdup (value);
+    *((char **)options[i].value) = xstrdup(value);
     return;
   }
 
@@ -773,7 +769,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     }
   }
 
-  tmp = strdup ("/tmp/opkg.XXXXXX");
+  tmp = xstrdup("/tmp/opkg.XXXXXX");
 
   if (mkdtemp (tmp) == NULL)
   {
@@ -1051,7 +1047,7 @@ int opkg_repository_accessibility_check(opkg_t *opkg)
 		      (index(strstr(((pkg_src_t *)iter->data)->value, "://") + 3, '/') - ((pkg_src_t *)iter->data)->value)*sizeof(char));
 
     else
-      stmp = strdup(((pkg_src_t *)iter->data)->value);
+      stmp = xstrdup(((pkg_src_t *)iter->data)->value);
 
     for (iter1 = str_list_first(src); iter1; iter1 = str_list_next(src, iter1))
     {

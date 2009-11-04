@@ -25,6 +25,7 @@
 #include "opkg_message.h"
 #include "pkg_parse.h"
 #include "hash_table.h"
+#include "libbb/libbb.h"
 
 static int parseDepends(compound_depend_t *compound_depend, hash_table_t * hash, char * depend_str);
 static depend_t * depend_init(void);
@@ -609,7 +610,7 @@ char ** add_unresolved_dep(pkg_t * pkg, char ** the_lost, int ref_ndx)
        fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
        return NULL;
     }
-    resized[count - 1] = strdup(depend_str);
+    resized[count - 1] = xstrdup(depend_str);
     resized[count] = NULL;
     
     return resized;

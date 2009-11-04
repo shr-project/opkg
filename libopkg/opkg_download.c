@@ -47,6 +47,7 @@
 #include "file_util.h"
 #include "str_util.h"
 #include "opkg_defines.h"
+#include "libbb/libbb.h"
 
 #if defined(HAVE_OPENSSL) || defined(HAVE_SSLCURL)
 static void openssl_init(void);
@@ -71,7 +72,7 @@ int opkg_download(opkg_conf_t *conf, const char *src,
 {
     int err = 0;
 
-    char *src_basec = strdup(src);
+    char *src_basec = xstrdup(src);
     char *src_base = basename(src_basec);
     char *tmp_file_location;
 
@@ -177,7 +178,7 @@ int opkg_download(opkg_conf_t *conf, const char *src,
 static int opkg_download_cache(opkg_conf_t *conf, const char *src,
   const char *dest_file_name, curl_progress_func cb, void *data)
 {
-    char *cache_name = strdup(src);
+    char *cache_name = xstrdup(src);
     char *cache_location, *p;
     int err = 0;
 
@@ -260,7 +261,7 @@ int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **name
      if (str_starts_with(url, "http://")
 	 || str_starts_with(url, "ftp://")) {
 	  char *tmp_file;
-	  char *file_basec = strdup(url);
+	  char *file_basec = xstrdup(url);
 	  char *file_base = basename(file_basec);
 
 	  sprintf_alloc(&tmp_file, "%s/%s", conf->tmp_dir, file_base);
@@ -305,7 +306,7 @@ int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **name
         return 0;
      }
      if (namep) {
-	  *namep = strdup(pkg->name);
+	  *namep = xstrdup(pkg->name);
      }
      return 0;
 }

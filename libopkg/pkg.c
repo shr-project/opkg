@@ -291,7 +291,7 @@ int pkg_init_from_file(pkg_t *pkg, const char *filename)
      err = pkg_init(pkg);
      if (err) { return err; }
 
-     pkg->local_filename = strdup(filename);
+     pkg->local_filename = xstrdup(filename);
     
      control_file = tmpfile();
      err = pkg_extract_control_file_to_stream(pkg, control_file);
@@ -957,13 +957,13 @@ char *pkg_version_str_alloc(pkg_t *pkg)
      if (pkg->epoch) {
 	  sprintf_alloc(&epoch_str, "%d:", pkg->epoch);
      } else {
-	  epoch_str = strdup("");
+	  epoch_str = xstrdup("");
      }
 
      if (pkg->revision && strlen(pkg->revision)) {
 	  sprintf_alloc(&revision_str, "-%s", pkg->revision);
      } else {
-	  revision_str = strdup("");
+	  revision_str = xstrdup("");
      }
 
 
@@ -1224,13 +1224,13 @@ char *pkg_state_want_to_str(pkg_state_want_t sw)
 
      for (i=0; i < ARRAY_SIZE(pkg_state_want_map); i++) {
 	  if (pkg_state_want_map[i].value == sw) {
-	       return strdup(pkg_state_want_map[i].str);
+	       return xstrdup(pkg_state_want_map[i].str);
 	  }
      }
 
      fprintf(stderr, "%s: ERROR: Illegal value for state_want: %d\n",
 	     __FUNCTION__, sw);
-     return strdup("<STATE_WANT_UNKNOWN>");
+     return xstrdup("<STATE_WANT_UNKNOWN>");
 }
 
 pkg_state_want_t pkg_state_want_from_str(char *str)
@@ -1258,7 +1258,7 @@ char *pkg_state_flag_to_str(pkg_state_flag_t sf)
      sf &= SF_NONVOLATILE_FLAGS;
 
      if (sf == 0) {
-	  return strdup("ok");
+	  return xstrdup("ok");
      } else {
 
 	  for (i=0; i < ARRAY_SIZE(pkg_state_flag_map); i++) {
@@ -1315,13 +1315,13 @@ char *pkg_state_status_to_str(pkg_state_status_t ss)
 
      for (i=0; i < ARRAY_SIZE(pkg_state_status_map); i++) {
 	  if (pkg_state_status_map[i].value == ss) {
-	       return strdup(pkg_state_status_map[i].str);
+	       return xstrdup(pkg_state_status_map[i].str);
 	  }
      }
 
      fprintf(stderr, "%s: ERROR: Illegal value for state_status: %d\n",
 	     __FUNCTION__, ss);
-     return strdup("<STATE_STATUS_UNKNOWN>");
+     return xstrdup("<STATE_STATUS_UNKNOWN>");
 }
 
 pkg_state_status_t pkg_state_status_from_str(const char *str)

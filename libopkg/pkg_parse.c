@@ -22,6 +22,7 @@
 #include "pkg.h"
 #include "opkg_utils.h"
 #include "pkg_parse.h"
+#include "libbb/libbb.h"
 
 int isGenericFieldType(char * type, char * line)
 {
@@ -378,7 +379,7 @@ out:;
     {
        pkg->provides_count = 1;
        pkg->provides_str = calloc (1, sizeof (char*));
-       pkg->provides_str[0] = strdup ("opkg_internal_use_only");
+       pkg->provides_str[0] = xstrdup("opkg_internal_use_only");
     }
 
     if (pkg->name) {

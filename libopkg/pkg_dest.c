@@ -24,14 +24,15 @@
 #include "opkg_conf.h"
 #include "opkg_cmd.h"
 #include "opkg_defines.h"
+#include "libbb/libbb.h"
 
 int pkg_dest_init(pkg_dest_t *dest, const char *name, const char *root_dir,const char * lists_dir)
 {
-    dest->name = strdup(name);
+    dest->name = xstrdup(name);
 
     /* Guarantee that dest->root_dir ends with a '/' */
     if (str_ends_with(root_dir, "/")) {
-	dest->root_dir = strdup(root_dir);
+	dest->root_dir = xstrdup(root_dir);
     } else {
 	sprintf_alloc(&dest->root_dir, "%s/", root_dir);
     }

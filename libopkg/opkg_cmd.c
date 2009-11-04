@@ -195,7 +195,7 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
      failures = 0;
 
 
-     tmp = strdup ("/tmp/opkg.XXXXXX");
+     tmp = xstrdup("/tmp/opkg.XXXXXX");
 
      if (mkdtemp (tmp) == NULL) {
 	 perror ("mkdtemp");
@@ -303,18 +303,11 @@ typedef struct opkg_intercept *opkg_intercept_t;
 static opkg_intercept_t opkg_prep_intercepts(opkg_conf_t *conf)
 {
     opkg_intercept_t ctx;
-    char *oldpath;
     char *newpath;
     int gen;
 
     ctx = calloc (1, sizeof (*ctx));
-    oldpath = getenv ("PATH");
-    if (oldpath) {
-        ctx->oldpath = strdup (oldpath);
-    } else {
-        ctx->oldpath = 0;
-    }
-
+    ctx->oldpath = xstrdup(getenv("PATH"));
 
     sprintf_alloc (&newpath, "%s/opkg/intercept:%s", DATADIR, ctx->oldpath);
     setenv ("PATH", newpath, 1);

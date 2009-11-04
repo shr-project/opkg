@@ -44,6 +44,7 @@ typedef void (*sighandler_t)(int);
 #include "str_util.h"
 #include "xsystem.h"
 #include "user.h"
+#include "libbb/libbb.h"
 
 static int verify_pkg_installable(opkg_conf_t *conf, pkg_t *pkg);
 static int unpack_pkg_control_files(opkg_conf_t *conf, pkg_t *pkg);
@@ -1135,7 +1136,7 @@ static int preinst_configure(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 	  sprintf_alloc(&preinst_args, "install %s", pkg_version);
 	  free(pkg_version);
      } else {
-	  preinst_args = strdup("install");
+	  preinst_args = xstrdup("install");
      }
 
      err = pkg_run_script(conf, pkg, "preinst", preinst_args);
