@@ -40,7 +40,7 @@ int conffile_has_been_modified(opkg_conf_t *conf, conffile_t *conffile)
     char *md5sum;
     char *filename = conffile->name;
     char *root_filename;
-    int ret;
+    int ret = 1;
 
     if (conffile->value == NULL) {
 	 opkg_message(conf, OPKG_NOTICE, "%s: conffile %s has no md5sum\n", __FUNCTION__, conffile->name);
@@ -51,14 +51,14 @@ int conffile_has_been_modified(opkg_conf_t *conf, conffile_t *conffile)
 
     md5sum = file_md5sum_alloc(root_filename);
 
-    ret = strcmp(md5sum, conffile->value);
-    if (ret) {
+    if (md5sum && (ret = strcmp(md5sum, conffile->value))) {
       opkg_message(conf, OPKG_NOTICE, "%s: conffile %s: \t\nold md5=%s \t\nnew md5=%s\n", __FUNCTION__,
               conffile->name, md5sum, conffile->value);
     }
 
     free(root_filename);
-    free(md5sum);
+    if (md5sum)
+        free(md5sum);
 
     return ret;
 }

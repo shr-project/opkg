@@ -870,7 +870,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      if (pkg->md5sum)
      {
          file_md5 = file_md5sum_alloc(pkg->local_filename);
-         if (strcmp(file_md5, pkg->md5sum))
+         if (file_md5 && strcmp(file_md5, pkg->md5sum))
          {
               opkg_message(conf, OPKG_ERROR,
                            "Package %s md5sum mismatch. Either the opkg or the package index are corrupt. Try 'opkg update'.\n",
@@ -878,7 +878,8 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
               free(file_md5);
               return OPKG_INSTALL_ERR_MD5;
          }
-         free(file_md5);
+	 if (file_md5)
+              free(file_md5);
      }
 
 #ifdef HAVE_SHA256
@@ -886,7 +887,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      if(pkg->sha256sum)
      {
          file_sha256 = file_sha256sum_alloc(pkg->local_filename);
-         if (strcmp(file_sha256, pkg->sha256sum))
+         if (file_sha256 && strcmp(file_sha256, pkg->sha256sum))
          {
               opkg_message(conf, OPKG_ERROR,
                            "Package %s sha256sum mismatch. Either the opkg or the package index are corrupt. Try 'opkg update'.\n",
@@ -894,7 +895,8 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
               free(file_sha256);
               return OPKG_INSTALL_ERR_SHA256;
          }
-         free(file_sha256);
+	 if (file_sha256)
+              free(file_sha256);
      }
 #endif
 
@@ -1585,10 +1587,8 @@ static int resolve_conffiles(opkg_conf_t *conf, pkg_t *pkg)
      conffile_list_elt_t *iter;
      conffile_t *cf;
      char *cf_backup;
+     char *md5sum;
 
-    char *md5sum;
-
-    
      if (conf->noaction) return 0;
 
      for (iter = nv_pair_list_first(&pkg->conffiles); iter; iter = nv_pair_list_next(&pkg->conffiles, iter)) {
@@ -1612,7 +1612,7 @@ static int resolve_conffiles(opkg_conf_t *conf, pkg_t *pkg)
           if (file_exists(cf_backup)) {
               /* Let's compute md5 to test if files are changed */
               md5sum = file_md5sum_alloc(cf_backup);
-              if (strcmp( cf->value,md5sum) != 0 ) {
+              if (md5sum && cf->value && strcmp(cf->value,md5sum) != 0 ) {
                   if (conf->force_maintainer) {
                       opkg_message(conf, OPKG_NOTICE, "Conffile %s using maintainer's setting.\n", cf_backup);
                   } else if (conf->force_defaults
@@ -1621,7 +1621,8 @@ static int resolve_conffiles(opkg_conf_t *conf, pkg_t *pkg)
                   }
               }
               unlink(cf_backup);
-              free(md5sum);
+	      if (md5sum)
+                  free(md5sum);
           }
 
 	  free(cf_backup);

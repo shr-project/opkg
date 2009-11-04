@@ -83,7 +83,7 @@ char *file_read_line_alloc(FILE *file)
 	    strcat(line, buf);
 	} else {
 	    line_size = buf_len + 1;
-	    line = strdup(buf);
+	    line = xstrdup(buf);
 	}
 	if (buf[buf_len - 1] == '\n') {
 	    break;
@@ -150,21 +150,24 @@ char *file_md5sum_alloc(const char *file_name)
     md5sum_hex = calloc(1, md5sum_hex_len + 1);
     if (md5sum_hex == NULL) {
 	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	return strdup("");
+	return NULL;
     }
 
     file = fopen(file_name, "r");
     if (file == NULL) {
 	fprintf(stderr, "%s: Failed to open file %s: %s\n",
 		__FUNCTION__, file_name, strerror(errno));
-	return strdup("");
+	free(md5sum_hex);
+	return NULL;
     }
 
     err = md5_stream(file, md5sum_bin);
     if (err) {
 	fprintf(stderr, "%s: ERROR computing md5sum for %s: %s\n",
 		__FUNCTION__, file_name, strerror(err));
-	return strdup("");
+	fclose(file);
+	free(md5sum_hex);
+	return NULL;
     }
 
     fclose(file);
@@ -200,21 +203,24 @@ char *file_sha256sum_alloc(const char *file_name)
     sha256sum_hex = calloc(1, sha256sum_hex_len + 1);
     if (sha256sum_hex == NULL) {
 	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	return strdup("");
+	return NULL;
     }
 
     file = fopen(file_name, "r");
     if (file == NULL) {
 	fprintf(stderr, "%s: Failed to open file %s: %s\n",
 		__FUNCTION__, file_name, strerror(errno));
-	return strdup("");
+	free(sha256sum_hex);
+	return NULL;
     }
 
     err = sha256_stream(file, sha256sum_bin);
     if (err) {
 	fprintf(stderr, "%s: ERROR computing sha256sum for %s: %s\n",
 		__FUNCTION__, file_name, strerror(err));
-	return strdup("");
+	fclose(file);
+	free(sha256sum_hex);
+	return NULL;
     }
 
     fclose(file);
