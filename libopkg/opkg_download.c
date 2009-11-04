@@ -41,7 +41,6 @@
 #include "includes.h"
 #include "opkg_download.h"
 #include "opkg_message.h"
-#include "opkg_state.h"
 
 #include "sprintf_alloc.h"
 #include "xsystem.h"
@@ -216,7 +215,6 @@ int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir)
 {
     int err;
     char *url;
-    char *pkgid;
     char *stripped_filename;
 
     if (pkg->src == NULL) {
@@ -228,10 +226,6 @@ int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir)
 	opkg_message(conf,OPKG_ERROR, "ERROR: Package %s (parent %s) does not have a valid filename field.\n",pkg->name, pkg->parent->name);
 	return -1;
     }
-
-    sprintf_alloc (&pkgid, "%s;%s;%s;", pkg->name, pkg->version, pkg->architecture);
-    opkg_set_current_state (conf, OPKG_STATE_DOWNLOADING_PKG, pkgid);
-    free (pkgid);
 
     sprintf_alloc(&url, "%s/%s", pkg->src->value, pkg->filename);
 
@@ -249,7 +243,6 @@ int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir)
     err = opkg_download_cache(conf, url, pkg->local_filename, NULL, NULL);
     free(url);
 
-    opkg_set_current_state (conf, OPKG_STATE_NONE, NULL);
     return err;
 }
 

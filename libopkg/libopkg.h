@@ -23,7 +23,6 @@
 
 #include "opkg_conf.h"
 #include "opkg_message.h"
-#include "opkg_state.h"
 #include "opkg_download.h"
 #include "opkg_utils.h"
 

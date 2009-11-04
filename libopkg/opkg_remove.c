@@ -22,7 +22,7 @@
 
 #include "opkg_remove.h"
 #include "opkg_error.h"
-#include "opkg_state.h"
+#include "opkg_cmd.h"
 
 #include "file_util.h"
 #include "sprintf_alloc.h"
