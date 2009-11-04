@@ -18,13 +18,13 @@
 #include "includes.h"
 
 #include "nv_pair.h"
-#include "str_util.h"
+#include "libbb/libbb.h"
 
 int nv_pair_init(nv_pair_t *nv_pair, const char *name, const char *value)
 {
 
-    nv_pair->name = str_dup_safe(name);
-    nv_pair->value = str_dup_safe(value);
+    nv_pair->name = xstrdup(name);
+    nv_pair->value = xstrdup(value);
 
     return 0;
 }

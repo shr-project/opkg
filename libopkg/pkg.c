@@ -29,6 +29,7 @@
 #include "opkg_message.h"
 #include "opkg_utils.h"
 
+#include "libbb/libbb.h"
 #include "sprintf_alloc.h"
 #include "file_util.h"
 #include "str_util.h"
@@ -330,15 +331,15 @@ int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
      if (!oldpkg->dest)
 	  oldpkg->dest = newpkg->dest;
      if (!oldpkg->architecture)
-	  oldpkg->architecture = str_dup_safe(newpkg->architecture);
+	  oldpkg->architecture = xstrdup(newpkg->architecture);
      if (!oldpkg->arch_priority)
 	  oldpkg->arch_priority = newpkg->arch_priority;
      if (!oldpkg->section)
-	  oldpkg->section = str_dup_safe(newpkg->section);
+	  oldpkg->section = xstrdup(newpkg->section);
      if(!oldpkg->maintainer)
-	  oldpkg->maintainer = str_dup_safe(newpkg->maintainer);
+	  oldpkg->maintainer = xstrdup(newpkg->maintainer);
      if(!oldpkg->description)
-	  oldpkg->description = str_dup_safe(newpkg->description);
+	  oldpkg->description = xstrdup(newpkg->description);
      if (set_status) {
 	  /* merge the state_flags from the new package */
 	  oldpkg->state_want = newpkg->state_want;
@@ -408,28 +409,28 @@ int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
      }
 
      if (!oldpkg->filename)
-	  oldpkg->filename = str_dup_safe(newpkg->filename);
+	  oldpkg->filename = xstrdup(newpkg->filename);
      if (0)
      fprintf(stdout, "pkg=%s old local_filename=%s new local_filename=%s\n", 
 	     oldpkg->name, oldpkg->local_filename, newpkg->local_filename);
      if (!oldpkg->local_filename)
-	  oldpkg->local_filename = str_dup_safe(newpkg->local_filename);
+	  oldpkg->local_filename = xstrdup(newpkg->local_filename);
      if (!oldpkg->tmp_unpack_dir)
-	  oldpkg->tmp_unpack_dir = str_dup_safe(newpkg->tmp_unpack_dir);
+	  oldpkg->tmp_unpack_dir = xstrdup(newpkg->tmp_unpack_dir);
      if (!oldpkg->md5sum)
-	  oldpkg->md5sum = str_dup_safe(newpkg->md5sum);
+	  oldpkg->md5sum = xstrdup(newpkg->md5sum);
 #if defined HAVE_SHA256
      if (!oldpkg->sha256sum)
-	  oldpkg->sha256sum = str_dup_safe(newpkg->sha256sum);
+	  oldpkg->sha256sum = xstrdup(newpkg->sha256sum);
 #endif
      if (!oldpkg->size)
-	  oldpkg->size = str_dup_safe(newpkg->size);
+	  oldpkg->size = xstrdup(newpkg->size);
      if (!oldpkg->installed_size)
-	  oldpkg->installed_size = str_dup_safe(newpkg->installed_size);
+	  oldpkg->installed_size = xstrdup(newpkg->installed_size);
      if (!oldpkg->priority)
-	  oldpkg->priority = str_dup_safe(newpkg->priority);
+	  oldpkg->priority = xstrdup(newpkg->priority);
      if (!oldpkg->source)
-	  oldpkg->source = str_dup_safe(newpkg->source);
+	  oldpkg->source = xstrdup(newpkg->source);
      if (nv_pair_list_empty(&oldpkg->conffiles)){
 	  list_splice_init(&newpkg->conffiles.head, &oldpkg->conffiles.head);
 	  conffile_list_init(&newpkg->conffiles);

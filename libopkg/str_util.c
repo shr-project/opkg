@@ -65,9 +65,3 @@ int str_toupper(char *str)
 
     return 0;
 }
-
-char *str_dup_safe(const char *str)
-{
-    return str ? strdup(str) : NULL;
-}
-

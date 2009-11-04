@@ -23,6 +23,5 @@ int str_ends_with(const char *str, const char *suffix);
 int str_chomp(char *str);
 int str_tolower(char *str);
 int str_toupper(char *str);
-char *str_dup_safe(const char *str);
 
 #endif
