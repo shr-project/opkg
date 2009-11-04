@@ -568,29 +568,29 @@ static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 
 	  /* This has to be so ugly to deal with optional quotation marks */
 	  if (regmatch[2].rm_so > 0) {
-	       type = strndup(line + regmatch[2].rm_so,
+	       type = xstrndup(line + regmatch[2].rm_so,
 			      regmatch[2].rm_eo - regmatch[2].rm_so);
 	  } else {
-	       type = strndup(line + regmatch[3].rm_so,
+	       type = xstrndup(line + regmatch[3].rm_so,
 			      regmatch[3].rm_eo - regmatch[3].rm_so);
 	  }
 	  if (regmatch[5].rm_so > 0) {
-	       name = strndup(line + regmatch[5].rm_so,
+	       name = xstrndup(line + regmatch[5].rm_so,
 			      regmatch[5].rm_eo - regmatch[5].rm_so);
 	  } else {
-	       name = strndup(line + regmatch[6].rm_so,
+	       name = xstrndup(line + regmatch[6].rm_so,
 			      regmatch[6].rm_eo - regmatch[6].rm_so);
 	  }
 	  if (regmatch[8].rm_so > 0) {
-	       value = strndup(line + regmatch[8].rm_so,
+	       value = xstrndup(line + regmatch[8].rm_so,
 			       regmatch[8].rm_eo - regmatch[8].rm_so);
 	  } else {
-	       value = strndup(line + regmatch[9].rm_so,
+	       value = xstrndup(line + regmatch[9].rm_so,
 			       regmatch[9].rm_eo - regmatch[9].rm_so);
 	  }
 	  extra = NULL;
 	  if (regmatch[11].rm_so > 0) {
-	       extra = strndup (line + regmatch[11].rm_so,
+	       extra = xstrndup (line + regmatch[11].rm_so,
 				regmatch[11].rm_eo - regmatch[11].rm_so);
 	  }
 

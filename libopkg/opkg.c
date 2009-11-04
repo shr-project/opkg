@@ -1043,7 +1043,7 @@ int opkg_repository_accessibility_check(opkg_t *opkg)
   {
     if (strstr(((pkg_src_t *)iter->data)->value, "://") && 
 		    index(strstr(((pkg_src_t *)iter->data)->value, "://") + 3, '/')) 
-      stmp = strndup(((pkg_src_t *)iter->data)->value, 
+      stmp = xstrndup(((pkg_src_t *)iter->data)->value, 
 		      (index(strstr(((pkg_src_t *)iter->data)->value, "://") + 3, '/') - ((pkg_src_t *)iter->data)->value)*sizeof(char));
 
     else
