@@ -162,7 +162,7 @@ opkg_package_new ()
 
   opkg_package_t *p;
 
-  p = calloc (1, sizeof (opkg_package_t));
+  p = xcalloc(1, sizeof (opkg_package_t));
 
   return p;
 }
@@ -187,9 +187,9 @@ opkg_new ()
   opkg_t *opkg;
   int err;
 
-  opkg = calloc (1, sizeof (opkg_t));
+  opkg = xcalloc(1, sizeof (opkg_t));
 
-  opkg->args = calloc (1, sizeof (args_t));
+  opkg->args = xcalloc(1, sizeof (args_t));
   err = args_init (opkg->args);
   if (err)
   {
@@ -198,7 +198,7 @@ opkg_new ()
     return NULL;
   }
 
-  opkg->conf = calloc (1, sizeof (opkg_conf_t));
+  opkg->conf = xcalloc(1, sizeof (opkg_conf_t));
   err = opkg_conf_init (opkg->conf, opkg->args);
   if (err)
   {

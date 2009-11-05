@@ -19,11 +19,11 @@
 #include <stdarg.h>
 
 #include "sprintf_alloc.h"
+#include "libbb/libbb.h"
 
 int sprintf_alloc(char **str, const char *fmt, ...)
 {
     va_list ap;
-    char *new_str;
     int n, size = 100;
 
     if (!str) {
@@ -44,13 +44,11 @@ int sprintf_alloc(char **str, const char *fmt, ...)
 
     /* ripped more or less straight out of PRINTF(3) */
 
-    if ((new_str = calloc(1, size)) == NULL) 
-      return -1;
+    *str = xcalloc(1, size);
 
-    *str = new_str;
     while(1) {
       va_start(ap, fmt);
-      n = vsnprintf (new_str, size, fmt, ap);
+      n = vsnprintf (*str, size, fmt, ap);
       va_end(ap);
       /* If that worked, return the size. */
       if (n > -1 && n < size)
@@ -60,13 +58,7 @@ int sprintf_alloc(char **str, const char *fmt, ...)
 	    size = n+1; /* precisely what is needed */
 	else           /* glibc 2.0 */
 	    size *= 2;  /* twice the old size */
-	new_str = realloc(new_str, size);
-	if (new_str == NULL) {
-	    free(new_str);
-	    *str = NULL;
-	    return -1;
-	}
-	*str = new_str;
+	*str = xrealloc(*str, size);
     }
 
     return -1; /* Just to be correct - it probably won't get here */

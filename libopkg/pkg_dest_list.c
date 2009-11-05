@@ -20,6 +20,7 @@
 #include "pkg_dest.h"
 #include "void_list.h"
 #include "pkg_dest_list.h"
+#include "libbb/libbb.h"
 
 int pkg_dest_list_elt_init(pkg_dest_list_elt_t *elt, pkg_dest_t *data)
 {
@@ -58,12 +59,8 @@ pkg_dest_t *pkg_dest_list_append(pkg_dest_list_t *list, const char *name,
     int err;
     pkg_dest_t *pkg_dest;
 
-    /* freed in plg_dest_list_deinit */
-    pkg_dest = calloc(1, sizeof(pkg_dest_t));
-    if (pkg_dest == NULL) {
-	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	return NULL;
-    }
+    /* freed in pkg_dest_list_deinit */
+    pkg_dest = xcalloc(1, sizeof(pkg_dest_t));
 
     pkg_dest_init(pkg_dest, name, root_dir,lists_dir);
     err = void_list_append((void_list_t *) list, pkg_dest);

@@ -600,14 +600,14 @@ static int pkg_remove_orphan_dependent(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old
         if (found)
             continue;
         d_str = old_pkg->depends_str[i];
-        buf = calloc (1, strlen (d_str) + 1);
+        buf = xcalloc(1, strlen (d_str) + 1);
         j=0;
         while (d_str[j] != '\0' && d_str[j] != ' ') {
             buf[j]=d_str[j];
             ++j;
         }
         buf[j]='\0';
-        buf = realloc (buf, strlen (buf) + 1);
+        buf = xrealloc (buf, strlen (buf) + 1);
         p = pkg_hash_fetch_installed_by_name (&conf->pkg_hash, buf);
         if (!p) {
             fprintf(stderr, "The pkg %s had been removed!!\n", buf);

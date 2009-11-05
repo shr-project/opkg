@@ -573,24 +573,20 @@ static char ** merge_unresolved(char ** oldstuff, char ** newstuff)
 
     if(!newstuff)
 	return oldstuff;
-    
+
     while(oldstuff && oldstuff[oldlen]) oldlen++;
     while(newstuff && newstuff[newlen]) newlen++;
-    
-    result = (char **)realloc(oldstuff, sizeof(char *) * (oldlen + newlen + 1));
-    if (result == NULL) {
-        fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-        return NULL;
-    }
-    
+
+    result = xrealloc(oldstuff, sizeof(char *) * (oldlen + newlen + 1));
+
     for(i = oldlen, j = 0; i < (oldlen + newlen); i++, j++)
 	*(result + i) = *(newstuff + j);
-    
+
     *(result + i) = NULL;
 
     return result;
 }
-    
+
 /* 
  * a kinda kludgy way to back out depends str from two different arrays (reg'l'r 'n pre)
  * this is null terminated, no count is carried around 
@@ -605,11 +601,7 @@ char ** add_unresolved_dep(pkg_t * pkg, char ** the_lost, int ref_ndx)
     while(the_lost && the_lost[count]) count++;
 
     count++;  /* need one to hold the null */
-    resized = (char **)realloc(the_lost, sizeof(char *) * (count + 1));
-    if (resized == NULL) {
-       fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-       return NULL;
-    }
+    resized = xrealloc(the_lost, sizeof(char *) * (count + 1));
     resized[count - 1] = xstrdup(depend_str);
     resized[count] = NULL;
     
@@ -654,11 +646,7 @@ int buildProvides(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
     if (pkg->provides)
       return 0;
 
-    pkg->provides = (abstract_pkg_t **)calloc((pkg->provides_count + 1), sizeof(abstract_pkg_t *));
-    if (pkg->provides == NULL) {
-       fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-       return -1 ;
-    }
+    pkg->provides = xcalloc((pkg->provides_count + 1), sizeof(abstract_pkg_t *));
     pkg->provides[0] = ab_pkg;
 
     // if (strcmp(ab_pkg->name, pkg->name))
@@ -684,11 +672,7 @@ int buildConflicts(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
     if (!pkg->conflicts_count)
 	return 0;
 
-    conflicts = pkg->conflicts = calloc(pkg->conflicts_count, sizeof(compound_depend_t));
-    if (conflicts == NULL) {
-       fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-       return  -1;
-    }
+    conflicts = pkg->conflicts = xcalloc(pkg->conflicts_count, sizeof(compound_depend_t));
     for (i = 0; i < pkg->conflicts_count; i++) {
 	 conflicts->type = CONFLICTS;
 	 parseDepends(conflicts, hash,
@@ -705,11 +689,7 @@ int buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
      if (!pkg->replaces_count)
 	  return 0;
 
-     pkg->replaces = (abstract_pkg_t **)calloc(pkg->replaces_count, sizeof(abstract_pkg_t *));
-     if (pkg->replaces == NULL) {
-        fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-        return  -1;
-     }
+     pkg->replaces = xcalloc(pkg->replaces_count, sizeof(abstract_pkg_t *));
 
      for(i = 0; i < pkg->replaces_count; i++){
 	  abstract_pkg_t *old_abpkg = ensure_abstract_pkg_by_name(hash, pkg->replaces_str[i]);
@@ -719,9 +699,6 @@ int buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 	  j = 0;
 	  if (!old_abpkg->replaced_by)
 	       old_abpkg->replaced_by = abstract_pkg_vec_alloc();
-               if ( old_abpkg->replaced_by == NULL ){
-                  return -1;
-               }
 	  /* if a package pkg both replaces and conflicts old_abpkg,
 	   * then add it to the replaced_by vector so that old_abpkg
 	   * will be upgraded to ab_pkg automatically */
@@ -743,12 +720,7 @@ int buildDepends(hash_table_t * hash, pkg_t * pkg)
      if (0 && pkg->pre_depends_count)
 	  fprintf(stderr, "pkg=%s pre_depends_count=%d depends_count=%d\n", 
 		  pkg->name, pkg->pre_depends_count, pkg->depends_count);
-     depends = pkg->depends = calloc(count, sizeof(compound_depend_t));
-     if (depends == NULL) {
-        fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-        return  -1;
-     }
-     
+     depends = pkg->depends = xcalloc(count, sizeof(compound_depend_t));
 
      for(i = 0; i < pkg->pre_depends_count; i++){
 	  parseDepends(depends, hash, pkg->pre_depends_str[i]);
@@ -856,7 +828,7 @@ void buildDependedUponBy(pkg_t * pkg, abstract_pkg_t * ab_pkg)
 	  for (j = 0; j < depends->possibility_count; j++){
 	       ab_depend = depends->possibilities[j]->pkg;
 	       if(!ab_depend->depended_upon_by)
-		    ab_depend->depended_upon_by = (abstract_pkg_t **)calloc(1, sizeof(abstract_pkg_t *));
+		    ab_depend->depended_upon_by = xcalloc(1, sizeof(abstract_pkg_t *));
 
 	       temp = ab_depend->depended_upon_by;
 	       othercount = 1;
@@ -866,7 +838,7 @@ void buildDependedUponBy(pkg_t * pkg, abstract_pkg_t * ab_pkg)
 	       }
 	       *temp = ab_pkg;
 
-	       ab_depend->depended_upon_by = (abstract_pkg_t **)realloc(ab_depend->depended_upon_by, 
+	       ab_depend->depended_upon_by = xrealloc(ab_depend->depended_upon_by, 
 									(othercount + 1) * sizeof(abstract_pkg_t *));
 	       /* the array may have moved */
 	       temp = ab_depend->depended_upon_by + othercount;
@@ -878,11 +850,7 @@ void buildDependedUponBy(pkg_t * pkg, abstract_pkg_t * ab_pkg)
 
 static depend_t * depend_init(void)
 {
-    depend_t * d = (depend_t *)calloc(1, sizeof(depend_t));    
-    if ( d==NULL ){
-        fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-        return NULL; 
-     }
+    depend_t * d = xcalloc(1, sizeof(depend_t));    
     d->constraint = NONE;
     d->version = NULL;
     d->pkg = NULL;
@@ -913,16 +881,12 @@ static int parseDepends(compound_depend_t *compound_depend,
      compound_depend->type = DEPEND;
 
      compound_depend->possibility_count = num_of_ors + 1;
-     possibilities = (depend_t **)calloc((num_of_ors + 1), sizeof(depend_t *) );
-     if (!possibilities)
-	  return -ENOMEM;
+     possibilities = xcalloc((num_of_ors + 1), sizeof(depend_t *) );
      compound_depend->possibilities = possibilities;
 
      src = depend_str;
      for(i = 0; i < num_of_ors + 1; i++){
 	  possibilities[i] = depend_init();
-          if (!possibilities[i])
-	       return -ENOMEM;
 	  /* gobble up just the name first */
 	  dest = buffer;
 	  while(*src &&

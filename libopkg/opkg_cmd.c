@@ -306,7 +306,7 @@ static opkg_intercept_t opkg_prep_intercepts(opkg_conf_t *conf)
     char *newpath;
     int gen;
 
-    ctx = calloc (1, sizeof (*ctx));
+    ctx = xcalloc(1, sizeof (*ctx));
     ctx->oldpath = xstrdup(getenv("PATH"));
 
     sprintf_alloc (&newpath, "%s/opkg/intercept:%s", DATADIR, ctx->oldpath);
@@ -877,7 +877,7 @@ static int opkg_remove_cmd(opkg_conf_t *conf, int argc, char **argv)
         available = pkg_vec_alloc();
         pkg_hash_fetch_all_installed(&conf->pkg_hash, available);
         for (i=0; i < argc; i++) {
-           pkg_name = calloc(1, strlen(argv[i])+2);
+           pkg_name = xcalloc(1, strlen(argv[i])+2);
            strcpy(pkg_name,argv[i]);
            for (a=0; a < available->len; a++) {
                pkg = available->pkgs[a];

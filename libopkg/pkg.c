@@ -79,7 +79,7 @@ pkg_t *pkg_new(void)
 {
      pkg_t *pkg;
 
-     pkg = calloc(1, sizeof(pkg_t));
+     pkg = xcalloc(1, sizeof(pkg_t));
      if (pkg == NULL) {
 	  fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
 	  return NULL;
@@ -450,7 +450,7 @@ abstract_pkg_t *abstract_pkg_new(void)
 {
      abstract_pkg_t * ab_pkg;
 
-     ab_pkg = calloc(1, sizeof(abstract_pkg_t));
+     ab_pkg = xcalloc(1, sizeof(abstract_pkg_t));
 
      if (ab_pkg == NULL) {
 	  fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
@@ -992,10 +992,6 @@ str_list_t *pkg_get_installed_files(pkg_t *pkg)
      }
 
      pkg->installed_files = str_list_alloc();
-     if (pkg->installed_files == NULL) {
-	  fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	  return NULL;
-     }
 
      /* For uninstalled packages, get the file list directly from the package.
 	For installed packages, look at the package.list file in the database.
@@ -1262,11 +1258,7 @@ char *pkg_state_flag_to_str(pkg_state_flag_t sf)
 		    len += strlen(pkg_state_flag_map[i].str) + 1;
 	       }
 	  }
-	  str = malloc(len);
-          if ( str == NULL ) {
-	      fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-              return NULL;
-          }
+	  str = xmalloc(len);
 	  str[0] = 0;
 	  for (i=0; i < ARRAY_SIZE(pkg_state_flag_map); i++) {
 	       if (sf & pkg_state_flag_map[i].value) {

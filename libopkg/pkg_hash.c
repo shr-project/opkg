@@ -186,8 +186,7 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pk
      if (err)
        *err = 0;
 
-     if (matching_apkgs == NULL || providers == NULL || 
-         apkg == NULL || apkg->provided_by == NULL || (apkg->provided_by->len == 0))
+     if (apkg == NULL || apkg->provided_by == NULL || (apkg->provided_by->len == 0))
 	  return NULL;
 
      opkg_message(conf, OPKG_DEBUG, "best installation candidate for %s\n", apkg->name);

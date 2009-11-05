@@ -19,6 +19,7 @@
 #include <errno.h>
 
 #include "void_list.h"
+#include "libbb/libbb.h"
 
 int void_list_elt_init(void_list_elt_t *elt, void *data)
 {
@@ -31,11 +32,7 @@ int void_list_elt_init(void_list_elt_t *elt, void *data)
 void_list_elt_t * void_list_elt_new (void *data) {
     void_list_elt_t *elt;
     /* freed in void_list_elt_deinit */
-    elt = calloc(1, sizeof(void_list_elt_t));
-    if (elt == NULL) {
-	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	return NULL;
-    }
+    elt = xcalloc(1, sizeof(void_list_elt_t));
     void_list_elt_init(elt, data);
     return elt;
 }

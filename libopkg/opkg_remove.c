@@ -27,6 +27,7 @@
 #include "file_util.h"
 #include "sprintf_alloc.h"
 #include "str_util.h"
+#include "libbb/libbb.h"
 
 /*
  * Returns number of the number of packages depending on the packages provided by this package.
@@ -54,12 +55,7 @@ int pkg_has_installed_dependents(opkg_conf_t *conf, abstract_pkg_t *parent_apkg,
      /* if caller requested the set of installed dependents */
      if (pdependents) {
 	  int p = 0;
-	  abstract_pkg_t **dependents = (abstract_pkg_t **)calloc((n_installed_dependents+1), sizeof(abstract_pkg_t *));
-
-          if ( dependents == NULL ){
-              fprintf(stderr,"%s Unable to allocate memory. REPORT THIS BUG IN BUGZILLA PLEASE\n", __FUNCTION__);
-              return -1;  
-          }
+	  abstract_pkg_t **dependents = xcalloc((n_installed_dependents+1), sizeof(abstract_pkg_t *));
 
 	  *pdependents = dependents;
 	  for (i = 0; i <= nprovides; i++) {
@@ -181,12 +177,7 @@ static int remove_autoinstalled (opkg_conf_t *conf, pkg_t *pkg)
     int x = 0;
     pkg_t *p;
     d_str = pkg->depends_str[i];
-    buffer = calloc (1, strlen (d_str) + 1);
-    if (!buffer)
-    {
-      fprintf(stderr,"%s Unable to allocate memory.\n", __FUNCTION__);
-      return -1;
-    }
+    buffer = xcalloc(1, strlen (d_str) + 1);
 
     while (d_str[x] != '\0' && d_str[x] != ' ')
     {
@@ -194,7 +185,7 @@ static int remove_autoinstalled (opkg_conf_t *conf, pkg_t *pkg)
       ++x;
     }
     buffer[x] = '\0';
-    buffer = realloc (buffer, strlen (buffer) + 1);
+    buffer = xrealloc (buffer, strlen (buffer) + 1);
     p = pkg_hash_fetch_installed_by_name (&conf->pkg_hash, buffer);
 
     /* if the package is not installed, this could have been a circular

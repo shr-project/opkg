@@ -19,6 +19,7 @@
 
 #include "pkg_src_list.h"
 #include "void_list.h"
+#include "libbb/libbb.h"
 
 int pkg_src_list_init(pkg_src_list_t *list)
 {
@@ -48,12 +49,7 @@ pkg_src_t *pkg_src_list_append(pkg_src_list_t *list,
     int err;
 
     /* freed in pkg_src_list_deinit */
-    pkg_src_t *pkg_src = calloc(1, sizeof(pkg_src_t));
-
-    if (pkg_src == NULL) {
-	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	return NULL;
-    }
+    pkg_src_t *pkg_src = xcalloc(1, sizeof(pkg_src_t));
     pkg_src_init(pkg_src, name, base_url, extra_data, gzip);
 
     err = void_list_append((void_list_t *) list, pkg_src);

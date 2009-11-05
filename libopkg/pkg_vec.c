@@ -20,14 +20,11 @@
 #include "xregex.h"
 #include "pkg.h"
 #include "opkg_message.h"
+#include "libbb/libbb.h"
 
 pkg_vec_t * pkg_vec_alloc(void)
 {
-    pkg_vec_t * vec = (pkg_vec_t *)calloc(1, sizeof(pkg_vec_t));
-    if (!vec) {
-      fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-      return NULL;
-    }
+    pkg_vec_t * vec = xcalloc(1, sizeof(pkg_vec_t));
     vec->pkgs = NULL;
     vec->len = 0;
 
@@ -103,13 +100,7 @@ pkg_t *pkg_vec_insert_merge(pkg_vec_t *vec, pkg_t *pkg, int set_status,opkg_conf
 
 void pkg_vec_insert(pkg_vec_t *vec, const pkg_t *pkg)
 {
-    pkg_t **tmp;
-    tmp = realloc(vec->pkgs, (vec->len + 1) * sizeof(pkg_t *));
-    if (tmp == NULL) {
-        fprintf(stderr, "%s: %s\n", __FUNCTION__, strerror(errno));
-	return;
-    }
-    vec->pkgs = tmp;
+    vec->pkgs = xrealloc(vec->pkgs, (vec->len + 1) * sizeof(pkg_t *));
     vec->pkgs[vec->len] = (pkg_t *)pkg;
     vec->len++;
 }
@@ -159,11 +150,7 @@ int pkg_vec_mark_if_matches(pkg_vec_t *vec, const char *pattern)
 abstract_pkg_vec_t * abstract_pkg_vec_alloc(void)
 {
     abstract_pkg_vec_t * vec ; 
-    vec = (abstract_pkg_vec_t *)calloc(1, sizeof(abstract_pkg_vec_t));
-    if (!vec) {
-      fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-      return NULL;
-    }
+    vec = xcalloc(1, sizeof(abstract_pkg_vec_t));
     vec->pkgs = NULL;
     vec->len = 0;
 
@@ -183,13 +170,7 @@ void abstract_pkg_vec_free(abstract_pkg_vec_t *vec)
  */
 void abstract_pkg_vec_insert(abstract_pkg_vec_t *vec, abstract_pkg_t *pkg)
 {
-    abstract_pkg_t **tmp;
-    tmp = realloc(vec->pkgs, (vec->len + 1) * sizeof(abstract_pkg_t *));
-    if (tmp == NULL) {
-        fprintf(stderr, "%s: %s\n", __FUNCTION__, strerror(errno));
-	return;
-    }
-    vec->pkgs = tmp;
+    vec->pkgs = xrealloc(vec->pkgs, (vec->len + 1) * sizeof(abstract_pkg_t *));
     vec->pkgs[vec->len] = pkg;
     vec->len++;
 }

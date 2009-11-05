@@ -18,6 +18,7 @@
 #include "includes.h"
 
 #include "xregex.h"
+#include "libbb/libbb.h"
 
 static void print_regcomp_err(const regex_t *preg, int err);
 
@@ -39,10 +40,8 @@ static void print_regcomp_err(const regex_t *preg, int err)
     
     fprintf(stderr, "%s: Error compiling regex:", __FUNCTION__);
     size = regerror(err, preg, 0, 0);
-    error = calloc(1, size);
-    if (error) {
-	regerror(err, preg, error, size);
-	fprintf(stderr, "%s\n", error);
-    }
+    error = xcalloc(1, size);
+    regerror(err, preg, error, size);
+    fprintf(stderr, "%s\n", error);
     free(error);
 }

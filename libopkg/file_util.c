@@ -75,11 +75,7 @@ char *file_read_line_alloc(FILE *file)
 	buf_len = strlen(buf);
 	if (line) {
 	    line_size += buf_len;
-	    line = realloc(line, line_size);
-	    if (line == NULL) {
-		fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-		break;
-	    }
+	    line = xrealloc(line, line_size);
 	    strcat(line, buf);
 	} else {
 	    line_size = buf_len + 1;
@@ -147,11 +143,7 @@ char *file_md5sum_alloc(const char *file_name)
     char *md5sum_hex;
     unsigned char md5sum_bin[md5sum_bin_len];
 
-    md5sum_hex = calloc(1, md5sum_hex_len + 1);
-    if (md5sum_hex == NULL) {
-	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	return NULL;
-    }
+    md5sum_hex = xcalloc(1, md5sum_hex_len + 1);
 
     file = fopen(file_name, "r");
     if (file == NULL) {
@@ -200,11 +192,7 @@ char *file_sha256sum_alloc(const char *file_name)
     char *sha256sum_hex;
     unsigned char sha256sum_bin[sha256sum_bin_len];
 
-    sha256sum_hex = calloc(1, sha256sum_hex_len + 1);
-    if (sha256sum_hex == NULL) {
-	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	return NULL;
-    }
+    sha256sum_hex = xcalloc(1, sha256sum_hex_len + 1);
 
     file = fopen(file_name, "r");
     if (file == NULL) {

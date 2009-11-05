@@ -20,7 +20,7 @@
 #include "nv_pair.h"
 #include "void_list.h"
 #include "nv_pair_list.h"
-
+#include "libbb/libbb.h"
 
 int nv_pair_list_init(nv_pair_list_t *list)
 {
@@ -51,12 +51,7 @@ nv_pair_t *nv_pair_list_append(nv_pair_list_t *list, const char *name, const cha
     int err;
 
     /* freed in nv_pair_list_deinit */
-    nv_pair_t *nv_pair = calloc(1, sizeof(nv_pair_t));
-
-    if (nv_pair == NULL) {
-	fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	return NULL;
-    }
+    nv_pair_t *nv_pair = xcalloc(1, sizeof(nv_pair_t));
     nv_pair_init(nv_pair, name, value);
 
     err = void_list_append((void_list_t *) list, nv_pair);

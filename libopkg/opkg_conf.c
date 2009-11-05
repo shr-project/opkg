@@ -94,12 +94,7 @@ int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
 	  { NULL }
      };
 
-     *options = (opkg_option_t *)calloc(1, sizeof(tmp));
-     if ( options == NULL ){
-        fprintf(stderr,"%s: Unable to allocate memory\n",__FUNCTION__);
-        return -1;
-     }
-
+     *options = xcalloc(1, sizeof(tmp));
      memcpy(*options, tmp, sizeof(tmp));
      return 0;
 };
@@ -186,7 +181,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      pkg_hash_init("pkg-hash", &conf->pkg_hash, OPKG_CONF_DEFAULT_HASH_LEN);
      hash_table_init("file-hash", &conf->file_hash, OPKG_CONF_DEFAULT_HASH_LEN);
      hash_table_init("obs-file-hash", &conf->obs_file_hash, OPKG_CONF_DEFAULT_HASH_LEN);
-     lists_dir=(char *)malloc(1);
+     lists_dir=xmalloc(1);
      lists_dir[0]='\0';
      if (args->conf_file) {
 	  struct stat stat_buf;
@@ -200,7 +195,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      }
 
      if (strlen(lists_dir)<=1 ){
-        lists_dir = realloc(lists_dir,strlen(OPKG_CONF_LISTS_DIR)+2);
+        lists_dir = xrealloc(lists_dir,strlen(OPKG_CONF_LISTS_DIR)+2);
         sprintf (lists_dir,"%s",OPKG_CONF_LISTS_DIR);
      }
 
@@ -211,7 +206,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
             lists_dir = tmp;
      }
 
-     pending_dir = calloc(1, strlen(lists_dir)+strlen("/pending")+5);
+     pending_dir = xcalloc(1, strlen(lists_dir)+strlen("/pending")+5);
      snprintf(pending_dir,strlen(lists_dir)+strlen("/pending") ,"%s%s",lists_dir,"/pending");
 
      conf->lists_dir = xstrdup(lists_dir);
@@ -619,12 +614,7 @@ static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 	  } else if (strcmp(type, "dest") == 0) {
 	       nv_pair_list_append(tmp_dest_nv_pair_list, name, value);
 	  } else if (strcmp(type, "lists_dir") == 0) {
-	       *lists_dir = realloc(*lists_dir,strlen(value)+1);
-               if (*lists_dir == NULL) {
-		    opkg_message(conf, OPKG_ERROR, "ERROR: Not enough memory\n");
-	            free(options);
-	            return EINVAL;
-               }
+	       *lists_dir = xrealloc(*lists_dir,strlen(value)+1);
                sprintf (*lists_dir,"%s",value);
 	  } else if (strcmp(type, "arch") == 0) {
 	       opkg_message(conf, OPKG_INFO, "supported arch %s priority (%s)\n", name, value);

@@ -69,11 +69,8 @@ int hash_table_init(const char *name, hash_table_t *hash, int len)
     --picker;
 
     hash->n_entries = *picker;
-    hash->entries = (hash_entry_t *)calloc(hash->n_entries, sizeof(hash_entry_t));
-    if (hash->entries == NULL) {
-	fprintf(stderr, "%s: Out of memory.\n", __FUNCTION__);
-	return ENOMEM;
-    }
+    hash->entries = xcalloc(hash->n_entries, sizeof(hash_entry_t));
+
     return 0;
 }
 
@@ -147,10 +144,7 @@ int hash_table_insert(hash_table_t *hash, const char *key, void *value)
                         return 0;
                     }
                }
-	       hash_entry->next = (hash_entry_t *)calloc(1, sizeof(hash_entry_t));
-	       if (!hash_entry->next) {
-		    return -ENOMEM;
-	       }
+	       hash_entry->next = xcalloc(1, sizeof(hash_entry_t));
 	       hash_entry = hash_entry->next;
 	       hash_entry->next = NULL;
 	  }

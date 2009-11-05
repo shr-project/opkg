@@ -62,7 +62,7 @@ char ** parseDependsString(char * raw, int * depends_count)
 	return NULL;
     }
     while(raw && *raw){
-	depends = (char **)realloc(depends, sizeof(char *) * (line_count + 1));
+	depends = xrealloc(depends, sizeof(char *) * (line_count + 1));
 	
 	while(isspace(*raw)) raw++;
 
@@ -142,12 +142,8 @@ int parseVersion(pkg_t *pkg, char *raw)
 
   if (!pkg->version)
   {
-  pkg->version= calloc(1, strlen(raw)+1);
-  if ( pkg->version == NULL ) {
-     fprintf(stderr, "%s: out of memory \n", __FUNCTION__);
-     return ENOMEM;
-  }
-  strcpy(pkg->version, raw);
+    pkg->version= xcalloc(1, strlen(raw)+1);
+    strcpy(pkg->version, raw);
   }
 
   hyphen= strrchr(pkg->version,'-');
@@ -231,7 +227,7 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 		pkg->priority = parseGenericFieldType("Priority", *lines);
 	    else if(isGenericFieldType("Provides", *lines)){
 /* Here we add the internal_use to align the off by one problem between provides_str and provides */
-        	provide = (char * ) calloc(1, strlen(*lines)+ 35 ); /* Preparing the space for the new opkg_internal_use_only */
+        	provide = xcalloc(1, strlen(*lines)+ 35 ); /* Preparing the space for the new opkg_internal_use_only */
         	if ( alterProvidesLine(*lines,provide) ){
         	    return EINVAL;
         	}
@@ -353,7 +349,7 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 	case ' ':
 	    if(reading_description) {
 		/* we already know it's not blank, so the rest of description */      
-		pkg->description = realloc(pkg->description,
+		pkg->description = xrealloc(pkg->description,
 					   strlen(pkg->description)
 					   + 1 + strlen(*lines) + 1);
 		strcat(pkg->description, "\n");
@@ -378,7 +374,7 @@ out:;
     if ( pkg_false_provides==1)
     {
        pkg->provides_count = 1;
-       pkg->provides_str = calloc (1, sizeof (char*));
+       pkg->provides_str = xcalloc(1, sizeof (char*));
        pkg->provides_str[0] = xstrdup("opkg_internal_use_only");
     }
 

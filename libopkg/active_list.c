@@ -21,6 +21,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "libbb/libbb.h"
 
 void active_list_init(struct active_list *ptr) {
     INIT_LIST_HEAD(&ptr->node);
@@ -119,7 +120,7 @@ void active_list_add(struct active_list *head, struct active_list *node) {
 }
 
 struct active_list * active_list_head_new() {
-    struct active_list * head = calloc(1, sizeof(struct active_list));
+    struct active_list * head = xcalloc(1, sizeof(struct active_list));
     active_list_init(head);
     return head;
 }

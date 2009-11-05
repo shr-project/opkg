@@ -70,20 +70,20 @@ char **read_raw_pkgs_from_stream(FILE *fp)
      int count = 0;
      size_t size = 512;
      
-     buf = calloc (1, size);
+     buf = xcalloc(1, size);
 
      while (fgets(buf, size, fp)) {
 	  while (strlen (buf) == (size - 1)
 		 && buf[size-2] != '\n') {
 	       size_t o = size - 1;
 	       size *= 2;
-	       buf = realloc (buf, size);
+	       buf = xrealloc (buf, size);
 	       if (fgets (buf + o, size - o, fp) == NULL)
 		    break;
 	  }
 	  
 	  if(!(count % 50))
-	       raw = realloc(raw, (count + 50) * sizeof(char *));
+	       raw = xrealloc(raw, (count + 50) * sizeof(char *));
 	
 	  if((scout = strchr(buf, '\n')))
 	       *scout = '\0';
@@ -91,7 +91,7 @@ char **read_raw_pkgs_from_stream(FILE *fp)
 	  raw[count++] = xstrdup(buf);
      }
     
-     raw = realloc(raw, (count + 1) * sizeof(char *));
+     raw = xrealloc(raw, (count + 1) * sizeof(char *));
      raw[count] = NULL;
 
      free (buf);
@@ -105,11 +105,7 @@ char *trim_alloc(char *line)
      char *new; 
      char *dest, *src, *end;
     
-     new = calloc(1, strlen(line) + 1);
-     if ( new == NULL ){
-        fprintf(stderr,"%s: Unable to allocate memory\n",__FUNCTION__);
-        return NULL;
-     }
+     new = xcalloc(1, strlen(line) + 1);
      dest = new, src = line, end = line + (strlen(line) - 1);
 
      /* remove it from the front */    
@@ -157,13 +153,7 @@ void push_error_list(char * msg)
 {
 	struct errlist *e;
 
-	e = calloc(1,  sizeof(struct errlist));
-	if (e == NULL) {
-		fprintf(stderr, "%s: calloc: %s\n",
-				__FUNCTION__, strerror(errno));
-		return;
-	}
-
+	e = xcalloc(1,  sizeof(struct errlist));
 	e->errmsg = xstrdup(msg);
 	e->next = NULL;
 
