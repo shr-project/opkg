@@ -419,11 +419,13 @@ opkg_verify_file (opkg_conf_t *conf, char *text_file, char *sig_file)
         goto verify_file_end;
     }
 #if defined(HAVE_PATHFINDER)
-    if(!pkcs7_pathfinder_verify_signers(p7)){
-	opkg_message(conf,  OPKG_ERROR, "pkcs7_pathfinder_verify_signers: "
-		"Path verification failed\n");
+    if(conf->check_x509_path){
+	if(!pkcs7_pathfinder_verify_signers(p7)){
+	    opkg_message(conf,  OPKG_ERROR, "pkcs7_pathfinder_verify_signers: "
+		    "Path verification failed\n");
+	    goto verify_file_end;
+	}
     }
-
 #endif
 
     // Open the Package file to authenticate
@@ -609,13 +611,13 @@ static CURL *opkg_curl_init(opkg_conf_t *conf, curl_progress_func cb, void *data
 	    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
 	}else{
 #ifdef HAVE_PATHFINDER
-	    if (curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, curl_ssl_ctx_function) != CURLE_OK){
-		opkg_message(conf, OPKG_DEBUG, "Failed to set ssl path verification callback\n");
-	    }else{
-		curl_easy_setopt(curl, CURLOPT_SSL_CTX_DATA, NULL);
+	    if(conf->check_x509_path){
+    	        if (curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, curl_ssl_ctx_function) != CURLE_OK){
+		    opkg_message(conf, OPKG_DEBUG, "Failed to set ssl path verification callback\n");
+		}else{
+		    curl_easy_setopt(curl, CURLOPT_SSL_CTX_DATA, NULL);
+		}
 	    }
-
-	    //curl_easy_setopt(curl, CURLOPT_SSL_CERT_VERIFY_FUNCTION, curlcb_pathfinder);
 #endif
 	}
 

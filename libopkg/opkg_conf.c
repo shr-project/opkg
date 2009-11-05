@@ -80,6 +80,9 @@ int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
 	  { "signature_ca_file", OPKG_OPT_TYPE_STRING, &conf->signature_ca_file },
 	  { "signature_ca_path", OPKG_OPT_TYPE_STRING, &conf->signature_ca_path },
 #endif
+#if defined(HAVE_PATHFINDER)
+          { "check_x509_path", OPKG_OPT_TYPE_INT, &conf->check_x509_path }, 
+#endif
 #if defined(HAVE_SSLCURL) && defined(HAVE_CURL)
           { "ssl_engine", OPKG_OPT_TYPE_STRING, &conf->ssl_engine },
           { "ssl_cert", OPKG_OPT_TYPE_STRING, &conf->ssl_cert },
@@ -129,6 +132,10 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      char *pending_dir = NULL;
 
      memset(conf, 0, sizeof(opkg_conf_t));
+
+#if defined(HAVE_PATHFINDER)
+     conf->check_x509_path = 1;
+#endif
 
      pkg_src_list_init(&conf->pkg_src_list);
 

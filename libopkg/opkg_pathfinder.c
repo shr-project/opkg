@@ -20,12 +20,13 @@
 
 #include <openssl/ssl.h>
 #include <libpathfinder.h>
-#include "includes.h"
-#include "opkg_message.h"
 
 #if defined(HAVE_SSLCURL)
 #include <curl/curl.h>
 #endif
+
+#include "includes.h"
+#include "opkg_message.h"
 
 #if defined(HAVE_SSLCURL) || defined(HAVE_OPENSSL)
 /*
@@ -66,12 +67,11 @@ static int pathfinder_verify_callback(X509_STORE_CTX *ctx, void *arg)
 }
 #endif
 
-
 #if defined(HAVE_OPENSSL)
 int pkcs7_pathfinder_verify_signers(PKCS7* p7)
 {
     STACK_OF(X509) *signers;
-    int i;
+    int i, ret = 1; /* signers are verified by default */
 
     signers = PKCS7_get0_signers(p7, NULL, 0);
 
@@ -80,11 +80,15 @@ int pkcs7_pathfinder_verify_signers(PKCS7* p7)
 	    .cert = sk_X509_value(signers, i),
 	};
 
-	if(!pathfinder_verify_callback(&ctx, NULL))
-	    return 0;
+	if(!pathfinder_verify_callback(&ctx, NULL)){
+	    /* Signer isn't verified ! goto jail; */
+	    ret = 0;
+	    break;
+	}
     }
 
-    return 1;
+    sk_X509_free(signers);
+    return ret;
 }
 #endif
 
