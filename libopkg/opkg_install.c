@@ -1470,42 +1470,11 @@ static int remove_obsolesced_files(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg
      return 0;
 }
 
-static int remove_obsolete_maintainer_scripts(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
-{
-     int i;
-     int err = 0;
-     char *globpattern;
-     glob_t globbuf;
-     if (0) {
-	  if (!pkg->dest) {
-	       opkg_message(conf, OPKG_ERROR, "%s: no dest for package %s\n", __FUNCTION__, pkg->name);
-	       return -1;
-	  }
-	  sprintf_alloc(&globpattern, "%s/%s.*", pkg->dest->info_dir, pkg->name);
-	  err = glob(globpattern, 0, NULL, &globbuf);
-	  free(globpattern);
-	  if (err) {
-	       return err;
-	  }
-	  /* XXXX this should perhaps only remove the ones that are not overwritten in new package.  Jamey 11/11/2003 */
-	  for (i = 0; i < globbuf.gl_pathc; i++) {
-	       opkg_message(conf, OPKG_DEBUG, "Removing control file %s from old_pkg %s\n",
-			    globbuf.gl_pathv[i], old_pkg->name);
-	       if (!conf->noaction)
-		    unlink(globbuf.gl_pathv[i]);
-	  }
-	  globfree(&globbuf);
-     }
-     return err;
-}
-
 static int install_maintainer_scripts(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
      int ret;
      char *prefix;
 
-     if (old_pkg)
-	  remove_obsolete_maintainer_scripts(conf, pkg, old_pkg);
      sprintf_alloc(&prefix, "%s.", pkg->name);
      ret = pkg_extract_control_files_to_dir_with_prefix(pkg,
 							pkg->dest->info_dir,

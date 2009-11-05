@@ -410,9 +410,6 @@ int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
 
      if (!oldpkg->filename)
 	  oldpkg->filename = xstrdup(newpkg->filename);
-     if (0)
-     fprintf(stdout, "pkg=%s old local_filename=%s new local_filename=%s\n", 
-	     oldpkg->name, oldpkg->local_filename, newpkg->local_filename);
      if (!oldpkg->local_filename)
 	  oldpkg->local_filename = xstrdup(newpkg->local_filename);
      if (!oldpkg->tmp_unpack_dir)

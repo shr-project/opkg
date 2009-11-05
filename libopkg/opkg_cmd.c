@@ -568,9 +568,6 @@ static int opkg_install_cmd(opkg_conf_t *conf, int argc, char **argv)
 	  }
      }
 
-     /* recheck to verify that all dependences are satisfied */
-     if (0) opkg_satisfy_all_dependences(conf);
-
      opkg_configure_packages(conf, NULL);
 
      write_status_files_if_changed(conf);
@@ -631,9 +628,6 @@ static int opkg_upgrade_cmd(opkg_conf_t *conf, int argc, char **argv)
 	  }
 	  pkg_vec_free(installed);
      }
-
-     /* recheck to verify that all dependences are satisfied */
-     if (0) opkg_satisfy_all_dependences(conf);
 
      opkg_configure_packages(conf, NULL);
 

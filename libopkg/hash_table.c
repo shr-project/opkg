@@ -123,11 +123,9 @@ int hash_table_insert(hash_table_t *hash, const char *key, void *value)
 {
      int ndx= hash_index(hash, key);
      hash_entry_t *hash_entry = hash->entries + ndx;
-     if (0) opkg_message(NULL, OPKG_DEBUG2, "Function: %s. Inserting in hash for '%s' \n", __FUNCTION__, key);
      if (hash_entry->key) {
 	  if (strcmp(hash_entry->key, key) == 0) {
 	       /* alread in table, update the value */
-               if (0) opkg_message(NULL, OPKG_DEBUG2, "Function: %s. Value already in hash for '%s' \n", __FUNCTION__, key);
 	       hash_entry->data = value;
 	       return 0;
 	  } else {
@@ -136,7 +134,6 @@ int hash_table_insert(hash_table_t *hash, const char *key, void *value)
 		* then add a new entry
 		* before we can hook up the value
 		*/
-               if (0) opkg_message(NULL, OPKG_DEBUG2, "Function: %s. Value already in hash by collision for '%s' \n", __FUNCTION__, key);
 	       while (hash_entry->next) {
 		    hash_entry = hash_entry->next;
                     if (strcmp(hash_entry->key, key) == 0) {
