@@ -338,8 +338,6 @@ static int opkg_finalize_intercepts(opkg_intercept_t ctx)
     if (ctx->oldpath) {
         setenv ("PATH", ctx->oldpath, 1);
         free (ctx->oldpath);
-    } else {
-        unsetenv("PATH"); 
     }
 
     dir = opendir (ctx->statedir);
