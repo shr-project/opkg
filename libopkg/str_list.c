@@ -19,9 +19,9 @@
 #include "str_list.h"
 #include "libbb/libbb.h"
 
-int str_list_elt_init(str_list_elt_t *elt, char *data)
+void str_list_elt_init(str_list_elt_t *elt, char *data)
 {
-    return void_list_elt_init((void_list_elt_t *) elt, data);
+    void_list_elt_init((void_list_elt_t *) elt, data);
 }
 
 void str_list_elt_deinit(str_list_elt_t *elt)
@@ -38,9 +38,9 @@ str_list_t *str_list_alloc()
      return list;
 }
 
-int str_list_init(str_list_t *list)
+void str_list_init(str_list_t *list)
 {
-    return void_list_init((void_list_t *) list);
+    void_list_init((void_list_t *) list);
 }
 
 void str_list_deinit(str_list_t *list)
@@ -57,14 +57,14 @@ void str_list_deinit(str_list_t *list)
     }
 }
 
-int str_list_append(str_list_t *list, char *data)
+void str_list_append(str_list_t *list, char *data)
 {
-    return void_list_append((void_list_t *) list, xstrdup(data));
+    void_list_append((void_list_t *) list, xstrdup(data));
 }
 
-int str_list_push(str_list_t *list, char *data)
+void str_list_push(str_list_t *list, char *data)
 {
-    return void_list_push((void_list_t *) list, xstrdup(data));
+    void_list_push((void_list_t *) list, xstrdup(data));
 }
 
 str_list_elt_t *str_list_pop(str_list_t *list)

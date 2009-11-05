@@ -30,12 +30,12 @@ static inline int nv_pair_list_empty(nv_pair_list_t *list)
     return void_list_empty ((void_list_t *)list);
 }
 
-int nv_pair_list_init(nv_pair_list_t *list);
+void nv_pair_list_init(nv_pair_list_t *list);
 void nv_pair_list_deinit(nv_pair_list_t *list);
 
 nv_pair_t *nv_pair_list_append(nv_pair_list_t *list,
 			       const char *name, const char *value);
-int nv_pair_list_push(nv_pair_list_t *list, nv_pair_t *data);
+void nv_pair_list_push(nv_pair_list_t *list, nv_pair_t *data);
 nv_pair_list_elt_t *nv_pair_list_pop(nv_pair_list_t *list);
 char *nv_pair_list_find(nv_pair_list_t *list, char *name);
 

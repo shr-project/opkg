@@ -21,9 +21,9 @@
 #include "void_list.h"
 #include "libbb/libbb.h"
 
-int pkg_src_list_init(pkg_src_list_t *list)
+void pkg_src_list_init(pkg_src_list_t *list)
 {
-    return void_list_init((void_list_t *) list);
+    void_list_init((void_list_t *) list);
 }
 
 void pkg_src_list_deinit(pkg_src_list_t *list)
@@ -46,23 +46,18 @@ pkg_src_t *pkg_src_list_append(pkg_src_list_t *list,
 			       const char *name, const char *base_url, const char *extra_data,
 			       int gzip)
 {
-    int err;
-
     /* freed in pkg_src_list_deinit */
     pkg_src_t *pkg_src = xcalloc(1, sizeof(pkg_src_t));
     pkg_src_init(pkg_src, name, base_url, extra_data, gzip);
 
-    err = void_list_append((void_list_t *) list, pkg_src);
-    if (err) {
-	return NULL;
-    }
+    void_list_append((void_list_t *) list, pkg_src);
 
     return pkg_src;
 }
 
-int pkg_src_list_push(pkg_src_list_t *list, pkg_src_t *data)
+void pkg_src_list_push(pkg_src_list_t *list, pkg_src_t *data)
 {
-    return void_list_push((void_list_t *) list, data);
+    void_list_push((void_list_t *) list, data);
 }
 
 pkg_src_list_elt_t *pkg_src_list_pop(pkg_src_list_t *list)

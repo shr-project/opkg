@@ -22,9 +22,9 @@
 #include "pkg_dest_list.h"
 #include "libbb/libbb.h"
 
-int pkg_dest_list_elt_init(pkg_dest_list_elt_t *elt, pkg_dest_t *data)
+void pkg_dest_list_elt_init(pkg_dest_list_elt_t *elt, pkg_dest_t *data)
 {
-    return void_list_elt_init((void_list_elt_t *) elt, data);
+    void_list_elt_init((void_list_elt_t *) elt, data);
 }
 
 void pkg_dest_list_elt_deinit(pkg_dest_list_elt_t *elt)
@@ -32,9 +32,9 @@ void pkg_dest_list_elt_deinit(pkg_dest_list_elt_t *elt)
     void_list_elt_deinit((void_list_elt_t *) elt);
 }
 
-int pkg_dest_list_init(pkg_dest_list_t *list)
+void pkg_dest_list_init(pkg_dest_list_t *list)
 {
-    return void_list_init((void_list_t *) list);
+    void_list_init((void_list_t *) list);
 }
 
 void pkg_dest_list_deinit(pkg_dest_list_t *list)
@@ -56,24 +56,19 @@ void pkg_dest_list_deinit(pkg_dest_list_t *list)
 pkg_dest_t *pkg_dest_list_append(pkg_dest_list_t *list, const char *name,
 				 const char *root_dir,const char *lists_dir)
 {
-    int err;
     pkg_dest_t *pkg_dest;
 
     /* freed in pkg_dest_list_deinit */
     pkg_dest = xcalloc(1, sizeof(pkg_dest_t));
-
     pkg_dest_init(pkg_dest, name, root_dir,lists_dir);
-    err = void_list_append((void_list_t *) list, pkg_dest);
-    if (err) {
-	return NULL;
-    }
+    void_list_append((void_list_t *) list, pkg_dest);
 
     return pkg_dest;
 }
 
-int pkg_dest_list_push(pkg_dest_list_t *list, pkg_dest_t *data)
+void pkg_dest_list_push(pkg_dest_list_t *list, pkg_dest_t *data)
 {
-    return void_list_push((void_list_t *) list, data);
+    void_list_push((void_list_t *) list, data);
 }
 
 pkg_dest_list_elt_t *pkg_dest_list_pop(pkg_dest_list_t *list)

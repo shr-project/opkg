@@ -22,9 +22,9 @@
 #include "nv_pair_list.h"
 #include "libbb/libbb.h"
 
-int nv_pair_list_init(nv_pair_list_t *list)
+void nv_pair_list_init(nv_pair_list_t *list)
 {
-    return void_list_init((void_list_t *) list);
+    void_list_init((void_list_t *) list);
 }
 
 void nv_pair_list_deinit(nv_pair_list_t *list)
@@ -48,23 +48,17 @@ void nv_pair_list_deinit(nv_pair_list_t *list)
 
 nv_pair_t *nv_pair_list_append(nv_pair_list_t *list, const char *name, const char *value)
 {
-    int err;
-
     /* freed in nv_pair_list_deinit */
     nv_pair_t *nv_pair = xcalloc(1, sizeof(nv_pair_t));
     nv_pair_init(nv_pair, name, value);
-
-    err = void_list_append((void_list_t *) list, nv_pair);
-    if (err) {
-	return NULL;
-    }
+    void_list_append((void_list_t *) list, nv_pair);
 
     return nv_pair;
 }
 
-int nv_pair_list_push(nv_pair_list_t *list, nv_pair_t *data)
+void nv_pair_list_push(nv_pair_list_t *list, nv_pair_t *data)
 {
-    return void_list_push((void_list_t *) list, data);
+    void_list_push((void_list_t *) list, data);
 }
 
 nv_pair_list_elt_t *nv_pair_list_pop(nv_pair_list_t *list)

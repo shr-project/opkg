@@ -21,12 +21,10 @@
 #include "void_list.h"
 #include "libbb/libbb.h"
 
-int void_list_elt_init(void_list_elt_t *elt, void *data)
+void void_list_elt_init(void_list_elt_t *elt, void *data)
 {
     INIT_LIST_HEAD(&elt->node);
     elt->data = data;
-
-    return 0;
 }
 
 void_list_elt_t * void_list_elt_new (void *data) {
@@ -44,10 +42,9 @@ void void_list_elt_deinit(void_list_elt_t *elt)
     free(elt);
 }
 
-int void_list_init(void_list_t *list)
+void void_list_init(void_list_t *list)
 {
     INIT_LIST_HEAD(&list->head);
-    return 0;
 }
 
 void void_list_deinit(void_list_t *list)
@@ -61,22 +58,16 @@ void void_list_deinit(void_list_t *list)
     INIT_LIST_HEAD(&list->head);
 }
 
-int void_list_append(void_list_t *list, void *data)
+void void_list_append(void_list_t *list, void *data)
 {
     void_list_elt_t *elt = void_list_elt_new(data);
-     
     list_add_tail(&elt->node, &list->head);
-
-    return 0;
 }
 
-int void_list_push(void_list_t *list, void *data)
+void void_list_push(void_list_t *list, void *data)
 {
     void_list_elt_t *elt = void_list_elt_new(data);
-
     list_add(&elt->node, &list->head);
-
-    return 0;
 }
 
 void_list_elt_t *void_list_pop(void_list_t *list)

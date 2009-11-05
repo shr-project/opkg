@@ -24,15 +24,15 @@ typedef struct void_list_elt pkg_dest_list_elt_t;
 
 typedef struct void_list pkg_dest_list_t;
 
-int pkg_dest_list_elt_init(pkg_dest_list_elt_t *elt, pkg_dest_t *data);
+void pkg_dest_list_elt_init(pkg_dest_list_elt_t *elt, pkg_dest_t *data);
 void pkg_dest_list_elt_deinit(pkg_dest_list_elt_t *elt);
 
-int pkg_dest_list_init(pkg_dest_list_t *list);
+void pkg_dest_list_init(pkg_dest_list_t *list);
 void pkg_dest_list_deinit(pkg_dest_list_t *list);
 
 pkg_dest_t *pkg_dest_list_append(pkg_dest_list_t *list, const char *name,
 				 const char *root_dir,const char* lists_dir);
-int pkg_dest_list_push(pkg_dest_list_t *list, pkg_dest_t *data);
+void pkg_dest_list_push(pkg_dest_list_t *list, pkg_dest_t *data);
 pkg_dest_list_elt_t *pkg_dest_list_pop(pkg_dest_list_t *list);
 
 #endif

@@ -30,14 +30,14 @@ static inline int pkg_src_list_empty(pkg_src_list_t *list)
     return void_list_empty((void_list_t *)list);
 }
 
-int pkg_src_list_elt_init(pkg_src_list_elt_t *elt, nv_pair_t *data);
+void pkg_src_list_elt_init(pkg_src_list_elt_t *elt, nv_pair_t *data);
 void pkg_src_list_elt_deinit(pkg_src_list_elt_t *elt);
 
-int pkg_src_list_init(pkg_src_list_t *list);
+void pkg_src_list_init(pkg_src_list_t *list);
 void pkg_src_list_deinit(pkg_src_list_t *list);
 
 pkg_src_t *pkg_src_list_append(pkg_src_list_t *list, const char *name, const char *root_dir, const char *extra_data, int gzip);
-int pkg_src_list_push(pkg_src_list_t *list, pkg_src_t *data);
+void pkg_src_list_push(pkg_src_list_t *list, pkg_src_t *data);
 pkg_src_list_elt_t *pkg_src_list_pop(pkg_src_list_t *list);
 
 #endif
