@@ -1,5 +1,5 @@
 
-AM_CFLAGS=-Wall -Werror -DHOST_CPU_STR=\"@host_cpu@\" -DBUILD_CPU=@build_cpu@ -DLIBDIR=\"@libdir@\" -DOPKGLIBDIR=\"@opkglibdir@\" -DOPKGETCDIR=\"@opkgetcdir@\" -DDATADIR=\"@datadir@\" -I$(top_srcdir) $(BIGENDIAN_CFLAGS) $(CURL_CFLAGS) $(GPGME_CFLAGS)
+AM_CFLAGS=-Wall -Werror -DHOST_CPU_STR=\"@host_cpu@\" -DBUILD_CPU=@build_cpu@ -DLIBDIR=\"@libdir@\" -DOPKGLIBDIR=\"@opkglibdir@\" -DOPKGETCDIR=\"@opkgetcdir@\" -DDATADIR=\"@datadir@\" -I$(top_srcdir) $(BIGENDIAN_CFLAGS) $(CURL_CFLAGS) $(GPGME_CFLAGS) $(PATHFINDER_CFLAGS)
 
 libopkg_includedir=$(includedir)/libopkg
 libopkg_include_HEADERS= opkg.h
@@ -29,7 +29,9 @@ opkg_list_sources = conffile.c conffile.h conffile_list.c conffile_list.h \
 opkg_util_sources = file_util.c file_util.h opkg_message.h opkg_message.c md5.c md5.h \
 		    sprintf_alloc.c sprintf_alloc.h str_util.c str_util.h \
 		    xregex.c xregex.h xsystem.c xsystem.h
-
+if HAVE_PATHFINDER
+opkg_util_sources += opkg_pathfinder.c opkg_pathfinder.h
+endif
 if HAVE_SHA256
 opkg_util_sources += sha256.c sha256.h
 endif
@@ -40,7 +42,8 @@ libopkg_la_SOURCES = \
 	$(opkg_cmd_sources) $(opkg_db_sources) \
 	$(opkg_util_sources) $(opkg_list_sources)
 
-libopkg_la_LIBADD = $(top_builddir)/libbb/libbb.la $(CURL_LIBS) $(GPGME_LIBS) $(OPENSSL_LIBS)
+libopkg_la_LIBADD = $(top_builddir)/libbb/libbb.la $(CURL_LIBS) $(GPGME_LIBS) $(OPENSSL_LIBS) $(PATHFINDER_LIBS)
+
 # make sure we only export symbols that are for public use
 libopkg_la_LDFLAGS = -export-symbols-regex "^opkg_.*"
 

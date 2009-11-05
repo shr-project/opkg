@@ -5,6 +5,9 @@ BUILD_CPU=@build_cpu@
 OPKGLIBDIR=@opkglibdir@ 
 ALL_CFLAGS=-g -O -Wall -DHOST_CPU_STR=\"@host_cpu@\" -DBUILD_CPU=@build_cpu@ -DLIBDIR=\"@libdir@\" -DOPKGLIBDIR=\"@opkglibdir@\" -DDATADIR=\"@datadir@\"
 
+PATHFINDER_CFLAGS = @PATHFINDER_CFLAGS@
+PATHFINDER_LIBS   = @PATHFINDER_LIBS@
+
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libopkg.pc
 

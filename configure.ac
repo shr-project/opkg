@@ -29,6 +29,22 @@ AC_PROG_LIBTOOL
 
 # Checks for libraries
 
+dnl extra argument: --with-pathfinder
+AC_ARG_ENABLE(pathfinder,
+              AC_HELP_STRING([--with-pathfinder], [With libpathfinder support.
+      [[default=no]] ]),
+    [want_pathfinder="$enableval"], [want_pathfinder="no"])
+dnl Check for libpathfinder
+if test "x$want_pathfinder" = "xyes"; then
+  PKG_CHECK_MODULES([PATHFINDER], [pathfinder-openssl dbus-1 openssl])
+  if test -n "$PATHFINDER_CFLAGS$PATHFINDER_LIBS"; then
+    AC_DEFINE(HAVE_PATHFINDER, 1, [we have pathfinder])
+  fi
+  AC_SUBST(PATHFINDER_CFLAGS)
+  AC_SUBST(PATHFINDER_LIBS)
+fi
+AM_CONDITIONAL(HAVE_PATHFINDER, test "x$want_pathfinder" = "xyes")
+
 # check for libcurl
 AC_ARG_ENABLE(curl,
               AC_HELP_STRING([--enable-curl], [Enable downloading with curl
@@ -36,7 +52,7 @@ AC_ARG_ENABLE(curl,
     [want_curl="$enableval"], [want_curl="yes"])
 
 if test "x$want_curl" = "xyes"; then
-  PKG_CHECK_MODULES(CURL, libcurl)
+  PKG_CHECK_MODULES(CURL, [libcurl])
   AC_DEFINE(HAVE_CURL, 1, [Define if you want CURL support])
 fi
 
@@ -65,7 +81,7 @@ fi
 # check for libssl-curl
 AC_ARG_ENABLE(ssl-curl,
               AC_HELP_STRING([--enable-ssl-curl], [Enable certificate authentication with curl
-                              [[default="$default_sslcurl"]] ]),
+                              [[default="yes"]] ]),
                               [want_sslcurl="$enableval"], [want_sslcurl="yes"])
 
 if test "x$want_curl" = "xyes" -a "x$want_sslcurl" = "xyes"; then

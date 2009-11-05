@@ -26,6 +26,7 @@
 #include <openssl/conf.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
+#include <openssl/ssl.h>
 #endif
 
 #if defined(HAVE_GPGME)
@@ -48,6 +49,10 @@
 #include "str_util.h"
 #include "opkg_defines.h"
 #include "libbb/libbb.h"
+
+#ifdef HAVE_PATHFINDER
+#include "opkg_pathfinder.h"
+#endif
 
 #if defined(HAVE_OPENSSL) || defined(HAVE_SSLCURL)
 static void openssl_init(void);
@@ -413,6 +418,13 @@ opkg_verify_file (opkg_conf_t *conf, char *text_file, char *sig_file)
                 "Can't read signature file (Corrupted ?)\n");
         goto verify_file_end;
     }
+#if defined(HAVE_PATHFINDER)
+    if(!pkcs7_pathfinder_verify_signers(p7)){
+	opkg_message(conf,  OPKG_ERROR, "pkcs7_pathfinder_verify_signers: "
+		"Path verification failed\n");
+    }
+
+#endif
 
     // Open the Package file to authenticate
     if (!(indata = BIO_new_file(text_file, "rb"))){
@@ -595,6 +607,16 @@ static CURL *opkg_curl_init(opkg_conf_t *conf, curl_progress_func cb, void *data
 	     * CURLOPT_SSL_VERIFYPEER default is nonzero (curl => 7.10)
 	     */
 	    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+	}else{
+#ifdef HAVE_PATHFINDER
+	    if (curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, curl_ssl_ctx_function) != CURLE_OK){
+		opkg_message(conf, OPKG_DEBUG, "Failed to set ssl path verification callback\n");
+	    }else{
+		curl_easy_setopt(curl, CURLOPT_SSL_CTX_DATA, NULL);
+	    }
+
+	    //curl_easy_setopt(curl, CURLOPT_SSL_CERT_VERIFY_FUNCTION, curlcb_pathfinder);
+#endif
 	}
 
 	/* certification authority file and/or path */
