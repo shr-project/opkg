@@ -190,13 +190,7 @@ opkg_new ()
   opkg = xcalloc(1, sizeof (opkg_t));
 
   opkg->args = xcalloc(1, sizeof (args_t));
-  err = args_init (opkg->args);
-  if (err)
-  {
-    free (opkg->args);
-    free (opkg);
-    return NULL;
-  }
+  args_init (opkg->args);
 
   opkg->conf = xcalloc(1, sizeof (opkg_conf_t));
   err = opkg_conf_init (opkg->conf, opkg->args);

@@ -130,6 +130,6 @@ int opkg_conf_write_status_files(opkg_conf_t *conf);
 char *root_filename_alloc(opkg_conf_t *conf, char *filename);
 
 
-int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options);
+void opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options);
 
 #endif

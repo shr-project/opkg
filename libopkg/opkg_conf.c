@@ -50,7 +50,7 @@ static int set_and_load_pkg_src_list(opkg_conf_t *conf,
 static int set_and_load_pkg_dest_list(opkg_conf_t *conf,
 				      nv_pair_list_t *nv_pair_list, char * lists_dir);
 
-int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
+void opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
 {
      opkg_option_t tmp[] = {
 	  { "cache", OPKG_OPT_TYPE_STRING, &conf->cache},
@@ -99,7 +99,6 @@ int opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
 
      *options = xcalloc(1, sizeof(tmp));
      memcpy(*options, tmp, sizeof(tmp));
-     return 0;
 };
 
 static void opkg_conf_override_string(char **conf_str, char *arg_str) 
@@ -520,8 +519,7 @@ static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 #define regmatch_size 12
      regmatch_t regmatch[regmatch_size];
 
-     if (opkg_init_options_array(conf, &options)<0)
-        return ENOMEM;
+     opkg_init_options_array(conf, &options);
 
      if (file == NULL) {
 	  fprintf(stderr, "%s: failed to open %s: %s\n",

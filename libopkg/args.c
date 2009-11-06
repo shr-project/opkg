@@ -50,11 +50,8 @@ enum long_args_opt
 
 char *conf_file_dir;
 
-int args_init(args_t *args)
+void args_init(args_t *args)
 {
-     if (!args) {
-	  return EFAULT;
-     }
      memset(args, 0, sizeof(args_t));
 
      args->dest = ARGS_DEFAULT_DEST;
@@ -85,8 +82,6 @@ int args_init(args_t *args)
      args->multiple_providers = 0;
      args->nocheckfordirorfile = 0;
      args->noreadfeedsfile = 0;
-
-     return 0;
 }
 
 void args_deinit(args_t *args)

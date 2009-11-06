@@ -70,7 +70,7 @@ typedef struct args args_t;
 #define ARGS_DEFAULT_VERBOSITY 1
 #define ARGS_DEFAULT_AUTOREMOVE 0
 
-int args_init(args_t *args);
+void args_init(args_t *args);
 void args_deinit(args_t *args);
 int args_parse(args_t *args, int argc, char *argv[]);
 void args_usage(char *complaint);
