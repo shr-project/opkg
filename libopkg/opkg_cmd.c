@@ -180,7 +180,7 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 			    "%s: ERROR: %s exists, but is not a directory\n",
 			    __FUNCTION__, lists_dir);
 	       free(lists_dir);
-	       return EINVAL;
+	       return -1;
 	  }
 	  err = file_mkdir_hier(lists_dir, 0755);
 	  if (err) {
@@ -188,18 +188,16 @@ static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv)
 			    "%s: ERROR: failed to make directory %s: %s\n",
 			    __FUNCTION__, lists_dir, strerror(errno));
 	       free(lists_dir);
-	       return EINVAL;
+	       return -1;
 	  }	
      } 
 
      failures = 0;
 
-
-     tmp = xstrdup("/tmp/opkg.XXXXXX");
-
+     sprintf_alloc(&tmp, "%s/update-XXXXXX", conf->tmp_dir);
      if (mkdtemp (tmp) == NULL) {
 	 perror ("mkdtemp");
-	 failures++;
+	 return -1;
      }
 
 
