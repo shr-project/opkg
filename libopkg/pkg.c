@@ -80,11 +80,6 @@ pkg_t *pkg_new(void)
      pkg_t *pkg;
 
      pkg = xcalloc(1, sizeof(pkg_t));
-     if (pkg == NULL) {
-	  fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	  return NULL;
-     }
-
      pkg_init(pkg);
 
      return pkg;

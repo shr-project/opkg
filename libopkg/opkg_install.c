@@ -86,9 +86,6 @@ int opkg_install_from_file(opkg_conf_t *conf, const char *filename)
      char *old_version, *new_version;
 
      pkg = pkg_new();
-     if (pkg == NULL) {
-	  return ENOMEM;
-     }
 
      err = pkg_init_from_file(pkg, filename);
      if (err) {

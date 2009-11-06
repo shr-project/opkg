@@ -124,8 +124,6 @@ int pkg_hash_add_from_file(opkg_conf_t *conf, const char *file_name,
 
      while(*raw){         /* don't worry, we'll increment raw in the parsing function */
 	  pkg = pkg_new();
-	  if (!pkg)
-	       return -ENOMEM;
 
 	  if (pkg_parse_raw(pkg, &raw, src, dest) == 0) {
 	       if (!pkg->architecture) {

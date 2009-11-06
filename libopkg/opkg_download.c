@@ -259,9 +259,8 @@ int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **name
 {
      int err = 0;
      pkg_t *pkg;
+
      pkg = pkg_new();
-     if (pkg == NULL)
-	  return ENOMEM;
 
      if (str_starts_with(url, "http://")
 	 || str_starts_with(url, "ftp://")) {
