@@ -749,12 +749,7 @@ void buildDependedUponBy(pkg_t * pkg, abstract_pkg_t * ab_pkg)
      count = pkg->pre_depends_count + pkg->depends_count;
      depends = pkg->depends;
 
-	  if (0 && pkg->pre_depends_count)
-	       fprintf(stderr, "pkg=%s pre_depends_count=%d depends_count=%d\n",
-		       pkg->name, pkg->pre_depends_count, pkg->depends_count);
      for (i = 0; i < count; i++) {
-	  if (0 && pkg->pre_depends_count)
-	       fprintf(stderr, "  i=%d possibility_count=%x depends=%p\n", i, depends->possibility_count, depends);
 	  for (j = 0; j < depends->possibility_count; j++){
 	       ab_depend = depends->possibilities[j]->pkg;
 	       if(!ab_depend->depended_upon_by)
