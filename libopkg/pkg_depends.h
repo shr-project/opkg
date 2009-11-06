@@ -58,10 +58,10 @@ typedef struct compound_depend compound_depend_t;
 
 #include "hash_table.h"
 
-int buildProvides(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg);
-int buildConflicts(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg);
-int buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg);
-int buildDepends(hash_table_t * hash, pkg_t * pkg);
+void buildProvides(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg);
+void buildConflicts(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg);
+void buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg);
+void buildDepends(hash_table_t * hash, pkg_t * pkg);
 
 /**
  * pkg_has_common_provides returns 1 if pkg and replacee both provide

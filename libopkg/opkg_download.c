@@ -306,10 +306,7 @@ int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **name
      pkg->state_want = SW_INSTALL;
      pkg->state_flag |= SF_PREFER;
      pkg = hash_insert_pkg(&conf->pkg_hash, pkg, 1,conf);  
-     if ( pkg == NULL ){
-        fprintf(stderr, "%s : This should never happen. Report this Bug in bugzilla please \n ",__FUNCTION__);
-        return 0;
-     }
+
      if (namep) {
 	  *namep = xstrdup(pkg->name);
      }

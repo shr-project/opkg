@@ -559,10 +559,8 @@ pkg_t *hash_insert_pkg(hash_table_t *hash, pkg_t *pkg, int set_status,opkg_conf_
 
      arch_priority = pkg->arch_priority;
 
-     if (buildDepends(hash, pkg)<0){
-        fprintf(stderr, "%s : This should never happen. Report this Bug in bugzilla please \n ",__FUNCTION__);
-        return NULL;
-     }
+     buildDepends(hash, pkg);
+
      ab_pkg = ensure_abstract_pkg_by_name(hash, pkg->name);
 
      if (set_status) {
@@ -576,20 +574,13 @@ pkg_t *hash_insert_pkg(hash_table_t *hash, pkg_t *pkg, int set_status,opkg_conf_
      if(!ab_pkg->pkgs)
 	  ab_pkg->pkgs = pkg_vec_alloc();
     
-     if (buildProvides(hash, ab_pkg, pkg)<0){
-        fprintf(stderr, "%s : This should never happen. Report this Bug in bugzilla please \n ",__FUNCTION__);
-        return NULL;
-     }
+     buildProvides(hash, ab_pkg, pkg);
+
      /* need to build the conflicts graph before replaces for correct calculation of replaced_by relation */
-     if (buildConflicts(hash, ab_pkg, pkg)<0){
-        fprintf(stderr, "%s : This should never happen. Report this Bug in bugzilla please \n ",__FUNCTION__);
-        return NULL;
-     }
-     if (buildReplaces(hash, ab_pkg, pkg)<0) {
-        fprintf(stderr, "%s : This should never happen. Report this Bug in bugzilla please \n ",__FUNCTION__);
-        return NULL;
-     }
-    
+     buildConflicts(hash, ab_pkg, pkg);
+
+     buildReplaces(hash, ab_pkg, pkg);
+
      buildDependedUponBy(pkg, ab_pkg);
 
      /* pkg_vec_insert_merge might munge package, but it returns an unmunged pkg */

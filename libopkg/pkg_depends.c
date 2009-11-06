@@ -29,7 +29,6 @@
 
 static int parseDepends(compound_depend_t *compound_depend, hash_table_t * hash, char * depend_str);
 static depend_t * depend_init(void);
-static void depend_deinit(depend_t *d);
 static char ** add_unresolved_dep(pkg_t * pkg, char ** the_lost, int ref_ndx);
 static char ** merge_unresolved(char ** oldstuff, char ** newstuff);
 static int is_pkg_in_pkg_vec(pkg_vec_t * vec, pkg_t * pkg);
@@ -608,43 +607,36 @@ char ** add_unresolved_dep(pkg_t * pkg, char ** the_lost, int ref_ndx)
     return resized;
 }
 
-int buildProvides(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
+void buildProvides(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 {
-    int i, j;
+    int i;
 
     /* every pkg provides itself */
     abstract_pkg_vec_insert(ab_pkg->provided_by, ab_pkg);
 
     if (!pkg->provides_count)
-      return 0;
-    if (pkg->provides)
-      return 0;
+      return;
 
     pkg->provides = xcalloc((pkg->provides_count + 1), sizeof(abstract_pkg_t *));
     pkg->provides[0] = ab_pkg;
 
-    // if (strcmp(ab_pkg->name, pkg->name))
-    //     fprintf(stderr, __FUNCTION__ ": ab_pkg=%s pkg=%s\n", ab_pkg->name, pkg->name);
-
     for(i = 0; i < pkg->provides_count; i++){
-	 abstract_pkg_t *provided_abpkg = ensure_abstract_pkg_by_name(hash, pkg->provides_str[i]);
+	abstract_pkg_t *provided_abpkg = ensure_abstract_pkg_by_name(hash, pkg->provides_str[i]);
 
 	pkg->provides[i+1] = provided_abpkg;
 
-	j = 0;
 	abstract_pkg_vec_insert(provided_abpkg->provided_by, ab_pkg);
     }
-    return 0;
 }
 
 /* Abhaya: added conflicts support */
-int buildConflicts(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
+void buildConflicts(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 {
     int i;
     compound_depend_t * conflicts;
 
     if (!pkg->conflicts_count)
-	return 0;
+	return;
 
     conflicts = pkg->conflicts = xcalloc(pkg->conflicts_count, sizeof(compound_depend_t));
     for (i = 0; i < pkg->conflicts_count; i++) {
@@ -653,15 +645,14 @@ int buildConflicts(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 		      pkg->conflicts_str[i]);
 	 conflicts++;
     }
-    return 0;
 }
 
-int buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
+void buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 {
-     int i, j;
+     int i;
 
      if (!pkg->replaces_count)
-	  return 0;
+	  return;
 
      pkg->replaces = xcalloc(pkg->replaces_count, sizeof(abstract_pkg_t *));
 
@@ -670,7 +661,6 @@ int buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 
 	  pkg->replaces[i] = old_abpkg;
 
-	  j = 0;
 	  if (!old_abpkg->replaced_by)
 	       old_abpkg->replaced_by = abstract_pkg_vec_alloc();
 	  /* if a package pkg both replaces and conflicts old_abpkg,
@@ -679,59 +669,42 @@ int buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 	  if (pkg_conflicts_abstract(pkg, old_abpkg))
 	       abstract_pkg_vec_insert(old_abpkg->replaced_by, ab_pkg);
      }
-     return 0;
 }
 
-int buildDepends(hash_table_t * hash, pkg_t * pkg)
+void buildDepends(hash_table_t * hash, pkg_t * pkg)
 {
      int count;
      int i;
      compound_depend_t * depends;
 
      if(!(count = pkg->pre_depends_count + pkg->depends_count + pkg->recommends_count + pkg->suggests_count))
-	  return 0;
+	  return;
 
-     if (0 && pkg->pre_depends_count)
-	  fprintf(stderr, "pkg=%s pre_depends_count=%d depends_count=%d\n", 
-		  pkg->name, pkg->pre_depends_count, pkg->depends_count);
      depends = pkg->depends = xcalloc(count, sizeof(compound_depend_t));
 
      for(i = 0; i < pkg->pre_depends_count; i++){
 	  parseDepends(depends, hash, pkg->pre_depends_str[i]);
-	  if (0 && pkg->pre_depends_count)
-	       fprintf(stderr, " pre_depends_str=%s depends=%p possibility_count=%x\n", 
-		       pkg->pre_depends_str[i], depends, depends->possibility_count);
 	  depends->type = PREDEPEND;
 	  depends++;
      }
 
      for(i = 0; i < pkg->recommends_count; i++){
 	  parseDepends(depends, hash, pkg->recommends_str[i]);
-	  if (0 && pkg->recommends_count)
-	       fprintf(stderr, " recommends_str=%s depends=%p possibility_count=%x\n", 
-		       pkg->recommends_str[i], depends, depends->possibility_count);
 	  depends->type = RECOMMEND;
 	  depends++;
      }
 
      for(i = 0; i < pkg->suggests_count; i++){
 	  parseDepends(depends, hash, pkg->suggests_str[i]);
-	  if (0 && pkg->suggests_count)
-	       fprintf(stderr, " suggests_str=%s depends=%p possibility_count=%x\n", 
-		       pkg->suggests_str[i], depends, depends->possibility_count);
 	  depends->type = SUGGEST;
 	  depends++;
      }
 
      for(i = 0; i < pkg->depends_count; i++){
 	  parseDepends(depends, hash, pkg->depends_str[i]);
-	  if (0 && pkg->depends_count)
-	       fprintf(stderr, " depends_str=%s depends=%p possibility_count=%x\n",
-		       pkg->depends_str[i], depends, depends->possibility_count);
 	  depends++;
      }
-     return 0;
-}    
+}
 
 /*
  * pkg_depend_string: returns the depends string specified by index.
@@ -763,23 +736,6 @@ char *pkg_depend_str(pkg_t *pkg, int index)
      }
      fprintf(stderr, "pkg_depend_str: index %d out of range for pkg=%s\n", index, pkg->name);
      return NULL;
-}
-
-void freeDepends(pkg_t *pkg)
-{
-    int i;
-
-    if (pkg == NULL || pkg->depends == NULL) {
-	return;
-    }
-
-    fprintf(stderr, "Freeing depends=%p\n", pkg->depends);
-    for (i=0; i < pkg->depends->possibility_count; i++) {
-	depend_deinit(pkg->depends->possibilities[i]);
-    }
-    free(pkg->depends->possibilities);
-    free(pkg->depends);
-    pkg->depends = NULL;
 }
 
 void buildDependedUponBy(pkg_t * pkg, abstract_pkg_t * ab_pkg)
@@ -830,11 +786,6 @@ static depend_t * depend_init(void)
     d->pkg = NULL;
     
     return d;
-}
-
-static void depend_deinit(depend_t *d)
-{
-    free(d);
 }
 
 static int parseDepends(compound_depend_t *compound_depend, 
