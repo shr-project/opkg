@@ -30,9 +30,9 @@ PKG_PROG_PKG_CONFIG([0.20])
 
 # Checks for libraries
 
-dnl extra argument: --with-pathfinder
+dnl extra argument: --enable-pathfinder
 AC_ARG_ENABLE(pathfinder,
-              AC_HELP_STRING([--with-pathfinder], [With libpathfinder support.
+              AC_HELP_STRING([--enable-pathfinder], [Enable libpathfinder support.
       [[default=no]] ]),
     [want_pathfinder="$enableval"], [want_pathfinder="no"])
 dnl Check for libpathfinder
