@@ -581,14 +581,13 @@ static int pkg_remove_orphan_dependent(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old
     int i, j, found;
     char *buf, *d_str;
     pkg_t *p;
+
     if (!old_pkg) 
         return 0;
-    if (!pkg) {
-        fprintf(stderr, "pkg shall not be NULL here.  please send to the bugzilla!! [%s %d]\n", __FILE__, __LINE__);
-        return -1;
-    }
+
     if (old_pkg->depends_count == 0) 
         return 0;
+
     for (i=0;i<old_pkg->depends_count;i++) {
         found = 0;
         for (j=0;j<pkg->depends_count;j++) {
