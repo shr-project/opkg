@@ -304,28 +304,25 @@ static opkg_intercept_t opkg_prep_intercepts(opkg_conf_t *conf)
 {
     opkg_intercept_t ctx;
     char *newpath;
-    int gen;
 
     ctx = xcalloc(1, sizeof (*ctx));
     ctx->oldpath = xstrdup(getenv("PATH"));
+    sprintf_alloc(&newpath, "%s/opkg/intercept:%s", DATADIR, ctx->oldpath);
+    sprintf_alloc(&ctx->statedir, "%s/opkg-intercept-XXXXXX", conf->tmp_dir);
 
-    sprintf_alloc (&newpath, "%s/opkg/intercept:%s", DATADIR, ctx->oldpath);
-    setenv ("PATH", newpath, 1);
-    free (newpath);
-    
-    gen = 0;
- retry:
-    sprintf_alloc (&ctx->statedir, "/tmp/opkg-intercept-%d-%d", getpid (), gen);
-    if (mkdir (ctx->statedir, 0770) < 0) {
-	if (errno == EEXIST) {
-	    free (ctx->statedir);
-	    gen++;
-	    goto retry;
-	}
-	perror (ctx->statedir);
+    if (mkdtemp(ctx->statedir) == NULL) {
+        fprintf(stderr, "%s: mkdtemp: %s\n", __FUNCTION__, strerror(errno));
+	free(ctx->oldpath);
+	free(ctx->statedir);
+        free(newpath);
+	free(ctx);
 	return NULL;
     }
-    setenv ("OPKG_INTERCEPT_DIR", ctx->statedir, 1);
+
+    setenv("OPKG_INTERCEPT_DIR", ctx->statedir, 1);
+    setenv("PATH", newpath, 1);
+    free(newpath);
+
     return ctx;
 }
 
@@ -335,10 +332,8 @@ static int opkg_finalize_intercepts(opkg_intercept_t ctx)
     DIR *dir;
     int err = 0;
 
-    if (ctx->oldpath) {
-        setenv ("PATH", ctx->oldpath, 1);
-        free (ctx->oldpath);
-    }
+    setenv ("PATH", ctx->oldpath, 1);
+    free (ctx->oldpath);
 
     dir = opendir (ctx->statedir);
     if (dir) {
@@ -464,7 +459,7 @@ static int opkg_recurse_pkgs_in_order(opkg_conf_t *conf, pkg_t *pkg, pkg_vec_t *
 
 static int opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
 {
-    pkg_vec_t *all, *ordered, *visited;
+     pkg_vec_t *all, *ordered, *visited;
      int i;
      pkg_t *pkg;
      opkg_intercept_t ic;
@@ -489,8 +484,9 @@ static int opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
          opkg_recurse_pkgs_in_order(conf, pkg, all, visited, ordered);
      }
 
-
      ic = opkg_prep_intercepts (conf);
+     if (ic == NULL)
+	     return -1;
     
      for(i = 0; i < all->len; i++) {
 	  pkg = all->pkgs[i];
