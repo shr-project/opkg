@@ -607,32 +607,6 @@ char ** add_unresolved_dep(pkg_t * pkg, char ** the_lost, int ref_ndx)
     
     return resized;
 }
-	
-void printDepends(pkg_t * pkg)
-{
-    int i, j;
-    compound_depend_t * depend;
-    int count;
-    
-    count = pkg->pre_depends_count + pkg->depends_count;
-    
-    depend = pkg->depends;
-    if(!depend){
-	fprintf(stderr, "Depends pointer is NULL\n");
-	return;
-    }
-    for(i = 0; i < count; i++){
-	fprintf(stderr, "%s has %d possibilities:\n", 
-		(depend->type == GREEDY_DEPEND) ? "Greedy-Depend" : ((depend->type == DEPEND) ? "Depend" : "Pre-Depend"),
-		depend->possibility_count);
-	for(j = 0; j < depend->possibility_count; j++)
-	    fprintf(stderr, "\t%s version %s (%d)\n",
-		    depend->possibilities[j]->pkg->name,
-		    depend->possibilities[j]->version,
-		    depend->possibilities[j]->constraint);
-	depend++;
-    }
-}
 
 int buildProvides(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 {
