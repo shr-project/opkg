@@ -370,12 +370,6 @@ void opkg_conf_deinit(opkg_conf_t *conf)
      pkg_src_list_deinit(&conf->pkg_src_list);
      pkg_dest_list_deinit(&conf->pkg_dest_list);
      nv_pair_list_deinit(&conf->arch_list);
-     if (&conf->pkg_hash)
-	            pkg_hash_deinit(&conf->pkg_hash);
-     if (&conf->file_hash)
-	            hash_table_deinit(&conf->file_hash);
-     if (&conf->obs_file_hash)
-	            hash_table_deinit(&conf->obs_file_hash);
 
      opkg_conf_free_string(&conf->offline_root);
      opkg_conf_free_string(&conf->offline_root_path);
@@ -425,9 +419,15 @@ void opkg_conf_deinit(opkg_conf_t *conf)
 	       }
 	       opkg_message(conf, OPKG_DEBUG, "hash_table[%s] n_buckets=%d n_elements=%d max_conflicts=%d n_conflicts=%d\n", 
 			    hash->name, hash->n_entries, hash->n_elements, c, n_conflicts);
-	       hash_table_deinit(hash);
 	  }
      }
+
+     if (&conf->pkg_hash)
+	            pkg_hash_deinit(&conf->pkg_hash);
+     if (&conf->file_hash)
+	            hash_table_deinit(&conf->file_hash);
+     if (&conf->obs_file_hash)
+	            hash_table_deinit(&conf->obs_file_hash);
 }
 
 static int opkg_conf_set_default_dest(opkg_conf_t *conf,
