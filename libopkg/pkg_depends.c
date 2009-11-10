@@ -448,47 +448,6 @@ static int is_pkg_in_pkg_vec(pkg_vec_t * vec, pkg_t * pkg)
     return 0;
 }
 
-
-#ifdef DeadCode
-/**
- * pkg_has_common_provides returns 1 if pkg and replacee both provide
- * the same abstract package and 0 otherwise.
- */
-int pkg_has_common_provides(pkg_t *pkg, pkg_t *replacee)
-{
-     abstract_pkg_t **provides = pkg->provides;
-     int provides_count = pkg->provides_count;
-     abstract_pkg_t **replacee_provides = replacee->provides;
-     int replacee_provides_count = replacee->provides_count;
-     int i, j;
-     for (i = 0; i < provides_count; i++) {
-	  abstract_pkg_t *apkg = provides[i];
-	  for (j = 0; j < replacee_provides_count; j++) {
-	       abstract_pkg_t *replacee_apkg = replacee_provides[i];
-	       if (apkg == replacee_apkg)
-		    return 1;
-	  }
-     }
-     return 0;
-}
-#endif
-
-/**
- * pkg_provides_abstract returns 1 if pkg->provides contains providee
- * and 0 otherwise.
- */
-int pkg_provides_abstract(pkg_t *pkg, abstract_pkg_t *providee)
-{
-     abstract_pkg_t **provides = pkg->provides;
-     int provides_count = pkg->provides_count;
-     int i;
-     for (i = 0; i < provides_count; i++) {
-	  if (provides[i] == providee)
-	       return 1;
-     }
-     return 0;
-}
-
 /**
  * pkg_replaces returns 1 if pkg->replaces contains one of replacee's provides and 0
  * otherwise.
@@ -497,14 +456,11 @@ int pkg_replaces(pkg_t *pkg, pkg_t *replacee)
 {
      abstract_pkg_t **replaces = pkg->replaces;
      int replaces_count = pkg->replaces_count;
-     /* abstract_pkg_t **replacee_provides = pkg->provides;
-     int replacee_provides_count = pkg->provides_count; */
+     int replacee_provides_count = replacee->provides_count;
      int i, j;
      for (i = 0; i < replaces_count; i++) {
 	  abstract_pkg_t *abstract_replacee = replaces[i];
-	  for (j = 0; j < replaces_count; j++) {
-   /*            opkg_message(NULL, OPKG_DEBUG2, "Searching pkg-name %s repprovname %s absrepname %s \n",
-                 pkg->name,replacee->provides[j]->name, abstract_replacee->name); */
+	  for (j = 0; j < replacee_provides_count; j++) {
 	       if (replacee->provides[j] == abstract_replacee)
 		    return 1;
 	  }
@@ -612,18 +568,16 @@ void buildProvides(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
     int i;
 
     /* every pkg provides itself */
+    pkg->provides_count++;
     abstract_pkg_vec_insert(ab_pkg->provided_by, ab_pkg);
-
-    if (!pkg->provides_count)
-      return;
-
-    pkg->provides = xcalloc((pkg->provides_count + 1), sizeof(abstract_pkg_t *));
+    pkg->provides = xcalloc(pkg->provides_count, sizeof(abstract_pkg_t *));
     pkg->provides[0] = ab_pkg;
 
-    for(i = 0; i < pkg->provides_count; i++){
-	abstract_pkg_t *provided_abpkg = ensure_abstract_pkg_by_name(hash, pkg->provides_str[i]);
+    for (i=1; i<pkg->provides_count; i++) {
+	abstract_pkg_t *provided_abpkg = ensure_abstract_pkg_by_name(hash,
+			pkg->provides_str[i-1]);
 
-	pkg->provides[i+1] = provided_abpkg;
+	pkg->provides[i] = provided_abpkg;
 
 	abstract_pkg_vec_insert(provided_abpkg->provided_by, ab_pkg);
     }

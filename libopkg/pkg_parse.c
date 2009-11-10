@@ -156,38 +156,6 @@ int parseVersion(pkg_t *pkg, char *raw)
   return 0;
 }
 
-
-/* This code is needed to insert in first position the keyword for the aligning bug */
-
-int alterProvidesLine(char *raw, char *temp)
-{
-
-
-  if (!*raw) {
-      fprintf(stderr, "%s: ERROR: Provides string is empty", __FUNCTION__);
-      return -EINVAL;
-  }
-
-  if ( temp == NULL ) {
-     fprintf(stderr, "%s: out of memory \n", __FUNCTION__);
-     return -ENOMEM;
-  }
-
-  if (strncmp(raw, "Provides:", 9) == 0) {
-      raw += 9;
-  }
-  while (*raw && isspace(*raw)) {
-      raw++;
-  }      
-  
-  snprintf ( temp, 35, "Provides: opkg_internal_use_only, ");           /* First part of the line */
-  while (*raw) {
-     strncat( temp, raw++, 1);
-  }
-  return 0;
- 
-}
-
 /* Some random thoughts from Carl:
 
    This function could be considerably simplified if we just kept
@@ -208,9 +176,7 @@ int alterProvidesLine(char *raw, char *temp)
 int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 {
     int reading_conffiles, reading_description;
-    int pkg_false_provides=1;
     char ** lines;
-    char * provide=NULL;
 
     pkg->src = src;
     pkg->dest = dest;
@@ -226,17 +192,7 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 	    else if(isGenericFieldType("Priority:", *lines))
 		pkg->priority = parseGenericFieldType("Priority", *lines);
 	    else if(isGenericFieldType("Provides", *lines)){
-/* Here we add the internal_use to align the off by one problem between provides_str and provides */
-        	provide = xcalloc(1, strlen(*lines)+ 35 ); /* Preparing the space for the new opkg_internal_use_only */
-        	if ( alterProvidesLine(*lines,provide) ){
-        	    return EINVAL;
-        	}
-		pkg->provides_str = parseDependsString( provide, &pkg->provides_count);
-/* Let's try to hack a bit here.
-   The idea is that if a package has no Provides, we would add one generic, to permit the check of dependencies
-   in alot of other places. We will remove it before writing down the status database */
-        	pkg_false_provides=0;
-        	free(provide);
+		pkg->provides_str = parseDependsString(*lines, &pkg->provides_count);
     	    } 
 	    else if(isGenericFieldType("Pre-Depends", *lines))
 		pkg->pre_depends_str = parseDependsString(*lines, &pkg->pre_depends_count);
@@ -370,13 +326,6 @@ int pkg_parse_raw(pkg_t *pkg, char ***raw, pkg_src_t *src, pkg_dest_t *dest)
 out:;
     
     *raw = lines;
-/* If the opk has not a Provides line, we insert our false line */ 
-    if ( pkg_false_provides==1)
-    {
-       pkg->provides_count = 1;
-       pkg->provides_str = xcalloc(1, sizeof (char*));
-       pkg->provides_str[0] = xstrdup("opkg_internal_use_only");
-    }
 
     if (pkg->name) {
 	return 0;

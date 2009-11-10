@@ -64,18 +64,6 @@ void buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg);
 void buildDepends(hash_table_t * hash, pkg_t * pkg);
 
 /**
- * pkg_has_common_provides returns 1 if pkg and replacee both provide
- * the same abstract package and 0 otherwise.
- */
-int pkg_has_common_provides(pkg_t *pkg, pkg_t *replacee);
-
-/**
- * pkg_provides returns 1 if pkg->provides contains providee and 0
- * otherwise.
- */
-int pkg_provides_abstract(pkg_t *pkg, abstract_pkg_t *providee);
-
-/**
  * pkg_replaces returns 1 if pkg->replaces contains one of replacee's provides and 0
  * otherwise.
  */

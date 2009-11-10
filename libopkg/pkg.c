@@ -417,8 +417,10 @@ int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
 	  oldpkg->provides_count = newpkg->provides_count;
 	  newpkg->provides_count = 0;
 
-	  oldpkg->provides = newpkg->provides;
-	  newpkg->provides = NULL;
+	  if (!oldpkg->provides) {
+		oldpkg->provides = newpkg->provides;
+		newpkg->provides = NULL;
+	  }
      }
 
      if (!oldpkg->conflicts_str) {
@@ -546,7 +548,6 @@ void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){
 void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
 {
      int i;
-     int flag_provide_false = 0;
 
      if (strlen(field) < PKG_MINIMUM_FIELD_NAME_LEN) {
 	  goto UNKNOWN_FMT_FIELD;
@@ -655,23 +656,11 @@ void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
                fprintf(fp, "Priority: %s\n", pkg->priority);
 	  } else if (strcasecmp(field, "Provides") == 0) {
 	       if (pkg->provides_count) {
-               /* Here we check if the opkg_internal_use_only is used, and we discard it.*/
-                  for ( i=0; i < pkg->provides_count; i++ ){
-	              if (strstr(pkg->provides_str[i],"opkg_internal_use_only")!=NULL) {
-                         memset (pkg->provides_str[i],'\x0',strlen(pkg->provides_str[i])); /* Pigi clear my trick flag, just in case */
-                         flag_provide_false = 1;
-                      }
+                  fprintf(fp, "Provides:");
+		  for(i = 0; i < pkg->provides_count-1; i++) {
+                      fprintf(fp, "%s %s", i == 0 ? "" : ",", pkg->provides_str[i]);
                   }
-                  if ( !flag_provide_false ||                                             /* Pigi there is not my trick flag */
-                     ((flag_provide_false) &&  (pkg->provides_count > 1))){             /* Pigi There is, but we also have others Provides */
-                     fprintf(fp, "Provides:");
-		     for(i = 0; i < pkg->provides_count; i++) {
-                         if (strlen(pkg->provides_str[i])>0) {
-                            fprintf(fp, "%s %s", i == 1 ? "" : ",", pkg->provides_str[i]);
-                         }
-                     }
-                     fprintf(fp, "\n");
-                  }
+                  fprintf(fp, "\n");
                }
 	  } else {
 	       goto UNKNOWN_FMT_FIELD;

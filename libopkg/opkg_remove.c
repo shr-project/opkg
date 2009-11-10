@@ -39,7 +39,7 @@ int pkg_has_installed_dependents(opkg_conf_t *conf, abstract_pkg_t *parent_apkg,
      abstract_pkg_t **provides = pkg->provides;
      int n_installed_dependents = 0;
      int i;
-     for (i = 0; i <= nprovides; i++) {
+     for (i = 0; i < nprovides; i++) {
 	  abstract_pkg_t *providee = provides[i];
 	  abstract_pkg_t **dependers = providee->depended_upon_by;
 	  abstract_pkg_t *dep_ab_pkg;
@@ -58,7 +58,7 @@ int pkg_has_installed_dependents(opkg_conf_t *conf, abstract_pkg_t *parent_apkg,
 	  abstract_pkg_t **dependents = xcalloc((n_installed_dependents+1), sizeof(abstract_pkg_t *));
 
 	  *pdependents = dependents;
-	  for (i = 0; i <= nprovides; i++) {
+	  for (i = 0; i < nprovides; i++) {
 	       abstract_pkg_t *providee = provides[i];
 	       abstract_pkg_t **dependers = providee->depended_upon_by;
 	       abstract_pkg_t *dep_ab_pkg;
