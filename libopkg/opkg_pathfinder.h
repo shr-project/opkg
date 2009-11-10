@@ -1,8 +1,7 @@
-/* opkg_download.h - the opkg package management system
+/* opkg_pathfinder.h - the opkg package management system
 
-   Camille Moncelier <moncelier@devlife.org>
 
-   Copyright (C) 2009 Camille Moncelier
+   Copyright (C) 2009 Camille Moncelier <moncelier@devlife.org>
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as

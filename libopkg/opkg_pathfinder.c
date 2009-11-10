@@ -1,10 +1,7 @@
 /* vi: set noexpandtab sw=4 sts=4: */
-/* opkg_download.c - the opkg package management system
+/* opkg_pathfinder.c - the opkg package management system
 
-   Carl D. Worth
-
-   Copyright (C) 2001 University of Southern California
-   Copyright (C) 2008 OpenMoko Inc
+   Copyright (C) 2009 Camille Moncelier <moncelier@devlife.org>
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -58,7 +55,7 @@ static int pathfinder_verify_callback(X509_STORE_CTX *ctx, void *arg)
     int validated = pathfinder_dbus_verify(certdata_str, policy, 0, 0, &errmsg);
 
     if (!validated)
-        fprintf(stderr, "curlcb_pathfinder: Path verification failed: %s", errmsg);
+        fprintf(stderr, "curlcb_pathfinder: Path verification failed: %s\n", errmsg);
 
     free(certdata_str);
     free(errmsg);
