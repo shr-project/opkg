@@ -158,123 +158,161 @@ void compound_depend_deinit (compound_depend_t *depends)
 
 void pkg_deinit(pkg_t *pkg)
 {
-     int i;
+	int i;
 
-     free(pkg->name);
-     pkg->name = NULL;
-     pkg->epoch = 0;
-     free(pkg->version);
-     pkg->version = NULL;
-     /* revision shares storage with version, so
-	don't free */
-     pkg->revision = NULL;
-     /* owned by opkg_conf_t */
-     pkg->dest = NULL;
-     /* owned by opkg_conf_t */
-     pkg->src = NULL;
-     free(pkg->architecture);
-     pkg->architecture = NULL;
-     free(pkg->maintainer);
-     pkg->maintainer = NULL;
-     free(pkg->section);
-     pkg->section = NULL;
-     free(pkg->description);
-     pkg->description = NULL;
-     pkg->state_want = SW_UNKNOWN;
-     pkg->state_flag = SF_OK;
-     pkg->state_status = SS_NOT_INSTALLED;
+	if (pkg->name)
+		free(pkg->name);
+	pkg->name = NULL;
 
-     active_list_clear(&pkg->list);
+	pkg->epoch = 0;
 
-     free (pkg->replaces);
-     pkg->replaces = NULL;
+	if (pkg->version)
+		free(pkg->version);
+	pkg->version = NULL;
+	/* revision shares storage with version, so don't free */
+	pkg->revision = NULL;
 
-     for (i = 0; i < pkg->depends_count; i++)
-       free (pkg->depends_str[i]);
-     free(pkg->depends_str);
-     pkg->depends_str = NULL;
+	/* owned by opkg_conf_t */
+	pkg->dest = NULL;
+	/* owned by opkg_conf_t */
+	pkg->src = NULL;
 
-     for (i = 0; i < pkg->provides_count; i++)
-       free (pkg->provides_str[i]);
-     free(pkg->provides_str);
-     pkg->provides_str = NULL;
+	if (pkg->architecture)
+		free(pkg->architecture);
+	pkg->architecture = NULL;
 
-     for (i = 0; i < pkg->conflicts_count; i++)
-       free (pkg->conflicts_str[i]);
-     free(pkg->conflicts_str);
-     pkg->conflicts_str = NULL;
+	if (pkg->maintainer)
+		free(pkg->maintainer);
+	pkg->maintainer = NULL;
 
-     for (i = 0; i < pkg->replaces_count; i++)
-       free (pkg->replaces_str[i]);
-     free(pkg->replaces_str);
-     pkg->replaces_str = NULL;
+	if (pkg->section)
+		free(pkg->section);
+	pkg->section = NULL;
 
-     for (i = 0; i < pkg->recommends_count; i++)
-       free (pkg->recommends_str[i]);
-     free(pkg->recommends_str);
-     pkg->recommends_str = NULL;
+	if (pkg->description)
+		free(pkg->description);
+	pkg->description = NULL;
+	
+	pkg->state_want = SW_UNKNOWN;
+	pkg->state_flag = SF_OK;
+	pkg->state_status = SS_NOT_INSTALLED;
 
-     for (i = 0; i < pkg->suggests_count; i++)
-       free (pkg->suggests_str[i]);
-     free(pkg->suggests_str);
-     pkg->suggests_str = NULL;
+	active_list_clear(&pkg->list);
 
-     if (pkg->depends)
-     {
-       int count = pkg->pre_depends_count + pkg->depends_count + pkg->recommends_count + pkg->suggests_count;
-       int x;
+	if (pkg->replaces)
+		free (pkg->replaces);
+	pkg->replaces = NULL;
 
-       for (x = 0; x < count; x++)
-	 compound_depend_deinit (&pkg->depends[x]);
-       free (pkg->depends);
-     }
+	for (i = 0; i < pkg->depends_count; i++)
+		free (pkg->depends_str[i]);
+	free(pkg->depends_str);
+	pkg->depends_str = NULL;
 
-     if (pkg->conflicts)
-     {
-       int x;
-       for (x = 0; x < pkg->conflicts_count; x++)
-         compound_depend_deinit (&pkg->conflicts[x]);
-       free (pkg->conflicts);
-     }
+	for (i = 0; i < pkg->provides_count-1; i++)
+		free (pkg->provides_str[i]);
+	free(pkg->provides_str);
+	pkg->provides_str = NULL;
 
-     free (pkg->provides);
+	for (i = 0; i < pkg->conflicts_count; i++)
+		free (pkg->conflicts_str[i]);
+	free(pkg->conflicts_str);
+	pkg->conflicts_str = NULL;
 
-     pkg->pre_depends_count = 0;
-     free(pkg->pre_depends_str);
-     pkg->pre_depends_str = NULL;
-     pkg->provides_count = 0;
-     free(pkg->filename);
-     pkg->filename = NULL;
-     free(pkg->local_filename);
-     pkg->local_filename = NULL;
+	for (i = 0; i < pkg->replaces_count; i++)
+		free (pkg->replaces_str[i]);
+	free(pkg->replaces_str);
+	pkg->replaces_str = NULL;
+
+	for (i = 0; i < pkg->recommends_count; i++)
+		free (pkg->recommends_str[i]);
+	free(pkg->recommends_str);
+	pkg->recommends_str = NULL;
+
+	for (i = 0; i < pkg->suggests_count; i++)
+		free (pkg->suggests_str[i]);
+	free(pkg->suggests_str);
+	pkg->suggests_str = NULL;
+
+	if (pkg->depends) {
+		int count = pkg->pre_depends_count
+				+ pkg->depends_count
+				+ pkg->recommends_count
+				+ pkg->suggests_count;
+
+		for (i=0; i<count; i++)
+			compound_depend_deinit (&pkg->depends[i]);
+		free (pkg->depends);
+	}
+
+	if (pkg->conflicts) {
+		for (i=0; i<pkg->conflicts_count; i++)
+			compound_depend_deinit (&pkg->conflicts[i]);
+		free (pkg->conflicts);
+	}
+
+	if (pkg->provides)
+		free (pkg->provides);
+
+	pkg->pre_depends_count = 0;
+	if (pkg->pre_depends_str)
+		free(pkg->pre_depends_str);
+	pkg->pre_depends_str = NULL;
+	
+	pkg->provides_count = 0;
+	
+	if (pkg->filename)
+		free(pkg->filename);
+	pkg->filename = NULL;
+	
+	if (pkg->local_filename)
+		free(pkg->local_filename);
+	pkg->local_filename = NULL;
+
      /* CLEANUP: It'd be nice to pullin the cleanup function from
 	opkg_install.c here. See comment in
 	opkg_install.c:cleanup_temporary_files */
-     free(pkg->tmp_unpack_dir);
-     pkg->tmp_unpack_dir = NULL;
-     free(pkg->md5sum);
-     pkg->md5sum = NULL;
+	if (pkg->tmp_unpack_dir)
+		free(pkg->tmp_unpack_dir);
+	pkg->tmp_unpack_dir = NULL;
+
+	if (pkg->md5sum)
+		free(pkg->md5sum);
+	pkg->md5sum = NULL;
+
 #if defined HAVE_SHA256
-     free(pkg->sha256sum);
-     pkg->sha256sum = NULL;
+	if (pkg->sha256sum)
+		free(pkg->sha256sum);
+	pkg->sha256sum = NULL;
 #endif
-     free(pkg->size);
-     pkg->size = NULL;
-     free(pkg->installed_size);
-     pkg->installed_size = NULL;
-     free(pkg->priority);
-     pkg->priority = NULL;
-     free(pkg->source);
-     pkg->source = NULL;
-     conffile_list_deinit(&pkg->conffiles);
-     /* XXX: QUESTION: Is forcing this to 1 correct? I suppose so,
+
+	if (pkg->size)
+		free(pkg->size);
+	pkg->size = NULL;
+
+	if (pkg->installed_size)
+		free(pkg->installed_size);
+	pkg->installed_size = NULL;
+
+	if (pkg->priority)
+		free(pkg->priority);
+	pkg->priority = NULL;
+
+	if (pkg->source)
+		free(pkg->source);
+	pkg->source = NULL;
+
+	conffile_list_deinit(&pkg->conffiles);
+
+	/* XXX: QUESTION: Is forcing this to 1 correct? I suppose so,
 	since if they are calling deinit, they should know. Maybe do an
 	assertion here instead? */
-     pkg->installed_files_ref_cnt = 1;
-     pkg_free_installed_files(pkg);
-     pkg->essential = 0;
-     free (pkg->tags);
-     pkg->tags = NULL;
+	pkg->installed_files_ref_cnt = 1;
+	pkg_free_installed_files(pkg);
+	pkg->essential = 0;
+
+	if (pkg->tags)
+		free (pkg->tags);
+	pkg->tags = NULL;
 }
 
 int pkg_init_from_file(pkg_t *pkg, const char *filename)
