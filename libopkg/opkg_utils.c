@@ -100,36 +100,27 @@ char **read_raw_pkgs_from_stream(FILE *fp)
 }
 
 /* something to remove whitespace, a hash pooper */
-char *trim_alloc(char *line)
+char *trim_alloc(const char *src)
 {
-     char *new; 
-     char *dest, *src, *end;
-    
-     new = xcalloc(1, strlen(line) + 1);
-     dest = new, src = line, end = line + (strlen(line) - 1);
+     const char *end;
 
      /* remove it from the front */    
      while(src && 
 	   isspace(*src) &&
 	   *src)
 	  src++;
+
+     end = src + (strlen(src) - 1);
+
      /* and now from the back */
      while((end > src) &&
 	   isspace(*end))
 	  end--;
+
      end++;
-     *end = '\0';
-     strcpy(new, src);
-     /* this does from the first space
-      *  blasting away any versions stuff in depends
-      while(src && 
-      !isspace(*src) &&
-      *src)
-      *dest++ = *src++;
-      *dest = '\0';
-      */
-    
-     return new;
+
+     /* xstrndup will NULL terminate for us */
+     return xstrndup(src, end-src);
 }
 
 int line_is_blank(const char *line)
