@@ -19,6 +19,7 @@
 #include "includes.h"
 #include <dirent.h>
 #include <glob.h>
+#include <fnmatch.h>
 
 #include "opkg_conf.h"
 #include "opkg_cmd.h"
@@ -33,18 +34,14 @@
 #include "libbb/libbb.h"
 #include "opkg_utils.h"
 #include "opkg_defines.h"
-
-#include <fnmatch.h>
-
-
 #include "opkg_download.h"
 #include "opkg_install.h"
 #include "opkg_upgrade.h"
 #include "opkg_remove.h"
 #include "opkg_configure.h"
 #include "opkg_message.h"
-
 #include "libopkg.h"
+#include "xsystem.h"
 
 static int opkg_update_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_upgrade_cmd(opkg_conf_t *conf, int argc, char **argv);
@@ -338,16 +335,13 @@ static int opkg_finalize_intercepts(opkg_intercept_t ctx)
 	struct dirent *de;
 	while (de = readdir (dir), de != NULL) {
 	    char *path;
-	    
+
 	    if (de->d_name[0] == '.')
 		continue;
 	    
 	    sprintf_alloc (&path, "%s/%s", ctx->statedir, de->d_name);
 	    if (access (path, X_OK) == 0) {
-		if (system (path)) {
-		    err = errno;
-		    perror (de->d_name);
-		}
+		xsystem (path);
 	    }
 	    free (path);
 	}
@@ -356,7 +350,7 @@ static int opkg_finalize_intercepts(opkg_intercept_t ctx)
 	perror (ctx->statedir);
 	
     sprintf_alloc (&cmd, "rm -rf %s", ctx->statedir);
-    err = system (cmd);
+    err = xsystem (cmd);
     free (cmd);
 
     free (ctx->statedir);
@@ -483,8 +477,10 @@ static int opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
      }
 
      ic = opkg_prep_intercepts (conf);
-     if (ic == NULL)
-	     return -1;
+     if (ic == NULL) {
+	     err = -1;
+	     goto error;
+     }
     
      for(i = 0; i < all->len; i++) {
 	  pkg = all->pkgs[i];
@@ -512,6 +508,7 @@ static int opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
      if (r && !err)
 	 err = r;
 
+error:
      pkg_vec_free(all);
      pkg_vec_free(ordered);
      pkg_vec_free(visited);
