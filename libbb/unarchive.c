@@ -784,9 +784,7 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 			free (ar_header);
 		}
 		gz_close(gunzip_pid);
-		fclose(deb_stream);
 		fclose(uncompressed_stream);
-		free(ared_file);
 		goto cleanup;
 	} else if (strncmp(ar_magic, "\037\213", 2) == 0) {
 		/* it's a gz file, let's assume it's an opkg */
@@ -832,8 +830,6 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 		}
 		gz_close(unzipped_opkg_pid);
 		fclose(unzipped_opkg_stream);
-		fclose(deb_stream);
-		free(ared_file);
                 /*fprintf(stderr, __FUNCTION__ ":%d: done\n", __LINE__);*/
 		goto cleanup;
 	} else {
@@ -841,6 +837,9 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 	}
 
 cleanup:
+	free(ared_file);
+	if (deb_stream)
+		fclose(deb_stream);
 	if (file_list) {
 		free(file_list[0]);
 		free(file_list);
