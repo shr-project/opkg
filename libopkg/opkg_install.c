@@ -680,12 +680,6 @@ int pkg_remove_installed_replacees_unwind(opkg_conf_t *conf, pkg_vec_t *replacee
      return 0;
 }
 
-int caught_sigint = 0;
-static void opkg_install_pkg_sigint_handler(int sig)
-{
-     caught_sigint = sig;
-}
-
 /* compares versions of pkg and old_pkg, returns 0 if OK to proceed with installation of pkg, 1 otherwise */
 static int opkg_install_check_downgrade(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg, int message)
 {	  
@@ -921,16 +915,10 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      /* this next section we do with SIGINT blocked to prevent inconsistency between opkg database and filesystem */
      {
 	  sigset_t newset, oldset;
-	  sighandler_t old_handler = NULL;
-	  int use_signal = 0;
-	  caught_sigint = 0;
-	  if (use_signal) {
-	       old_handler = signal(SIGINT, opkg_install_pkg_sigint_handler);
-	  } else {
-	       sigemptyset(&newset);
-	       sigaddset(&newset, SIGINT);
-	       sigprocmask(SIG_BLOCK, &newset, &oldset);
-	  }
+
+	  sigemptyset(&newset);
+	  sigaddset(&newset, SIGINT);
+	  sigprocmask(SIG_BLOCK, &newset, &oldset);
 
 	  opkg_state_changed++;
 	  pkg->state_flag |= SF_FILELIST_CHANGED;
@@ -1024,10 +1012,7 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 
 	  opkg_message(conf, OPKG_INFO, "Done.\n");
 
-	  if (use_signal)
-	       signal(SIGINT, old_handler);
-	  else
-	       sigprocmask(SIG_UNBLOCK, &newset, &oldset);
+	  sigprocmask(SIG_UNBLOCK, &newset, &oldset);
           pkg_vec_free (replacees);
 	  return 0;
      
@@ -1053,10 +1038,8 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 
 	  opkg_message(conf, OPKG_INFO,
 		       "Failed.\n");
-	  if (use_signal)
-	       signal(SIGINT, old_handler);
-	  else
-	       sigprocmask(SIG_UNBLOCK, &newset, &oldset);
+
+	  sigprocmask(SIG_UNBLOCK, &newset, &oldset);
 
           pkg_vec_free (replacees);
 	  return OPKG_ERR_UNKNOWN;
