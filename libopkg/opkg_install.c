@@ -910,6 +910,9 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      if (conf->nodeps == 0) {
 	  err = satisfy_dependencies_for(conf, pkg);
 	  if (err) { return OPKG_INSTALL_ERR_DEPENDENCIES; }
+          if (pkg->state_status == SS_UNPACKED)
+               /* Circular dependency has installed it for us. */
+               return 0;
      }
 
      replacees = pkg_vec_alloc();
