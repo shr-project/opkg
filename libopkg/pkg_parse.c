@@ -388,9 +388,6 @@ pkg_parse_from_stream_nomalloc(pkg_t *pkg, FILE *fp, uint mask,
 		if (pkg_parse_line(pkg, *buf0, mask))
 			break;
 
-		if (buf != *buf0)
-			fprintf(stderr, "%s: %s\n", __FUNCTION__, pkg->name);
-
 		buf = *buf0;
 		buflen = buf0len;
 		buf[0] = '\0';
