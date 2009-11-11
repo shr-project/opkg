@@ -113,41 +113,53 @@ static char *pkg_get_default_arch(opkg_conf_t *conf)
 int pkg_hash_add_from_file(opkg_conf_t *conf, const char *file_name,
 			   pkg_src_t *src, pkg_dest_t *dest, int is_status_file)
 {
-     hash_table_t *hash = &conf->pkg_hash;
-     char **raw;
-     char **raw_start;
-     pkg_t *pkg;
-    
-     raw = raw_start = read_raw_pkgs_from_file(file_name);
-     if (!raw)
-        return -ENOMEM;
+	hash_table_t *hash = &conf->pkg_hash;
+	pkg_t *pkg;
+	FILE *fp;
+	char *buf;
+	const size_t len = 4096;
+	int ret = 0;
 
-     while(*raw){         /* don't worry, we'll increment raw in the parsing function */
-	  pkg = pkg_new();
+	fp = fopen(file_name, "r");
+	if (fp == NULL) {
+		fprintf(stderr, "%s: fopen(%s): %s\n",
+			     __FUNCTION__, file_name, strerror(errno));
+		return -1;
+	}
 
-	  if (pkg_parse_raw(pkg, &raw, src, dest) == 0) {
-	       if (!pkg->architecture) {
-		    char *version_str = pkg_version_str_alloc(pkg);
-		    pkg->architecture = pkg_get_default_arch(conf);
-		    opkg_message(conf, OPKG_ERROR, "Package %s version %s has no architecture specified, defaulting to %s.\n",
-				 pkg->name, version_str, pkg->architecture);
-		    free(version_str);
-	       }
-	       hash_insert_pkg(hash, pkg, is_status_file,conf);
-	  } else {
-	       pkg_deinit (pkg);
-	       free(pkg);
-	  }
-     }
+	buf = xmalloc(len);
 
-     /* XXX: CLEANUP: I'd like a cleaner interface for cleaning up
-	memory after read_raw_pkgs_from_file */
-     raw = raw_start;
-     while (*raw) {
-	  free(*raw++);
-     }
-     free(raw_start);
-     return 0;
+	do {
+		pkg = pkg_new();
+		pkg->src = src;
+		pkg->dest = dest;
+
+		ret = pkg_parse_from_stream_nomalloc(pkg, fp, PFM_ALL,
+				&buf, len);
+		if (ret) {
+			pkg_deinit (pkg);
+			free(pkg);
+			if (ret == -1)
+				break;
+			continue;
+		}
+
+		if (!pkg->architecture) {
+			char *version_str = pkg_version_str_alloc(pkg);
+			pkg->architecture = pkg_get_default_arch(conf);
+			opkg_message(conf, OPKG_ERROR, "Package %s version %s has no architecture specified, defaulting to %s.\n",
+			pkg->name, version_str, pkg->architecture);
+			free(version_str);
+		}
+
+		hash_insert_pkg(hash, pkg, is_status_file, conf);
+
+	} while (!feof(fp));
+
+	free(buf);
+	fclose(fp);
+
+	return ret;
 }
 
 abstract_pkg_t * abstract_pkg_fetch_by_name(hash_table_t * hash, const char * pkg_name)

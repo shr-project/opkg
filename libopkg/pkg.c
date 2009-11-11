@@ -318,7 +318,6 @@ void pkg_deinit(pkg_t *pkg)
 int pkg_init_from_file(pkg_t *pkg, const char *filename)
 {
      int err;
-     char **raw, **raw_start;
      FILE *control_file;
 
      err = pkg_init(pkg);
@@ -331,16 +330,9 @@ int pkg_init_from_file(pkg_t *pkg, const char *filename)
      if (err) { return err; }
 
      rewind(control_file);
-     raw = raw_start = read_raw_pkgs_from_stream(control_file);
-     pkg_parse_raw(pkg, &raw, NULL, NULL);
+     pkg_parse_from_stream(pkg, control_file, PFM_ALL);
 
      fclose(control_file);
-
-     raw = raw_start;
-     while (*raw) {
-	  free(*raw++);
-     }
-     free(raw_start);
 
      return 0;
 }
@@ -508,41 +500,27 @@ int abstract_pkg_init(abstract_pkg_t *ab_pkg)
 }
 
 void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){
-     char * temp_str;
-     char **raw =NULL;
-     char **raw_start=NULL; 
+     char *file_name;
+     FILE *fp;
 
-     size_t str_size = strlen(pkg->dest->info_dir)+strlen(pkg->name)+12;
-     temp_str = (char *) alloca (str_size);
-     memset(temp_str, 0 , str_size);
-     
-     if (temp_str == NULL ){
-        opkg_message(conf, OPKG_INFO, "Out of memory in  %s\n", __FUNCTION__);
-        return;
-     }
-     sprintf( temp_str,"%s/%s.control",pkg->dest->info_dir,pkg->name);
-   
-     raw = raw_start = read_raw_pkgs_from_file(temp_str);
-     if (raw == NULL ){
-        opkg_message(conf, OPKG_ERROR, "Unable to open the control file in  %s\n", __FUNCTION__);
-        return;
+     sprintf_alloc(&file_name,"%s/%s.control", pkg->dest->info_dir, pkg->name);
+
+     fp = fopen(file_name, "r");
+     if (fp == NULL) {
+	     opkg_message(conf, OPKG_ERROR, "fopen(%s): %s\n",
+			     file_name, strerror(errno));
+	     return;
      }
 
-     while(*raw){
-        if (!pkg_valorize_other_field(pkg, &raw ) == 0) {
-            opkg_message(conf, OPKG_DEBUG, "unable to read control file for %s. May be empty\n", pkg->name);
-        }
-     }
-     raw = raw_start;
-     while (*raw) {
-        if (raw!=NULL)
-          free(*raw++);
+     free(file_name);
+
+     if (pkg_parse_from_stream(pkg, fp, PFM_ESSENTIAL)) {
+        opkg_message(conf, OPKG_DEBUG, "unable to read control file for %s. May be empty\n", pkg->name);
      }
 
-     free(raw_start); 
+     fclose(fp);
 
-     return ;
-
+     return;
 }
 
 void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)

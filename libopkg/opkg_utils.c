@@ -47,58 +47,6 @@ long unsigned int get_available_blocks(char * filesystem)
     return 0;
 }
 
-char **read_raw_pkgs_from_file(const char *file_name)
-{
-     FILE *fp; 
-     char **ret;
-    
-     if(!(fp = fopen(file_name, "r"))){
-	  fprintf(stderr, "can't get %s open for read\n", file_name);
-	  return NULL;
-     }
-
-     ret = read_raw_pkgs_from_stream(fp);
-
-     fclose(fp);
-
-     return ret;
-}
-
-char **read_raw_pkgs_from_stream(FILE *fp)
-{    
-     char **raw = NULL, *buf, *scout;
-     int count = 0;
-     size_t size = 512;
-     
-     buf = xcalloc(1, size);
-
-     while (fgets(buf, size, fp)) {
-	  while (strlen (buf) == (size - 1)
-		 && buf[size-2] != '\n') {
-	       size_t o = size - 1;
-	       size *= 2;
-	       buf = xrealloc (buf, size);
-	       if (fgets (buf + o, size - o, fp) == NULL)
-		    break;
-	  }
-	  
-	  if(!(count % 50))
-	       raw = xrealloc(raw, (count + 50) * sizeof(char *));
-	
-	  if((scout = strchr(buf, '\n')))
-	       *scout = '\0';
-
-	  raw[count++] = xstrdup(buf);
-     }
-    
-     raw = xrealloc(raw, (count + 1) * sizeof(char *));
-     raw[count] = NULL;
-
-     free (buf);
-    
-     return raw;
-}
-
 /* something to remove whitespace, a hash pooper */
 char *trim_alloc(const char *src)
 {
