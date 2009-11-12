@@ -15,13 +15,11 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
 */
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <string.h>
+#include <unistd.h>
 #include "file_util.h"
 #include "str_util.h"
-#include "user.h"
 
 char *get_user_response(const char *format, ...)
 {
@@ -31,6 +29,9 @@ char *get_user_response(const char *format, ...)
 	va_start(ap, format);
 	vprintf(format, ap);
 	va_end(ap);
+
+	if (isatty(fileno(stdin)))
+		return NULL;
 
 	response = (char *)file_read_line_alloc(stdin);
 	if (response == NULL)

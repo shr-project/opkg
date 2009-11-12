@@ -1608,6 +1608,10 @@ static int user_prefers_old_conffile(const char *file_name, const char *backup)
 				       "          D     : show the differences between the versions (if diff is installed)\n"
 				       "     The default action is to keep your current version.\n"
 				       "    *** %s (Y/I/N/O/D) [default=N] ? ", file_name, short_file_name);
+
+	  if (response == NULL)
+		  return 1;
+
 	  if (strcmp(response, "y") == 0
 	      || strcmp(response, "i") == 0
 	      || strcmp(response, "yes") == 0) {
