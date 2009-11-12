@@ -30,7 +30,7 @@ char *get_user_response(const char *format, ...)
 	vprintf(format, ap);
 	va_end(ap);
 
-	if (isatty(fileno(stdin)))
+	if (!isatty(fileno(stdin)))
 		return NULL;
 
 	response = (char *)file_read_line_alloc(stdin);
