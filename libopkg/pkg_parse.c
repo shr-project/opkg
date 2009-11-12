@@ -82,26 +82,19 @@ static char ** parseDependsString(const char * raw, int * depends_count)
     return depends;
 }
 
-static void parseConffiles(pkg_t * pkg, const char * raw)
+static void
+parseConffiles(pkg_t *pkg, const char *cstr)
 {
-    char file_name[1048], md5sum[1048];  /* please tell me there aren't any longer that 1k */
+	char file_name[1024], md5sum[35];
 
-    if(!strncmp(raw, "Conffiles:", 10))
-	raw += strlen("Conffiles:");
+	if (sscanf(cstr, "%1023s %34s", file_name, md5sum) != 2) {
+		fprintf(stderr, "%s: failed to parse Conffiles line for %s\n",
+				__FUNCTION__, pkg->name);
+		return;
+	}
 
-    while(*raw && (sscanf(raw, "%s%s", file_name, md5sum) == 2)){
 	conffile_list_append(&pkg->conffiles, file_name, md5sum);
-	/*	fprintf(stderr, "%s %s ", file_name, md5sum);*/
-	while (*raw && isspace(*raw)) {
-	    raw++;
-	}
-	raw += strlen(file_name);
-	while (*raw && isspace(*raw)) {
-	    raw++;
-	}
-	raw += strlen(md5sum);
-    }
-}    
+}
 
 int
 parseVersion(pkg_t *pkg, const char *vstr)
@@ -158,7 +151,6 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 
 	case 'C':
 	    if((mask & PFM_CONFFILES) && isGenericFieldType("Conffiles", line)){
-		parseConffiles(pkg, line);
 		reading_conffiles = 1;
 		reading_description = 0;
 		goto dont_reset_flags;

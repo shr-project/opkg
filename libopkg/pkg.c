@@ -557,7 +557,7 @@ void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
                fprintf(fp, "Conffiles:\n");
 	       for (iter = nv_pair_list_first(&pkg->conffiles); iter; iter = nv_pair_list_next(&pkg->conffiles, iter)) {
 		    if (((conffile_t *)iter->data)->name && ((conffile_t *)iter->data)->value) {
-                         fprintf(fp, "%s %s\n", 
+                         fprintf(fp, " %s %s\n", 
                                  ((conffile_t *)iter->data)->name, 
                                  ((conffile_t *)iter->data)->value);
 		    }
