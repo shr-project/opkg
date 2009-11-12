@@ -945,32 +945,27 @@ int abstract_pkg_name_compare(const void *p1, const void *p2)
 }
 
 
-char *pkg_version_str_alloc(pkg_t *pkg)
+char *
+pkg_version_str_alloc(pkg_t *pkg)
 {
-     char *complete_version;
-     char *epoch_str;
-     char *revision_str;
+	char *version;
 
-     if (pkg->epoch) {
-	  sprintf_alloc(&epoch_str, "%d:", pkg->epoch);
-     } else {
-	  epoch_str = xstrdup("");
-     }
+	if (pkg->epoch) {
+		if (pkg->revision)
+			sprintf_alloc(&version, "%d:%s-%s",
+				pkg->epoch, pkg->version, pkg->revision);
+		else
+			sprintf_alloc(&version, "%d:%s",
+				pkg->epoch, pkg->version);
+	} else {
+		if (pkg->revision)
+			sprintf_alloc(&version, "%s-%s",
+				pkg->version, pkg->revision);
+		else
+			version = xstrdup(pkg->version);
+	}
 
-     if (pkg->revision && strlen(pkg->revision)) {
-	  sprintf_alloc(&revision_str, "-%s", pkg->revision);
-     } else {
-	  revision_str = xstrdup("");
-     }
-
-
-     sprintf_alloc(&complete_version, "%s%s%s",
-		   epoch_str, pkg->version, revision_str);
-
-     free(epoch_str);
-     free(revision_str);
-
-     return complete_version;
+	return version;
 }
 
 str_list_t *pkg_get_installed_files(pkg_t *pkg)

@@ -103,57 +103,37 @@ static void parseConffiles(pkg_t * pkg, const char * raw)
     }
 }    
 
-int parseVersion(pkg_t *pkg, const char *raw)
+int
+parseVersion(pkg_t *pkg, const char *vstr)
 {
-  char *colon, *eepochcolon;
-  char *hyphen;
-  unsigned long epoch;
+	char *colon;
 
-  if (!*raw) {
-      fprintf(stderr, "%s: ERROR: version string is empty", __FUNCTION__);
-      return EINVAL;
-  }
+	if (strncmp(vstr, "Version:", 8) == 0)
+		vstr += 8;
 
-  if (strncmp(raw, "Version:", 8) == 0) {
-      raw += 8;
-  }
-  while (*raw && isspace(*raw)) {
-      raw++;
-  }
-  
-  colon= strchr(raw,':');
-  if (colon) {
-    epoch= strtoul(raw,&eepochcolon,10);
-    if (colon != eepochcolon) {
-	fprintf(stderr, "%s: ERROR: epoch in version is not number", __FUNCTION__);
-	return EINVAL;
-    }
-    if (!*++colon) {
-	fprintf(stderr, "%s: ERROR: nothing after colon in version number", __FUNCTION__);
-	return EINVAL;
-    }
-    raw= colon;
-    pkg->epoch= epoch;
-  } else {
-    pkg->epoch= 0;
-  }
+	while (*vstr && isspace(*vstr))
+		vstr++;
 
-  pkg->revision = "";
+	colon = strchr(vstr, ':');
+	if (colon) {
+		errno = 0;
+		pkg->epoch = strtoul(vstr, NULL, 10);
+		if (errno) {
+			fprintf(stderr, "%s: %s: invalid epoch: %s\n",
+				__FUNCTION__, pkg->name, strerror(errno));
+		}
+		vstr = ++colon;
+	} else {
+		pkg->epoch= 0;
+	}
 
-  if (!pkg->version)
-  {
-    pkg->version= xcalloc(1, strlen(raw)+1);
-    strcpy(pkg->version, raw);
-  }
+	pkg->version= xstrdup(vstr);
+	pkg->revision = strrchr(pkg->version,'-');
 
-  hyphen= strrchr(pkg->version,'-');
+	if (pkg->revision)
+		*pkg->revision++ = '\0';
 
-  if (hyphen) {
-    *hyphen++= 0;
-      pkg->revision = hyphen;
-  }
-
-  return 0;
+	return 0;
 }
 
 static int
