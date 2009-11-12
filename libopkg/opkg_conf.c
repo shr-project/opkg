@@ -152,8 +152,9 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      else
        sprintf_alloc (&lock_file, "%s/lock", OPKG_STATE_DIR_PREFIX);
 
-     conf->lock_fd = creat (lock_file, S_IRUSR | S_IWUSR | S_IRGRP);
-     err = lockf (conf->lock_fd, F_TLOCK, 0);
+     err = conf->lock_fd = creat (lock_file, S_IRUSR | S_IWUSR | S_IRGRP);
+     if (err != -1)
+       err = lockf (conf->lock_fd, F_TLOCK, 0);
      errno_copy = errno;
 
      free (lock_file);
