@@ -90,7 +90,7 @@ parse_status(pkg_t *pkg, const char *sstr)
 
 	if (sscanf(sstr, "Status: %63s %63s %63s",
 				sw_str, sf_str, ss_str) != 3) {
-		fprintf(stderr, "%s: failed to parse Conffiles line for %s\n",
+		fprintf(stderr, "%s: failed to parse Status line for %s\n",
 				__FUNCTION__, pkg->name);
 		return;
 	}
