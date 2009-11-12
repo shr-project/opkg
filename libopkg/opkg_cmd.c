@@ -1350,8 +1350,8 @@ static int opkg_compare_versions_cmd(opkg_conf_t *conf, int argc, char **argv)
      if (argc == 3) {
 	  /* this is a bit gross */
 	  struct pkg p1, p2;
-	  parseVersion(&p1, argv[0]); 
-	  parseVersion(&p2, argv[2]); 
+	  parse_version(&p1, argv[0]); 
+	  parse_version(&p2, argv[2]); 
 	  return pkg_version_satisfied(&p1, &p2, argv[1]);
      } else {
 	  opkg_message(conf, OPKG_ERROR,

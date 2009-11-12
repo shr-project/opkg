@@ -48,7 +48,7 @@ long unsigned int get_available_blocks(char * filesystem)
 }
 
 /* something to remove whitespace, a hash pooper */
-char *trim_alloc(const char *src)
+char *trim_xstrdup(const char *src)
 {
      const char *end;
 

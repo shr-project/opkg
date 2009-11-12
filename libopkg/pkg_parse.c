@@ -24,66 +24,84 @@
 #include "pkg_parse.h"
 #include "libbb/libbb.h"
 
-static int isGenericFieldType(char * type, const char * line)
+static int
+is_field(char *type, const char *line)
 {
-    if(!strncmp(line, type, strlen(type)))
-	return 1;
-    return 0;
+	if (!strncmp(line, type, strlen(type)))
+		return 1;
+	return 0;
 }
 
-static char * parseGenericFieldType(char * type, const char * raw)
+static char *
+parse_simple(char *type, const char *line)
 {
-    const char * field_value = raw + (strlen(type) + 1);
-    return trim_alloc(field_value);
+	return trim_xstrdup(line + strlen(type) + 1);
 }
 
-static void parseStatus(pkg_t *pkg, const char * raw)
+/*
+ * Parse a comma separated string into an array.
+ */
+static char **
+parse_comma_separated(const char *raw, int *count)
 {
-    char sw_str[64], sf_str[64], ss_str[64];
+	char **depends = NULL;
+	const char *start, *end;
+	int line_count = 0;
 
-    sscanf(raw, "Status: %s %s %s", sw_str, sf_str, ss_str);
-    pkg->state_want = pkg_state_want_from_str(sw_str);
-    pkg->state_flag = pkg_state_flag_from_str(sf_str);
-    pkg->state_status = pkg_state_status_from_str(ss_str);
-}
-
-static char ** parseDependsString(const char * raw, int * depends_count)
-{
-    char ** depends = NULL;
-    int line_count = 0;
-    char buff[2048], * dest;
-
-    while(raw && *raw && !isspace(*raw)) {
+	/* skip past the "Field:" marker */
+	while (*raw && *raw != ':')
+		raw++;
 	raw++;
-    }
 
-    if(line_is_blank(raw)){
-	*depends_count = line_count;
-	return NULL;
-    }
-    while(raw && *raw){
-	depends = xrealloc(depends, sizeof(char *) * (line_count + 1));
+	if (line_is_blank(raw)) {
+		*count = line_count;
+		return NULL;
+	}
+
+	while (*raw) {
+		depends = xrealloc(depends, sizeof(char *) * (line_count + 1));
 	
-	while(isspace(*raw)) raw++;
+		while (isspace(*raw))
+			raw++;
 
-	dest = buff;
-	while((*raw != ',') && *raw)
-	    *dest++ = *raw++;
+		start = raw;
+		while (*raw != ',' && *raw)
+			raw++;
+		end = raw;
 
-	*dest = '\0';
-	depends[line_count] = trim_alloc(buff);
-	if(depends[line_count] ==NULL)
-	   return NULL;
-        line_count++;
-	if(*raw == ',')
-	    raw++;
-    }
-    *depends_count = line_count;
-    return depends;
+		while (end > start && isspace(*end))
+			end--;
+
+		depends[line_count] = xstrndup(start, end-start);
+
+        	line_count++;
+		if (*raw == ',')
+		    raw++;
+	}
+
+	*count = line_count;
+	return depends;
 }
 
 static void
-parseConffiles(pkg_t *pkg, const char *cstr)
+parse_status(pkg_t *pkg, const char *sstr)
+{
+	char sw_str[64], sf_str[64], ss_str[64];
+
+	if (sscanf(sstr, "Status: %63s %63s %63s",
+				sw_str, sf_str, ss_str) != 3) {
+		fprintf(stderr, "%s: failed to parse Conffiles line for %s\n",
+				__FUNCTION__, pkg->name);
+		return;
+	}
+
+	pkg->state_want = pkg_state_want_from_str(sw_str);
+	pkg->state_flag = pkg_state_flag_from_str(sf_str);
+	pkg->state_status = pkg_state_status_from_str(ss_str);
+}
+
+static void
+parse_conffiles(pkg_t *pkg, const char *cstr)
 {
 	char file_name[1024], md5sum[35];
 
@@ -97,7 +115,7 @@ parseConffiles(pkg_t *pkg, const char *cstr)
 }
 
 int
-parseVersion(pkg_t *pkg, const char *vstr)
+parse_version(pkg_t *pkg, const char *vstr)
 {
 	char *colon;
 
@@ -137,145 +155,136 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 
 	switch (*line) {
 	case 'A':
-	    if((mask & PFM_ARCHITECTURE ) && isGenericFieldType("Architecture:", line))
-		pkg->architecture = parseGenericFieldType("Architecture", line);
-	    else if((mask & PFM_AUTO_INSTALLED) && isGenericFieldType("Auto-Installed:", line)) {
-		char *auto_installed_value;
-		auto_installed_value = parseGenericFieldType("Auto-Installed:", line);
-		if (strcmp(auto_installed_value, "yes") == 0) {
-		    pkg->auto_installed = 1;
+		if ((mask & PFM_ARCHITECTURE ) && is_field("Architecture", line))
+			pkg->architecture = parse_simple("Architecture", line);
+		else if ((mask & PFM_AUTO_INSTALLED) && is_field("Auto-Installed", line)) {
+			char *tmp = parse_simple("Auto-Installed", line);
+			if (strcmp(tmp, "yes") == 0)
+			    pkg->auto_installed = 1;
+			free(tmp);
 		}
-		free(auto_installed_value);
-	    }
-	    break;
+		break;
 
 	case 'C':
-	    if((mask & PFM_CONFFILES) && isGenericFieldType("Conffiles", line)){
-		reading_conffiles = 1;
-		reading_description = 0;
-		goto dont_reset_flags;
-	    }
-	    else if((mask & PFM_CONFLICTS) && isGenericFieldType("Conflicts", line))
-		pkg->conflicts_str = parseDependsString(line, &pkg->conflicts_count);
-	    break;
+		if ((mask & PFM_CONFFILES) && is_field("Conffiles", line)) {
+			reading_conffiles = 1;
+			reading_description = 0;
+			goto dont_reset_flags;
+	    	}
+		else if ((mask & PFM_CONFLICTS) && is_field("Conflicts", line))
+			pkg->conflicts_str = parse_comma_separated(line, &pkg->conflicts_count);
+		break;
 
 	case 'D':
-	    if((mask & PFM_DESCRIPTION) && isGenericFieldType("Description", line)) {
-		pkg->description = parseGenericFieldType("Description", line);
-		reading_conffiles = 0;
-		reading_description = 1;
-		goto dont_reset_flags;
-	    }
-	    else if((mask & PFM_DEPENDS) && isGenericFieldType("Depends", line))
-		pkg->depends_str = parseDependsString(line, &pkg->depends_count);
-	    break;
+		if ((mask & PFM_DESCRIPTION) && is_field("Description", line)) {
+			pkg->description = parse_simple("Description", line);
+			reading_conffiles = 0;
+			reading_description = 1;
+			goto dont_reset_flags;
+		} else if ((mask & PFM_DEPENDS) && is_field("Depends", line))
+			pkg->depends_str = parse_comma_separated(line, &pkg->depends_count);
+		break;
 
 	case 'E':
-	    if((mask & PFM_ESSENTIAL) && isGenericFieldType("Essential:", line)) {
-		char *essential_value;
-		essential_value = parseGenericFieldType("Essential", line);
-		if (strcmp(essential_value, "yes") == 0) {
-		    pkg->essential = 1;
+		if((mask & PFM_ESSENTIAL) && is_field("Essential", line)) {
+			char *tmp = parse_simple("Essential", line);
+			if (strcmp(tmp, "yes") == 0)
+				pkg->essential = 1;
+			free(tmp);
 		}
-		free(essential_value);
-	    }
-	    break;
+		break;
 
 	case 'F':
-	    if((mask & PFM_FILENAME) && isGenericFieldType("Filename:", line))
-		pkg->filename = parseGenericFieldType("Filename", line);
-	    break;
+		if((mask & PFM_FILENAME) && is_field("Filename", line))
+			pkg->filename = parse_simple("Filename", line);
+		break;
 
 	case 'I':
-	    if((mask && PFM_INSTALLED_SIZE) && isGenericFieldType("Installed-Size:", line))
-		pkg->installed_size = parseGenericFieldType("Installed-Size", line);
-	    else if((mask && PFM_INSTALLED_TIME) && isGenericFieldType("Installed-Time:", line)) {
-		char *time_str = parseGenericFieldType("Installed-Time", line);
-		pkg->installed_time = strtoul(time_str, NULL, 0);
-		free (time_str);
-	    }	    
-	    break;
+		if ((mask && PFM_INSTALLED_SIZE) && is_field("Installed-Size", line))
+			pkg->installed_size = parse_simple("Installed-Size", line);
+		else if ((mask && PFM_INSTALLED_TIME) && is_field("Installed-Time", line)) {
+			char *tmp = parse_simple("Installed-Time", line);
+			pkg->installed_time = strtoul(tmp, NULL, 0);
+			free (tmp);
+		}	    
+		break;
 
 	case 'M':
-	    if(mask && PFM_MD5SUM) {
-		if (isGenericFieldType("MD5sum:", line))
-			pkg->md5sum = parseGenericFieldType("MD5sum", line);
-	    		/* The old opkg wrote out status files with the wrong
-			 * case for MD5sum, let's parse it either way */
-	    	else if(isGenericFieldType("MD5Sum:", line))
-			pkg->md5sum = parseGenericFieldType("MD5Sum", line);
-	    } else if((mask & PFM_MAINTAINER) && isGenericFieldType("Maintainer", line))
-		pkg->maintainer = parseGenericFieldType("Maintainer", line);
-	    break;
+		if (mask && PFM_MD5SUM) {
+			if (is_field("MD5sum:", line))
+				pkg->md5sum = parse_simple("MD5sum", line);
+			/* The old opkg wrote out status files with the wrong
+			* case for MD5sum, let's parse it either way */
+			else if (is_field("MD5Sum:", line))
+				pkg->md5sum = parse_simple("MD5Sum", line);
+		} else if((mask & PFM_MAINTAINER) && is_field("Maintainer", line))
+			pkg->maintainer = parse_simple("Maintainer", line);
+		break;
 
 	case 'P':
-	    if((mask & PFM_PACKAGE) && isGenericFieldType("Package:", line)) 
-		pkg->name = parseGenericFieldType("Package", line);
-	    else if((mask & PFM_PRIORITY) && isGenericFieldType("Priority:", line))
-		pkg->priority = parseGenericFieldType("Priority", line);
-	    else if((mask & PFM_PROVIDES) && isGenericFieldType("Provides", line)){
-		pkg->provides_str = parseDependsString(line, &pkg->provides_count);
-    	    } 
-	    else if((mask & PFM_PRE_DEPENDS) && isGenericFieldType("Pre-Depends", line))
-		pkg->pre_depends_str = parseDependsString(line, &pkg->pre_depends_count);
-	    break;
+		if ((mask & PFM_PACKAGE) && is_field("Package", line)) 
+			pkg->name = parse_simple("Package", line);
+		else if ((mask & PFM_PRIORITY) && is_field("Priority", line))
+			pkg->priority = parse_simple("Priority", line);
+		else if ((mask & PFM_PROVIDES) && is_field("Provides", line))
+			pkg->provides_str = parse_comma_separated(line, &pkg->provides_count);
+		else if ((mask & PFM_PRE_DEPENDS) && is_field("Pre-Depends", line))
+			pkg->pre_depends_str = parse_comma_separated(line, &pkg->pre_depends_count);
+		break;
 
 	case 'R':
-	    if((mask & PFM_RECOMMENDS) && isGenericFieldType("Recommends", line))
-	        pkg->recommends_str = parseDependsString(line, &pkg->recommends_count);
-	    else if((mask & PFM_REPLACES) && isGenericFieldType("Replaces", line))
-		pkg->replaces_str = parseDependsString(line, &pkg->replaces_count);
-	    
-	    break;
+		if ((mask & PFM_RECOMMENDS) && is_field("Recommends", line))
+			pkg->recommends_str = parse_comma_separated(line, &pkg->recommends_count);
+		else if ((mask & PFM_REPLACES) && is_field("Replaces", line))
+			pkg->replaces_str = parse_comma_separated(line, &pkg->replaces_count);
+
+		break;
 
 	case 'S':
-	    if((mask & PFM_SECTION) && isGenericFieldType("Section:", line))
-		pkg->section = parseGenericFieldType("Section", line);
+		if ((mask & PFM_SECTION) && is_field("Section", line))
+			pkg->section = parse_simple("Section", line);
 #ifdef HAVE_SHA256
-	    else if((mask & PFM_SHA256SUM) && isGenericFieldType("SHA256sum:", line))
-		pkg->sha256sum = parseGenericFieldType("SHA256sum", line);
+		else if ((mask & PFM_SHA256SUM) && is_field("SHA256sum", line))
+			pkg->sha256sum = parse_simple("SHA256sum", line);
 #endif
-	    else if((mask & PFM_SIZE) && isGenericFieldType("Size:", line))
-		pkg->size = parseGenericFieldType("Size", line);
-	    else if((mask & PFM_SOURCE) && isGenericFieldType("Source:", line))
-		pkg->source = parseGenericFieldType("Source", line);
-	    else if((mask & PFM_STATUS) && isGenericFieldType("Status", line))
-		parseStatus(pkg, line);
-	    else if((mask & PFM_SUGGESTS) && isGenericFieldType("Suggests", line))
-		pkg->suggests_str = parseDependsString(line, &pkg->suggests_count);
-	    break;
+		else if ((mask & PFM_SIZE) && is_field("Size", line))
+			pkg->size = parse_simple("Size", line);
+		else if ((mask & PFM_SOURCE) && is_field("Source", line))
+			pkg->source = parse_simple("Source", line);
+		else if ((mask & PFM_STATUS) && is_field("Status", line))
+			parse_status(pkg, line);
+		else if ((mask & PFM_SUGGESTS) && is_field("Suggests", line))
+			pkg->suggests_str = parse_comma_separated(line, &pkg->suggests_count);
+		break;
 
 	case 'T':
-	    if((mask & PFM_TAGS) && isGenericFieldType("Tags:", line))
-		pkg->tags = parseGenericFieldType("Tags", line);
-	    break;
+		if ((mask & PFM_TAGS) && is_field("Tags", line))
+			pkg->tags = parse_simple("Tags", line);
+		break;
 
 	case 'V':
-	    if((mask & PFM_VERSION) && isGenericFieldType("Version", line))
-		parseVersion(pkg, line);
-	    break;
+		if ((mask & PFM_VERSION) && is_field("Version", line))
+			parse_version(pkg, line);
+		break;
 
 	case ' ':
-	    if((mask & PFM_DESCRIPTION) && reading_description) {
-		/* we already know it's not blank, so the rest of description */      
-		pkg->description = xrealloc(pkg->description,
-					   strlen(pkg->description)
-					   + 1 + strlen(line) + 1);
-		strcat(pkg->description, "\n");
-		strcat(pkg->description, (line));
-		goto dont_reset_flags;
-	    }
-	    else if((mask && PFM_CONFFILES) && reading_conffiles) {
-		parseConffiles(pkg, line);
-		goto dont_reset_flags;
-	    }
-	    break;
+		if ((mask & PFM_DESCRIPTION) && reading_description) {
+			pkg->description = xrealloc(pkg->description,
+						strlen(pkg->description)
+						+ 1 + strlen(line) + 1);
+			strcat(pkg->description, "\n");
+			strcat(pkg->description, (line));
+			goto dont_reset_flags;
+		} else if ((mask && PFM_CONFFILES) && reading_conffiles) {
+			parse_conffiles(pkg, line);
+			goto dont_reset_flags;
+		}
+		break;
 
 	default:
-	    /* For package lists, signifies end of package. */
-	    if(line_is_blank(line)) {
-		return 1;
-	    }
+		/* For package lists, signifies end of package. */
+		if(line_is_blank(line))
+			return 1;
 	}
 
 	reading_description = 0;

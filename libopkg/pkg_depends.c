@@ -356,7 +356,7 @@ int version_constraints_satisfied(depend_t * depends, pkg_t * pkg)
 
     temp = pkg_new();
 
-    parseVersion(temp, depends->version);
+    parse_version(temp, depends->version);
 
     comparison = pkg_compare_versions(pkg, temp);
 
@@ -770,7 +770,7 @@ static int parseDepends(compound_depend_t *compound_depend,
 		(*src != '|'))
 	       *dest++ = *src++;
 	  *dest = '\0';
-	  pkg_name = trim_alloc(buffer);
+	  pkg_name = trim_xstrdup(buffer);
           if (pkg_name == NULL )
 	       return -ENOMEM;
 	
@@ -822,7 +822,7 @@ static int parseDepends(compound_depend_t *compound_depend,
 		    *dest++ = *src++;
 	       *dest = '\0';
 	    
-	       possibilities[i]->version = trim_alloc(buffer);
+	       possibilities[i]->version = trim_xstrdup(buffer);
 	       /*	   	    fprintf(stderr, "let's print the depends version string:");
 				    fprintf(stderr, "version %s\n", possibilities[i]->version);*/
                if (possibilities[i]->version == NULL )

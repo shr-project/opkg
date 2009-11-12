@@ -26,7 +26,7 @@ void free_error_list(void);
 void print_error_list(void);
 
 long unsigned int get_available_blocks(char * filesystem);
-char *trim_alloc(const char *line);
+char *trim_xstrdup(const char *line);
 int line_is_blank(const char *line);
 
 #endif
