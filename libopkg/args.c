@@ -48,18 +48,12 @@ enum long_args_opt
      ARGS_OPT_CACHE,
 };
 
-char *conf_file_dir;
-
 void args_init(args_t *args)
 {
      memset(args, 0, sizeof(args_t));
 
      args->dest = ARGS_DEFAULT_DEST;
 
-     conf_file_dir = getenv("OPKG_CONF_DIR");
-     if (conf_file_dir == NULL || conf_file_dir[0] == '\0') {
-	  conf_file_dir = ARGS_DEFAULT_CONF_FILE_DIR;
-     }
      sprintf_alloc(&args->conf_file, "%s/%s", OPKGETCDIR,
 		   ARGS_DEFAULT_CONF_FILE_NAME);
 

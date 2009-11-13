@@ -35,12 +35,9 @@
 #include <errno.h>
 #include <glob.h>
 
-extern char *conf_file_dir;
-
 static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 				pkg_src_list_t *pkg_src_list,
-				nv_pair_list_t *tmp_dest_nv_pair_list,
-				char **tmp_lists_dir);
+				nv_pair_list_t *tmp_dest_nv_pair_list);
 static int opkg_conf_set_option(const opkg_option_t *options,
 				const char *name, const char *value);
 static int opkg_conf_set_default_dest(opkg_conf_t *conf,
@@ -48,7 +45,7 @@ static int opkg_conf_set_default_dest(opkg_conf_t *conf,
 static int set_and_load_pkg_src_list(opkg_conf_t *conf,
 				     pkg_src_list_t *nv_pair_list);
 static int set_and_load_pkg_dest_list(opkg_conf_t *conf,
-				      nv_pair_list_t *nv_pair_list, char * lists_dir);
+				      nv_pair_list_t *nv_pair_list);
 
 void opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
 {
@@ -125,10 +122,10 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      int errno_copy;
      char *tmp_dir_base;
      nv_pair_list_t tmp_dest_nv_pair_list;
-     char *lists_dir = NULL, *lock_file = NULL;
+     char *lock_file = NULL;
      glob_t globbuf;
      char *etc_opkg_conf_pattern;
-     char *pending_dir = NULL;
+     char *offline_root = NULL;
 
      memset(conf, 0, sizeof(opkg_conf_t));
 
@@ -146,9 +143,66 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      conf->restrict_to_default_dest = 0;
      conf->default_dest = NULL;
 
+     if (args->conf_file) {
+	  struct stat stat_buf;
+	  err = stat(args->conf_file, &stat_buf);
+	  if (err == 0)
+	       if (opkg_conf_parse_file(conf, args->conf_file,
+				    &conf->pkg_src_list, &tmp_dest_nv_pair_list)<0) {
+                   /* Memory leakage from opkg_conf_parse-file */
+                   return OPKG_CONF_ERR_PARSE;
+               }
+     }
+
+     offline_root = conf->offline_root;
+     opkg_conf_override_string(&conf->offline_root, args->offline_root);
+
+     if (conf->offline_root)
+	  sprintf_alloc(&etc_opkg_conf_pattern, "%s/etc/opkg/*.conf", conf->offline_root);
+     else {
+	  char *conf_file_dir = getenv("OPKG_CONF_DIR");
+	  if (conf_file_dir == NULL)
+		  conf_file_dir = ARGS_DEFAULT_CONF_FILE_DIR;
+	  sprintf_alloc(&etc_opkg_conf_pattern, "%s/*.conf", conf_file_dir);
+     }
+     memset(&globbuf, 0, sizeof(globbuf));
+     err = glob(etc_opkg_conf_pattern, 0, NULL, &globbuf);
+     free (etc_opkg_conf_pattern);
+     if (!err) {
+	  int i;
+	  for (i = 0; i < globbuf.gl_pathc; i++) {
+	       if (globbuf.gl_pathv[i]) 
+		    if (args->conf_file &&
+				!strcmp(args->conf_file, globbuf.gl_pathv[i]))
+			    continue;
+		    if ( opkg_conf_parse_file(conf, globbuf.gl_pathv[i], 
+				         &conf->pkg_src_list, &tmp_dest_nv_pair_list)<0) {
+                        /* Memory leakage from opkg_conf_parse-file */
+                        return OPKG_CONF_ERR_PARSE;
+	            }
+                    if (offline_root != conf->offline_root) {
+                        opkg_message(conf, OPKG_ERROR,
+					"Config file %s, within an offline "
+					"root contains option offline_root.\n",
+				       globbuf.gl_pathv[i]);
+                        return OPKG_CONF_ERR_PARSE;
+                    }
+	  }
+     }
+     globfree(&globbuf);
+
+     opkg_conf_override_string(&conf->offline_root_path, 
+			       args->offline_root_path);
+     opkg_conf_override_string(&conf->offline_root_pre_script_cmd, 
+			       args->offline_root_pre_script_cmd);
+     opkg_conf_override_string(&conf->offline_root_post_script_cmd, 
+			       args->offline_root_post_script_cmd);
+
+     opkg_conf_override_string(&conf->cache, args->cache);
+
      /* check for lock file */
-     if (args->offline_root)
-       sprintf_alloc (&lock_file, "%s/%s/lock", args->offline_root, OPKG_STATE_DIR_PREFIX);
+     if (conf->offline_root)
+       sprintf_alloc (&lock_file, "%s/%s/lock", conf->offline_root, OPKG_STATE_DIR_PREFIX);
      else
        sprintf_alloc (&lock_file, "%s/lock", OPKG_STATE_DIR_PREFIX);
 
@@ -157,19 +211,13 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
        err = lockf (conf->lock_fd, F_TLOCK, 0);
      errno_copy = errno;
 
-     free (lock_file);
-
-     if (err)
-     {
-       if(args->offline_root) {
-         opkg_message (conf, OPKG_ERROR, "Could not obtain administrative lock for offline root (ERR: %s)  at %s/%s/lock\n",
-                 strerror(errno_copy), args->offline_root, OPKG_STATE_DIR_PREFIX);
-       } else {
-         opkg_message (conf, OPKG_ERROR, "Could not obtain administrative lock (ERR: %s) at %s/lock\n",
-                 strerror(errno_copy), OPKG_STATE_DIR_PREFIX);
-       }
+     if (err) {
+       opkg_message (conf, OPKG_ERROR, "Could not lock %s: %s\n",
+                 lock_file, strerror(errno_copy));
+       free(lock_file);
        return OPKG_CONF_ERR_LOCK;
      }
+     free(lock_file);
 
      if (args->tmp_dir)
 	  tmp_dir_base = args->tmp_dir;
@@ -180,64 +228,27 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 		   OPKG_CONF_TMP_DIR_SUFFIX);
      conf->tmp_dir = mkdtemp(conf->tmp_dir);
      if (conf->tmp_dir == NULL) {
-	  fprintf(stderr, "%s: Failed to create temporary directory `%s': %s\n",
-		  __FUNCTION__, conf->tmp_dir, strerror(errno));
+	  opkg_message(conf, OPKG_ERROR,
+			  "%s: Creating temp dir %s failed: %s\n",
+			  conf->tmp_dir, strerror(errno));
 	  return OPKG_CONF_ERR_TMP_DIR;
      }
 
      pkg_hash_init("pkg-hash", &conf->pkg_hash, OPKG_CONF_DEFAULT_HASH_LEN);
      hash_table_init("file-hash", &conf->file_hash, OPKG_CONF_DEFAULT_HASH_LEN);
      hash_table_init("obs-file-hash", &conf->obs_file_hash, OPKG_CONF_DEFAULT_HASH_LEN);
-     lists_dir=xmalloc(1);
-     lists_dir[0]='\0';
-     if (args->conf_file) {
-	  struct stat stat_buf;
-	  err = stat(args->conf_file, &stat_buf);
-	  if (err == 0)
-	       if (opkg_conf_parse_file(conf, args->conf_file,
-				    &conf->pkg_src_list, &tmp_dest_nv_pair_list,&lists_dir)<0) {
-                   /* Memory leakage from opkg_conf_parse-file */
-                   return OPKG_CONF_ERR_PARSE;
-               }
-     }
 
-     if (strlen(lists_dir)<=1 ){
-        lists_dir = xrealloc(lists_dir,strlen(OPKG_CONF_LISTS_DIR)+2);
-        sprintf (lists_dir,"%s",OPKG_CONF_LISTS_DIR);
-     }
+     if (conf->lists_dir == NULL)
+        conf->lists_dir = xstrdup(OPKG_CONF_LISTS_DIR);
 
-     if (args->offline_root) {
+     if (conf->offline_root) {
             char *tmp;
-            sprintf_alloc(&tmp, "%s/%s",args->offline_root,lists_dir);
-            free(lists_dir);
-            lists_dir = tmp;
+            sprintf_alloc(&tmp, "%s/%s", conf->offline_root, conf->lists_dir);
+            free(conf->lists_dir);
+            conf->lists_dir = tmp;
      }
 
-     pending_dir = xcalloc(1, strlen(lists_dir)+strlen("/pending")+5);
-     snprintf(pending_dir,strlen(lists_dir)+strlen("/pending") ,"%s%s",lists_dir,"/pending");
-
-     conf->lists_dir = xstrdup(lists_dir);
-     conf->pending_dir = xstrdup(pending_dir);
-
-     if (args->offline_root) 
-	  sprintf_alloc(&etc_opkg_conf_pattern, "%s/etc/opkg/*.conf", args->offline_root);
-     else
-	  sprintf_alloc(&etc_opkg_conf_pattern, "%s/*.conf", conf_file_dir);
-     memset(&globbuf, 0, sizeof(globbuf));
-     err = glob(etc_opkg_conf_pattern, 0, NULL, &globbuf);
-     free (etc_opkg_conf_pattern);
-     if (!err) {
-	  int i;
-	  for (i = 0; i < globbuf.gl_pathc; i++) {
-	       if (globbuf.gl_pathv[i]) 
-		    if ( opkg_conf_parse_file(conf, globbuf.gl_pathv[i], 
-				         &conf->pkg_src_list, &tmp_dest_nv_pair_list,&lists_dir)<0) {
-                        /* Memory leakage from opkg_conf_parse-file */
-                        return OPKG_CONF_ERR_PARSE;
-	            }
-	  }
-     }
-     globfree(&globbuf);
+     sprintf_alloc(&conf->pending_dir, "%s/pending", conf->lists_dir);
 
      /* if no architectures were defined, then default all, noarch, and host architecture */
      if (nv_pair_list_empty(&conf->arch_list)) {
@@ -303,17 +314,6 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 	  conf->verbosity = args->verbosity;
      } 
 
-     opkg_conf_override_string(&conf->offline_root, 
-			       args->offline_root);
-     opkg_conf_override_string(&conf->offline_root_path, 
-			       args->offline_root_path);
-     opkg_conf_override_string(&conf->offline_root_pre_script_cmd, 
-			       args->offline_root_pre_script_cmd);
-     opkg_conf_override_string(&conf->offline_root_post_script_cmd, 
-			       args->offline_root_post_script_cmd);
-
-     opkg_conf_override_string(&conf->cache, args->cache);
-
 /* Pigi: added a flag to disable the checking of structures if the command does not need to 
          read anything from there.
 */
@@ -325,7 +325,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
         /* Now that we have resolved conf->offline_root, we can commit to
 	   the directory names for the dests and load in all the package
 	   lists. */
-        set_and_load_pkg_dest_list(conf, &tmp_dest_nv_pair_list,lists_dir);
+        set_and_load_pkg_dest_list(conf, &tmp_dest_nv_pair_list);
    
         if (args->dest) {
 	     err = opkg_conf_set_default_dest(conf, args->dest);
@@ -335,36 +335,20 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
         }
      }
      nv_pair_list_deinit(&tmp_dest_nv_pair_list);
-     free(lists_dir);
-     free(pending_dir);
 
      return 0;
 }
 
 void opkg_conf_deinit(opkg_conf_t *conf)
 {
-#ifdef OPKG_DEBUG_NO_TMP_CLEANUP
-#error
-     fprintf(stderr, "%s: Not cleaning up %s since opkg compiled "
-	     "with OPKG_DEBUG_NO_TMP_CLEANUP\n",
-	     __FUNCTION__, conf->tmp_dir);
-#else
      int err;
+     char *cmd;
 
-     err = rmdir(conf->tmp_dir);
-     if (err) {
-	  if (errno == ENOTEMPTY) {
-	       char *cmd;
-	       sprintf_alloc(&cmd, "rm -fr %s\n", conf->tmp_dir);
-	       err = xsystem(cmd);
-	       free(cmd);
-	  }
-	  if (err)
-	       fprintf(stderr, "WARNING: Unable to remove temporary directory: %s: %s\n", conf->tmp_dir, strerror(errno));
-     }
-#endif /* OPKG_DEBUG_NO_TMP_CLEANUP */
+     sprintf_alloc(&cmd, "rm -fr %s\n", conf->tmp_dir);
+     err = xsystem(cmd);
+     free(cmd);
 
-     free(conf->tmp_dir); /*XXX*/
+     free(conf->tmp_dir);
      free(conf->lists_dir);
      free(conf->pending_dir);
 
@@ -372,12 +356,19 @@ void opkg_conf_deinit(opkg_conf_t *conf)
      pkg_dest_list_deinit(&conf->pkg_dest_list);
      nv_pair_list_deinit(&conf->arch_list);
 
+     opkg_conf_free_string(&conf->cache);
+
+     opkg_conf_free_string(&conf->ftp_proxy);
+     opkg_conf_free_string(&conf->http_proxy);
+     opkg_conf_free_string(&conf->no_proxy);
+
      opkg_conf_free_string(&conf->offline_root);
      opkg_conf_free_string(&conf->offline_root_path);
      opkg_conf_free_string(&conf->offline_root_pre_script_cmd);
      opkg_conf_free_string(&conf->offline_root_post_script_cmd);
 
-     opkg_conf_free_string(&conf->cache);
+     opkg_conf_free_string(&conf->proxy_passwd);
+     opkg_conf_free_string(&conf->proxy_user);
 
 #if defined(HAVE_OPENSSL)
      opkg_conf_free_string(&conf->signature_ca_file);
@@ -395,7 +386,7 @@ void opkg_conf_deinit(opkg_conf_t *conf)
      opkg_conf_free_string(&conf->ssl_ca_path);
 #endif
 
-     if (conf->verbosity > 1) { 
+     if (conf->verbosity >= OPKG_DEBUG) { 
 	  int i;
 	  hash_table_t *hashes[] = {
 	       &conf->pkg_hash,
@@ -476,7 +467,7 @@ static int set_and_load_pkg_src_list(opkg_conf_t *conf, pkg_src_list_t *pkg_src_
      return 0;
 }
 
-static int set_and_load_pkg_dest_list(opkg_conf_t *conf, nv_pair_list_t *nv_pair_list, char *lists_dir )
+static int set_and_load_pkg_dest_list(opkg_conf_t *conf, nv_pair_list_t *nv_pair_list)
 {
      nv_pair_list_elt_t *iter;
      nv_pair_t *nv_pair;
@@ -491,7 +482,7 @@ static int set_and_load_pkg_dest_list(opkg_conf_t *conf, nv_pair_list_t *nv_pair
 	  } else {
 	       root_dir = xstrdup(nv_pair->value);
 	  }
-	  dest = pkg_dest_list_append(&conf->pkg_dest_list, nv_pair->name, root_dir, lists_dir);
+	  dest = pkg_dest_list_append(&conf->pkg_dest_list, nv_pair->name, root_dir, conf->lists_dir);
 	  free(root_dir);
 	  if (dest == NULL) {
 	       continue;
@@ -510,8 +501,7 @@ static int set_and_load_pkg_dest_list(opkg_conf_t *conf, nv_pair_list_t *nv_pair
 
 static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 				pkg_src_list_t *pkg_src_list,
-				nv_pair_list_t *tmp_dest_nv_pair_list,
-				char **lists_dir)
+				nv_pair_list_t *tmp_dest_nv_pair_list)
 {
      int err;
      opkg_option_t * options;
@@ -620,8 +610,7 @@ static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 	  } else if (strcmp(type, "dest") == 0) {
 	       nv_pair_list_append(tmp_dest_nv_pair_list, name, value);
 	  } else if (strcmp(type, "lists_dir") == 0) {
-	       *lists_dir = xrealloc(*lists_dir,strlen(value)+1);
-               sprintf (*lists_dir,"%s",value);
+	       conf->lists_dir = xstrdup(value);
 	  } else if (strcmp(type, "arch") == 0) {
 	       opkg_message(conf, OPKG_INFO, "supported arch %s priority (%s)\n", name, value);
 	       if (!value) {
