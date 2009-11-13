@@ -688,17 +688,18 @@ int opkg_conf_write_status_files(opkg_conf_t *conf)
      pkg_vec_t *all;
      pkg_t *pkg;
      int i;
-     int err;
-     FILE * status_file=NULL;
+     FILE *fp;
 
      if (conf->noaction)
 	  return 0;
 
      dest = (pkg_dest_t *)void_list_first(&conf->pkg_dest_list)->data;
-     status_file = fopen(dest->status_file_tmp_name, "w");
-     if (status_file == NULL) {
+
+     fp = fopen(dest->status_file_name, "w");
+     if (fp == NULL) {
          fprintf(stderr, "%s: Can't open status file: %s for writing: %s\n",
-                 __FUNCTION__, dest->status_file_tmp_name, strerror(errno));
+                 __FUNCTION__, dest->status_file_name, strerror(errno));
+	 return -1;
      }
 
      all = pkg_vec_alloc();
@@ -719,25 +720,12 @@ int opkg_conf_write_status_files(opkg_conf_t *conf)
 		       __FUNCTION__, pkg->name);
 	       continue;
 	  }
-	  if (status_file) {
-	       pkg_print_status(pkg, status_file);
-	  }
+	  pkg_print_status(pkg, fp);
      }
 
      pkg_vec_free(all);
+     fclose(fp);
 
-     if (status_file) {
-         err = ferror(status_file);
-         fclose(status_file);
-         if (!err) {
-             file_move(dest->status_file_tmp_name, dest->status_file_name);
-         } else {
-             fprintf(stderr, "%s: ERROR: An error has occurred writing %s, "
-                     "retaining old %s\n", __FUNCTION__,
-                     dest->status_file_tmp_name, dest->status_file_name);
-         }
-         status_file = NULL;
-     }
      return 0;
 }
 

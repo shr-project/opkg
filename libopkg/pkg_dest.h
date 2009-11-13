@@ -29,7 +29,6 @@ struct pkg_dest
     char *lists_dir;
     char *info_dir;
     char *status_file_name;
-    char *status_file_tmp_name;
     FILE *status_file;
 };
 
