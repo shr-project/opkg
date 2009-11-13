@@ -758,7 +758,7 @@ static int opkg_info_status_cmd(opkg_conf_t *conf, int argc, char **argv, int in
 
 	  pkg_formatted_info(stdout, pkg);
 
-	  if (conf->verbosity > 1) {
+	  if (conf->verbosity >= OPKG_NOTICE) {
 	       conffile_list_elt_t *iter;
 	       for (iter = nv_pair_list_first(&pkg->conffiles); iter; iter = nv_pair_list_next(&pkg->conffiles, iter)) {
 		    conffile_t *cf = (conffile_t *)iter->data;
@@ -1080,8 +1080,7 @@ static int opkg_depends_cmd(opkg_conf_t *conf, int argc, char **argv)
 			      for (l = 0; l < cdepend->possibility_count; l++) {
 				   depend_t *possibility = cdepend->possibilities[l];
 				   opkg_message(conf, OPKG_ERROR, "    %s", possibility->pkg->name);
-				   if (conf->verbosity > 0) {
-					// char *ver = abstract_pkg_version_str_alloc(possibility->pkg); 
+				   if (conf->verbosity >= OPKG_NOTICE) {
 					opkg_message(conf, OPKG_NOTICE, " %s", possibility->version);
 					if (possibility->version) {
 					     char *typestr = NULL;
@@ -1095,7 +1094,6 @@ static int opkg_depends_cmd(opkg_conf_t *conf, int argc, char **argv)
 					     }
 					     opkg_message(conf, OPKG_NOTICE, " (%s %s)", typestr, possibility->version);
 					}
-					// free(ver);
 				   }
 				   opkg_message(conf, OPKG_ERROR, "\n");
 			      }
@@ -1183,9 +1181,9 @@ static int opkg_what_depends_conflicts_cmd(opkg_conf_t *conf, enum what_field_ty
 				   pkg_mark_provides(pkg);
 				   changed++;
 
-				   opkg_message(conf, OPKG_NOTICE, "    %s", pkg->name);
-				   if (conf->verbosity > 0) {
+				   if (conf->verbosity >= OPKG_NOTICE) {
 					char *ver = pkg_version_str_alloc(pkg); 
+				        opkg_message(conf, OPKG_NOTICE, "    %s", pkg->name);
 					opkg_message(conf, OPKG_NOTICE, " %s", ver);
 					opkg_message(conf, OPKG_NOTICE, "\t%s %s", rel_str, possibility->pkg->name);
 					if (possibility->version) {
