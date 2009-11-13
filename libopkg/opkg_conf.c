@@ -154,8 +154,8 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
                }
      }
 
-     offline_root = conf->offline_root;
      opkg_conf_override_string(&conf->offline_root, args->offline_root);
+     offline_root = conf->offline_root;
 
      if (conf->offline_root)
 	  sprintf_alloc(&etc_opkg_conf_pattern, "%s/etc/opkg/*.conf", conf->offline_root);
