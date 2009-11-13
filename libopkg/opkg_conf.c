@@ -420,6 +420,9 @@ void opkg_conf_deinit(opkg_conf_t *conf)
 	            hash_table_deinit(&conf->file_hash);
      if (&conf->obs_file_hash)
 	            hash_table_deinit(&conf->obs_file_hash);
+
+     lockf(conf->lock_fd, F_ULOCK, 0);
+     close(conf->lock_fd);
 }
 
 static int opkg_conf_set_default_dest(opkg_conf_t *conf,
