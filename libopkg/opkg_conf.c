@@ -505,18 +505,19 @@ static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 {
      int err;
      opkg_option_t * options;
-     FILE *file = fopen(filename, "r");
+     FILE *file;
      regex_t valid_line_re, comment_re;
 #define regmatch_size 12
      regmatch_t regmatch[regmatch_size];
 
      opkg_init_options_array(conf, &options);
 
+     file = fopen(filename, "r");
      if (file == NULL) {
 	  fprintf(stderr, "%s: failed to open %s: %s\n",
 		  __FUNCTION__, filename, strerror(errno));
 	  free(options);
-	  return errno;
+	  return -1;
      }
      opkg_message(conf, OPKG_NOTICE, "loading conf file %s\n", filename);
 
@@ -525,12 +526,12 @@ static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 		    REG_EXTENDED);
      if (err) {
 	  free(options);
-	  return err;
+	  return -1;
      }
      err = xregcomp(&valid_line_re, "^[[:space:]]*(\"([^\"]*)\"|([^[:space:]]*))[[:space:]]*(\"([^\"]*)\"|([^[:space:]]*))[[:space:]]*(\"([^\"]*)\"|([^[:space:]]*))([[:space:]]+([^[:space:]]+))?[[:space:]]*$", REG_EXTENDED);
      if (err) {
 	  free(options);
-	  return err;
+	  return -1;
      }
 
      while(1) {
@@ -622,7 +623,7 @@ static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 	       fprintf(stderr, "WARNING: Ignoring unknown configuration "
 		       "parameter: %s %s %s\n", type, name, value);
 	       free(options);
-	       return EINVAL;
+	       return -1;
 	  }
 
 	  free(type);
