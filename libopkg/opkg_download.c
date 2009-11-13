@@ -117,7 +117,6 @@ int opkg_download(opkg_conf_t *conf, const char *src,
     }
 
 #ifdef HAVE_CURL
-    CURL *curl;
     CURLcode res;
     FILE * file = fopen (tmp_file_location, "w");
 
