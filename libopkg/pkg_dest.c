@@ -56,8 +56,6 @@ int pkg_dest_init(pkg_dest_t *dest, const char *name, const char *root_dir,const
     sprintf_alloc(&dest->status_file_name, "%s/%s",
 		  dest->opkg_dir, OPKG_STATUS_FILE_SUFFIX);
 
-    dest->status_file = NULL;
-
     return 0;
 }
 
@@ -80,11 +78,6 @@ void pkg_dest_deinit(pkg_dest_t *dest)
 
     free(dest->status_file_name);
     dest->status_file_name = NULL;
-
-    if (dest->status_file) {
-	fclose(dest->status_file);
-    }
-    dest->status_file = NULL;
 
     dest->root_dir = NULL;
 }
