@@ -272,7 +272,7 @@ cleanup:
 char *unarchive(FILE *src_stream, FILE *out_stream,
 		file_header_t *(*get_headers)(FILE *),
 		void (*free_headers)(file_header_t *),
-		const int extract_function, const char *prefix, char **extract_names)
+		const int extract_function, const char *prefix, const char **extract_names)
 {
 	file_header_t *file_entry;
 	int extract_flag;
@@ -732,7 +732,7 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 	FILE *deb_stream = NULL;
 	FILE *uncompressed_stream = NULL;
 	file_header_t *ar_header = NULL;
-	char **file_list = NULL;
+	const char **file_list = NULL;
 	char *output_buffer = NULL;
 	char *ared_file = NULL;
 	char ar_magic[8];
