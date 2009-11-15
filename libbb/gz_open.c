@@ -34,11 +34,11 @@ extern FILE *gz_open(FILE *compressed_file, int *pid)
 	int unzip_pipe[2];
 
 	if (pipe(unzip_pipe)!=0) {
-		perror_msg("%s: pipe: ", __FUNCTION__);
+		perror_msg("%s: pipe", __FUNCTION__);
 		return(NULL);
 	}
 	if ((*pid = fork()) == -1) {
-		perror_msg("%s: fork: ", __FUNCTION__);
+		perror_msg("%s: fork", __FUNCTION__);
 		return(NULL);
 	}
 	if (*pid==0) {
@@ -57,10 +57,10 @@ extern FILE *gz_open(FILE *compressed_file, int *pid)
 extern void gz_close(int gunzip_pid)
 {
 	if (kill(gunzip_pid, SIGTERM) == -1) {
-		perror_msg_and_die("%s: kill(gunzip_pid): ", __FUNCTION__);
+		perror_msg_and_die("%s: kill(gunzip_pid)", __FUNCTION__);
 	}
 
 	if (waitpid(gunzip_pid, NULL, 0) == -1) {
-		perror_msg("%s wait: ", __FUNCTION__);
+		perror_msg("%s wait", __FUNCTION__);
 	}
 }
