@@ -113,7 +113,7 @@ static void make_crc_table()
 
 	/* initial shift register value */
 	crc = 0xffffffffL;	
-	crc_table = (unsigned long *) malloc(256 * sizeof(unsigned long));
+	crc_table = (unsigned long *) xmalloc(256 * sizeof(unsigned long));
 
 	/* Make exclusive-or pattern from polynomial (0xedb88320) */
 	for (i = 0; i < sizeof(p)/sizeof(int); i++)
