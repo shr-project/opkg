@@ -639,8 +639,11 @@ static int inflate_block(int *e)
 			}
 
 			/* decompress until an end-of-block code */
-			if (inflate_codes(tl, td, bl, bd))
+			if (inflate_codes(tl, td, bl, bd)) {
+				huft_free(tl);
+				huft_free(td);
 				return 1;
+			}
 
 			/* free the decoding tables, return */
 			huft_free(tl);
@@ -816,8 +819,11 @@ static int inflate_block(int *e)
 			}
 
 			/* decompress until an end-of-block code */
-			if (inflate_codes(tl, td, bl, bd))
+			if (inflate_codes(tl, td, bl, bd)) {
+				huft_free(tl);
+				huft_free(td);
 				return 1;
+			}
 
 			/* free the decoding tables, return */
 			huft_free(tl);
