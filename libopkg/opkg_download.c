@@ -306,7 +306,7 @@ int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **name
      pkg = hash_insert_pkg(&conf->pkg_hash, pkg, 1,conf);  
 
      if (namep) {
-	  *namep = xstrdup(pkg->name);
+	  *namep = pkg->name;
      }
      return 0;
 }
