@@ -1005,19 +1005,3 @@ extern int unzip(FILE *l_in_file, FILE *l_out_file)
 
 	return exit_code;
 }
-
-/*
- * This needs access to global variables wondow and crc_table, so its not in its own file.
- */
-extern void gz_close(int gunzip_pid)
-{
-	if (kill(gunzip_pid, SIGTERM) == -1) {
-		error_msg_and_die("***  Couldnt kill old gunzip process *** aborting");
-	}
-
-	if (waitpid(gunzip_pid, NULL, 0) == -1) {
-		printf("Couldnt wait ?");
-	}
-		free(window);
-		free(crc_table);
-}
