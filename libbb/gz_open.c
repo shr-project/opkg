@@ -56,10 +56,6 @@ extern FILE *gz_open(FILE *compressed_file, int *pid)
 
 extern void gz_close(int gunzip_pid)
 {
-	if (kill(gunzip_pid, SIGTERM) == -1) {
-		perror_msg_and_die("%s: kill(gunzip_pid)", __FUNCTION__);
-	}
-
 	if (waitpid(gunzip_pid, NULL, 0) == -1) {
 		perror_msg("%s wait", __FUNCTION__);
 	}
