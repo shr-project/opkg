@@ -29,6 +29,7 @@ struct pkg_dest
     char *lists_dir;
     char *info_dir;
     char *status_file_name;
+    FILE *status_fp;
 };
 
 int pkg_dest_init(pkg_dest_t *dest, const char *name, const char *root_dir,const char *lists_dir);

@@ -687,22 +687,24 @@ static int opkg_conf_set_option(const opkg_option_t *options,
 
 int opkg_conf_write_status_files(opkg_conf_t *conf)
 {
+     pkg_dest_list_elt_t *iter;
      pkg_dest_t *dest;
      pkg_vec_t *all;
      pkg_t *pkg;
-     int i;
-     FILE *fp;
+     int i, ret = 0;
 
      if (conf->noaction)
 	  return 0;
 
-     dest = (pkg_dest_t *)void_list_first(&conf->pkg_dest_list)->data;
+     list_for_each_entry(iter, &conf->pkg_dest_list.head, node) {
+          dest = (pkg_dest_t *)iter->data;
 
-     fp = fopen(dest->status_file_name, "w");
-     if (fp == NULL) {
-         fprintf(stderr, "%s: Can't open status file: %s for writing: %s\n",
-                 __FUNCTION__, dest->status_file_name, strerror(errno));
-	 return -1;
+          dest->status_fp = fopen(dest->status_file_name, "w");
+          if (dest->status_fp == NULL) {
+               fprintf(stderr, "%s: Can't open status file: %s: %s\n",
+                    __FUNCTION__, dest->status_file_name, strerror(errno));
+               ret = -1;
+          }
      }
 
      all = pkg_vec_alloc();
@@ -723,13 +725,18 @@ int opkg_conf_write_status_files(opkg_conf_t *conf)
 		       __FUNCTION__, pkg->name);
 	       continue;
 	  }
-	  pkg_print_status(pkg, fp);
+	  if (pkg->dest->status_fp)
+	       pkg_print_status(pkg, pkg->dest->status_fp);
      }
 
      pkg_vec_free(all);
-     fclose(fp);
 
-     return 0;
+     list_for_each_entry(iter, &conf->pkg_dest_list.head, node) {
+          dest = (pkg_dest_t *)iter->data;
+          fclose(dest->status_fp);
+     }
+
+     return ret;
 }
 
 
