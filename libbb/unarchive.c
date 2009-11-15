@@ -729,7 +729,7 @@ void free_header_tar(file_header_t *tar_entry)
 char *deb_extract(const char *package_filename, FILE *out_stream, 
 		  const int extract_function, const char *prefix, const char *filename)
 {
-	FILE *deb_stream;
+	FILE *deb_stream = NULL;
 	FILE *uncompressed_stream = NULL;
 	file_header_t *ar_header = NULL;
 	char **file_list = NULL;
@@ -740,15 +740,15 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 
 	if (filename != NULL) {
 		file_list = xmalloc(sizeof(char *) * 2);
-		file_list[0] = xstrdup(filename);
+		file_list[0] = filename;
 		file_list[1] = NULL;
 	}
 	
 	if (extract_function & extract_control_tar_gz) {
-		ared_file = xstrdup("control.tar.gz");
+		ared_file = "control.tar.gz";
 	}
 	else if (extract_function & extract_data_tar_gz) {		
-		ared_file = xstrdup("data.tar.gz");
+		ared_file = "data.tar.gz";
 	} else {
                 fprintf(stderr, "no file specified to extract -- extract_function=%x\n", extract_function);
 		goto cleanup;
@@ -837,13 +837,10 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 	}
 
 cleanup:
-	free(ared_file);
 	if (deb_stream)
 		fclose(deb_stream);
-	if (file_list) {
-		free(file_list[0]);
+	if (file_list)
 		free(file_list);
-	}
 
 	return output_buffer;
 }
