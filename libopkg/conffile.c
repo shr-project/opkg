@@ -52,7 +52,7 @@ int conffile_has_been_modified(opkg_conf_t *conf, conffile_t *conffile)
     md5sum = file_md5sum_alloc(root_filename);
 
     if (md5sum && (ret = strcmp(md5sum, conffile->value))) {
-      opkg_message(conf, OPKG_NOTICE, "%s: conffile %s: \t\nold md5=%s \t\nnew md5=%s\n", __FUNCTION__,
+      opkg_message(conf, OPKG_INFO, "%s: conffile %s: \t\nold md5=%s \t\nnew md5=%s\n", __FUNCTION__,
               conffile->name, md5sum, conffile->value);
     }
 
