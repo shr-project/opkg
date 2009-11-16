@@ -325,8 +325,8 @@ pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pk
           
           }
 
-     if (conf->verbosity >= OPKG_NOTICE && matching_apkgs->len > 1) {
-	  opkg_message(conf, OPKG_NOTICE, "%s: for apkg=%s, %d matching pkgs\n",
+     if (conf->verbosity >= OPKG_INFO && matching_apkgs->len > 1) {
+	  opkg_message(conf, OPKG_INFO, "%s: for apkg=%s, %d matching pkgs\n",
 		       __FUNCTION__, apkg->name, matching_pkgs->len);
 	  for (i = 0; i < matching_pkgs->len; i++) {
 	       pkg_t *matching = matching_pkgs->pkgs[i];
