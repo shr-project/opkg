@@ -323,7 +323,6 @@ static opkg_intercept_t opkg_prep_intercepts(opkg_conf_t *conf)
 
 static int opkg_finalize_intercepts(opkg_intercept_t ctx)
 {
-    char *cmd;
     DIR *dir;
     int err = 0;
 
@@ -349,10 +348,7 @@ static int opkg_finalize_intercepts(opkg_intercept_t ctx)
     } else
 	perror (ctx->statedir);
 	
-    sprintf_alloc (&cmd, "rm -rf %s", ctx->statedir);
-    err = xsystem (cmd);
-    free (cmd);
-
+    rm_r(ctx->statedir);
     free (ctx->statedir);
     free (ctx);
 

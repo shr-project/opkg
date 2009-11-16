@@ -341,12 +341,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 
 void opkg_conf_deinit(opkg_conf_t *conf)
 {
-     int err;
-     char *cmd;
-
-     sprintf_alloc(&cmd, "rm -fr %s\n", conf->tmp_dir);
-     err = xsystem(cmd);
-     free(cmd);
+     rm_r(conf->tmp_dir);
 
      free(conf->tmp_dir);
      free(conf->lists_dir);

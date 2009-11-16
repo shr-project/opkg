@@ -18,6 +18,7 @@
 #include "includes.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dirent.h>
 
 #include "sprintf_alloc.h"
 #include "file_util.h"
@@ -224,3 +225,83 @@ char *file_sha256sum_alloc(const char *file_name)
 }
 
 #endif
+
+
+int
+rm_r(const char *path)
+{
+	int ret = 0;
+	DIR *dir;
+	struct dirent *dent;
+
+	dir = opendir(path);
+	if (dir == NULL) {
+		perror_msg("%s: opendir(%s)", __FUNCTION__, path);
+		return -1;
+	}
+
+	if (fchdir(dirfd(dir)) == -1) {
+		perror_msg("%s: fchdir(%s)", __FUNCTION__, path);
+		closedir(dir);
+		return -1;
+	}
+
+	while (1) {
+		errno = 0;
+		if ((dent = readdir(dir)) == NULL) {
+			if (errno) {
+				perror_msg("%s: readdir(%s)",
+						__FUNCTION__, path);
+				ret = -1;
+			}
+			break;
+		}
+
+		if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, ".."))
+			continue;
+
+#ifdef _BSD_SOURCE
+		if (dent->d_type == DT_DIR) {
+			if ((ret = rm_r(dent->d_name)) == -1)
+				break;
+			continue;
+		} else if (dent->d_type == DT_UNKNOWN)
+#endif
+		{
+			struct stat st;
+			if ((ret = lstat(dent->d_name, &st)) == -1) {
+				perror_msg("%s: lstat(%s)",
+						__FUNCTION__, dent->d_name);
+				break;
+			}
+			if (S_ISDIR(st.st_mode)) {
+				if ((ret = rm_r(dent->d_name)) == -1)
+					break;
+				continue;
+			}
+		}
+
+		if ((ret = unlink(dent->d_name)) == -1) {
+			perror_msg("%s: unlink(%s)",
+					__FUNCTION__, dent->d_name);
+			break;
+		}
+	}
+
+	if (chdir("..") == -1) {
+		ret = -1;
+		perror_msg("%s: chdir(%s/..)", __FUNCTION__, path);
+	}
+
+	if (rmdir(path) == -1 ) {
+		ret = -1;
+		perror_msg("%s: rmdir(%s)", __FUNCTION__, path);
+	}
+
+	if (closedir(dir) == -1) {
+		ret = -1;
+		perror_msg("%s: closedir(%s)", __FUNCTION__, path);
+	}
+
+	return ret;
+}
