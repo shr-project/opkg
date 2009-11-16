@@ -32,4 +32,7 @@ int opkg_download_pkg(opkg_conf_t *conf, pkg_t *pkg, const char *dir);
 int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **namep);
 
 int opkg_verify_file (opkg_conf_t *conf, char *text_file, char *sig_file);
+#ifdef HAVE_CURL
+void opkg_curl_cleanup(void);
+#endif
 #endif

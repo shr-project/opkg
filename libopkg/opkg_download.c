@@ -68,7 +68,6 @@ static X509_STORE *setup_verify(opkg_conf_t *conf, char *CAfile, char *CApath);
  * each time
  */
 static CURL *curl = NULL;
-static void opkg_curl_cleanup(void);
 static CURL *opkg_curl_init(opkg_conf_t *conf, curl_progress_func cb, void *data);
 #endif
 
@@ -530,7 +529,7 @@ end:
 #endif
 
 #ifdef HAVE_CURL
-static void opkg_curl_cleanup(void){
+void opkg_curl_cleanup(void){
     if(curl != NULL){
 	curl_easy_cleanup (curl);
 	curl = NULL;
@@ -635,12 +634,6 @@ static CURL *opkg_curl_init(opkg_conf_t *conf, curl_progress_func cb, void *data
 	    curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, userpwd);
 	    free (userpwd);
 	}
-
-	/* add curl cleanup callback */
-	if(!atexit(opkg_curl_cleanup)){
-	    opkg_message(conf,OPKG_DEBUG, "Failed to register atexit curl cleanup function\n");
-	}
-
     }
 
     curl_easy_setopt (curl, CURLOPT_NOPROGRESS, (cb == NULL));

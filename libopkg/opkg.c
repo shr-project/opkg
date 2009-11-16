@@ -211,6 +211,9 @@ opkg_free (opkg_t *opkg)
 {
   opkg_assert (opkg != NULL);
 
+#ifdef HAVE_CURL
+  opkg_curl_cleanup();
+#endif
   opkg_conf_deinit (opkg->conf);
   args_deinit (opkg->args);
   free (opkg->options);
