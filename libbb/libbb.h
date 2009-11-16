@@ -217,7 +217,6 @@ enum {
 };
 const char *make_human_readable_str(unsigned long size, unsigned long block_size, unsigned long display_unit);
 
-int ask_confirmation(void);
 int klogctl(int type, char * b, int len);
 
 char *xgetcwd(char *cwd);
@@ -287,7 +286,6 @@ enum {
 	FILEUTILS_PRESERVE_SYMLINKS = 2,
 	FILEUTILS_RECUR = 4,
 	FILEUTILS_FORCE = 8,
-	FILEUTILS_INTERACTIVE = 16
 };
 
 extern const char *applet_name;

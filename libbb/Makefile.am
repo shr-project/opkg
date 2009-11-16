@@ -15,7 +15,6 @@ libbb_la_SOURCES = gz_open.c \
 	perror_msg.c perror_msg_and_die.c \
 	xreadlink.c \
 	concat_path_file.c \
-	ask_confirmation.c \
 	verror_msg.c vperror_msg.c \
 	xfuncs.c messages.c \
 	last_char_is.c \

@@ -134,12 +134,6 @@ int copy_file(const char *source, const char *dest, int flags)
 		FILE *sfp, *dfp;
 
 		if (dest_exists) {
-			if (flags & FILEUTILS_INTERACTIVE) {
-				fprintf(stderr, "%s: overwrite `%s'? ", applet_name, dest);
-				if (!ask_confirmation())
-					return 0;
-			}
-
 			if ((dfp = fopen(dest, "w")) == NULL) {
 				if (!(flags & FILEUTILS_FORCE)) {
 					perror_msg("unable to open `%s'", dest);
