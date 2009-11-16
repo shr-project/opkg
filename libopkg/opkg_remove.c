@@ -334,9 +334,13 @@ int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
      conffile_t *conffile;
      int removed_a_dir;
      pkg_t *owner;
+     int rootdirlen;
 
      str_list_init(&installed_dirs);
      installed_files = pkg_get_installed_files(pkg);
+
+     /* don't include trailing slash */
+     rootdirlen = strlen(pkg->dest->root_dir) -1;
 
      for (iter = str_list_first(installed_files); iter; iter = str_list_next(installed_files, iter)) {
 	  file_name = (char *)iter->data;
@@ -346,7 +350,7 @@ int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
 	       continue;
 	  }
 
-	  conffile = pkg_get_conffile(pkg, file_name);
+	  conffile = pkg_get_conffile(pkg, file_name+rootdirlen);
 	  if (conffile) {
 	       /* XXX: QUESTION: Is this right? I figure we only need to
 		  save the conffile if it has been modified. Is that what
