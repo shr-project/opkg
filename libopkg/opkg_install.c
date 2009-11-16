@@ -69,8 +69,6 @@ static int remove_disappeared(opkg_conf_t *conf, pkg_t *pkg);
 static int install_data_files(opkg_conf_t *conf, pkg_t *pkg);
 static int resolve_conffiles(opkg_conf_t *conf, pkg_t *pkg);
 
-static int cleanup_temporary_files(opkg_conf_t *conf, pkg_t *pkg);
-
 static int user_prefers_old_conffile(const char *file, const char *backup);
 
 static char *backup_filename_alloc(const char *file_name);
@@ -1004,10 +1002,6 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 
 	  time(&pkg->installed_time);
 
-	  opkg_message(conf, OPKG_INFO,
-		       "  cleanup temp files\n");
-	  cleanup_temporary_files(conf, pkg);
-
 	  ab_pkg = pkg->parent;
 	  if (ab_pkg)
 	       ab_pkg->state_status = pkg->state_status;
@@ -1033,10 +1027,6 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 	  prerm_upgrade_old_pkg_unwind(conf, pkg, old_pkg);
      UNWIND_REMOVE_INSTALLED_REPLACEES:
 	  pkg_remove_installed_replacees_unwind(conf, replacees);
-
-	  opkg_message(conf, OPKG_INFO,
-		       "  cleanup temp files\n");
-	  cleanup_temporary_files(conf, pkg);
 
 	  opkg_message(conf, OPKG_INFO,
 		       "Failed.\n");
@@ -1636,57 +1626,6 @@ static int user_prefers_old_conffile(const char *file_name, const char *backup)
 	  free(response);
 	  return 1;
      }
-}
-
-/* XXX: CLEANUP: I'd like to move all of the code for
-   creating/cleaning pkg->tmp_unpack_dir directly into pkg.c. (Then,
-   it would make sense to cleanup pkg->tmp_unpack_dir directly from
-   pkg_deinit for example). */
-static int cleanup_temporary_files(opkg_conf_t *conf, pkg_t *pkg)
-{
-     DIR *tmp_dir;
-     struct dirent *dirent;
-     char *tmp_file;
-
-#ifdef OPKG_DEBUG_NO_TMP_CLEANUP
-#error
-     opkg_message(conf, OPKG_DEBUG,
-		  "%s: Not cleaning up %s since opkg compiled with OPKG_DEBUG_NO_TMP_CLEANUP\n",
-		  __FUNCTION__, pkg->tmp_unpack_dir);
-     return 0;
-#endif
-
-     if (pkg->tmp_unpack_dir && file_is_dir(pkg->tmp_unpack_dir)) {
-	  tmp_dir = opendir(pkg->tmp_unpack_dir);
-	  if (tmp_dir) {
-	       while (1) {
-		    dirent = readdir(tmp_dir);
-		    if (dirent == NULL) {
-			 break;
-		    }
-		    sprintf_alloc(&tmp_file, "%s/%s",
-				  pkg->tmp_unpack_dir, dirent->d_name);
-		    if (! file_is_dir(tmp_file)) {
-			 unlink(tmp_file);
-		    }
-		    free(tmp_file);
-	       }
-	       closedir(tmp_dir);
-	       rmdir(pkg->tmp_unpack_dir);
-	       free(pkg->tmp_unpack_dir);
-	       pkg->tmp_unpack_dir = NULL;
-	  }
-     }
-
-     opkg_message(conf, OPKG_INFO, "cleanup_temporary_files: pkg=%s local_filename=%s tmp_dir=%s\n",
-		  pkg->name, pkg->local_filename, conf->tmp_dir);
-     if (pkg->local_filename && strncmp(pkg->local_filename, conf->tmp_dir, strlen(conf->tmp_dir)) == 0) {
-	  unlink(pkg->local_filename);
-	  free(pkg->local_filename);
-	  pkg->local_filename = NULL;
-     }
-
-     return 0;
 }
 
 static char *backup_filename_alloc(const char *file_name)
