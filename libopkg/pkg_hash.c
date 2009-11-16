@@ -644,7 +644,7 @@ int file_hash_set_file_owner(opkg_conf_t *conf, const char *file_name, pkg_t *ow
      // opkg_message(conf, OPKG_DEBUG2, "owning_pkg=%s filename=%s\n", owning_pkg->name, file_name);
      hash_table_insert(file_hash, file_name, owning_pkg); 
      if (old_owning_pkg) {
-	  pkg_get_installed_files(old_owning_pkg);
+	  pkg_get_installed_files(conf, old_owning_pkg);
 	  str_list_remove_elt(old_owning_pkg->installed_files, file_name);
 	  pkg_free_installed_files(old_owning_pkg);
 	  /* mark this package to have its filelist written */

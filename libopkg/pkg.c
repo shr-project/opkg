@@ -969,14 +969,14 @@ pkg_version_str_alloc(pkg_t *pkg)
 	return version;
 }
 
-str_list_t *pkg_get_installed_files(pkg_t *pkg)
+str_list_t *pkg_get_installed_files(opkg_conf_t *conf, pkg_t *pkg)
 {
      int err;
      char *list_file_name = NULL;
      FILE *list_file = NULL;
      char *line;
      char *installed_file_name;
-     int rootdirlen;
+     int rootdirlen = 0;
 
      pkg->installed_files_ref_cnt++;
 
@@ -1024,7 +1024,9 @@ str_list_t *pkg_get_installed_files(pkg_t *pkg)
 	  free(list_file_name);
      }
 
-     rootdirlen = strlen( pkg->dest->root_dir );
+     if (conf->offline_root)
+          rootdirlen = strlen(conf->offline_root);
+
      while (1) {
 	  char *file_name;
 	
@@ -1035,22 +1037,24 @@ str_list_t *pkg_get_installed_files(pkg_t *pkg)
 	  str_chomp(line);
 	  file_name = line;
 
-	  /* Take pains to avoid uglies like "/./" in the middle of file_name. */
-	  if( strncmp( pkg->dest->root_dir, 
-		       file_name, 
-		       rootdirlen ) ) {
+	  if (pkg->state_status == SS_NOT_INSTALLED) {
 	       if (*file_name == '.') {
 		    file_name++;
 	       }
 	       if (*file_name == '/') {
 		    file_name++;
 	       }
-
-	       /* Freed in pkg_free_installed_files */
-	       sprintf_alloc(&installed_file_name, "%s%s", pkg->dest->root_dir, file_name);
+	       sprintf_alloc(&installed_file_name, "%s%s",
+			       pkg->dest->root_dir, file_name);
 	  } else {
-	       // already contains root_dir as header -> ABSOLUTE
-	       sprintf_alloc(&installed_file_name, "%s", file_name);
+	       if (conf->offline_root &&
+	               strncmp(conf->offline_root, file_name, rootdirlen)) {
+	            sprintf_alloc(&installed_file_name, "%s%s",
+				    conf->offline_root, file_name);
+	       } else {
+	            // already contains root_dir as header -> ABSOLUTE
+	            sprintf_alloc(&installed_file_name, "%s", file_name);
+	       }
 	  }
 	  str_list_append(pkg->installed_files, installed_file_name);
           free(installed_file_name);
@@ -1394,7 +1398,7 @@ int pkg_info_preinstall_check(opkg_conf_t *conf)
      pkg_hash_fetch_all_installed(pkg_hash, installed_pkgs);
      for (i = 0; i < installed_pkgs->len; i++) {
 	  pkg_t *pkg = installed_pkgs->pkgs[i];
-	  str_list_t *installed_files = pkg_get_installed_files(pkg); /* this causes installed_files to be cached */
+	  str_list_t *installed_files = pkg_get_installed_files(conf, pkg); /* this causes installed_files to be cached */
 	  str_list_elt_t *iter, *niter;
 	  if (installed_files == NULL) {
 	       opkg_message(conf, OPKG_ERROR, "No installed files for pkg %s\n", pkg->name);

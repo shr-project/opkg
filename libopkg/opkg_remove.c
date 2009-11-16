@@ -334,13 +334,14 @@ int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
      conffile_t *conffile;
      int removed_a_dir;
      pkg_t *owner;
-     int rootdirlen;
+     int rootdirlen = 0;
 
      str_list_init(&installed_dirs);
-     installed_files = pkg_get_installed_files(pkg);
+     installed_files = pkg_get_installed_files(conf, pkg);
 
      /* don't include trailing slash */
-     rootdirlen = strlen(pkg->dest->root_dir) -1;
+     if (conf->offline_root)
+          rootdirlen = strlen(conf->offline_root);
 
      for (iter = str_list_first(installed_files); iter; iter = str_list_next(installed_files, iter)) {
 	  file_name = (char *)iter->data;

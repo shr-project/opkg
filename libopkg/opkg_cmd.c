@@ -1028,7 +1028,7 @@ static int opkg_files_cmd(opkg_conf_t *conf, int argc, char **argv)
 	  return 0;
      }
 
-     files = pkg_get_installed_files(pkg);
+     files = pkg_get_installed_files(conf, pkg);
      pkg_version = pkg_version_str_alloc(pkg);
 
      printf("Package %s (%s) is installed on %s and has the following files:\n",
@@ -1323,7 +1323,7 @@ static int opkg_search_cmd(opkg_conf_t *conf, int argc, char **argv)
      for (i=0; i < installed->len; i++) {
 	  pkg = installed->pkgs[i];
 
-	  installed_files = pkg_get_installed_files(pkg);
+	  installed_files = pkg_get_installed_files(conf, pkg);
 
 	  for (iter = str_list_first(installed_files); iter; iter = str_list_next(installed_files, iter)) {
 	       installed_file = (char *)iter->data;

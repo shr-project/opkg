@@ -212,7 +212,7 @@ void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field);
 void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg);
 
 void pkg_print_status(pkg_t * pkg, FILE * file);
-str_list_t *pkg_get_installed_files(pkg_t *pkg);
+str_list_t *pkg_get_installed_files(opkg_conf_t *conf, pkg_t *pkg);
 int pkg_free_installed_files(pkg_t *pkg);
 int pkg_remove_installed_files_list(opkg_conf_t *conf, pkg_t *pkg);
 conffile_t *pkg_get_conffile(pkg_t *pkg, const char *file_name);

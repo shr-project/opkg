@@ -427,7 +427,7 @@ static int check_conflicts_for(opkg_conf_t *conf, pkg_t *pkg)
 
 static int update_file_ownership(opkg_conf_t *conf, pkg_t *new_pkg, pkg_t *old_pkg)
 {
-     str_list_t *new_list = pkg_get_installed_files(new_pkg);
+     str_list_t *new_list = pkg_get_installed_files(conf, new_pkg);
      str_list_elt_t *iter, *niter;
 
      for (iter = str_list_first(new_list), niter = str_list_next(new_list, iter); 
@@ -441,7 +441,7 @@ static int update_file_ownership(opkg_conf_t *conf, pkg_t *new_pkg, pkg_t *old_p
 	       file_hash_set_file_owner(conf, new_file, new_pkg);
      }
      if (old_pkg) {
-	  str_list_t *old_list = pkg_get_installed_files(old_pkg);
+	  str_list_t *old_list = pkg_get_installed_files(conf, old_pkg);
 	  for (iter = str_list_first(old_list), niter = str_list_next(old_list, iter); 
                   iter; 
                   iter = niter, niter = str_list_next(old_list, niter)) {
@@ -1223,7 +1223,7 @@ static int check_data_file_clashes(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg
 
      int clashes = 0;
 
-     files_list = pkg_get_installed_files(pkg);
+     files_list = pkg_get_installed_files(conf, pkg);
      for (iter = str_list_first(files_list), niter = str_list_next(files_list, iter); 
              iter; 
              iter = niter, niter = str_list_next(files_list, iter)) {
@@ -1314,7 +1314,7 @@ static int check_data_file_clashes_change(opkg_conf_t *conf, pkg_t *pkg, pkg_t *
 
      int clashes = 0;
 
-     files_list = pkg_get_installed_files(pkg);
+     files_list = pkg_get_installed_files(conf, pkg);
      for (iter = str_list_first(files_list), niter = str_list_next(files_list, iter); 
              iter; 
              iter = niter, niter = str_list_next(files_list, niter)) {
@@ -1398,8 +1398,8 @@ static int remove_obsolesced_files(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg
 	  return 0;
      }
 
-     old_files = pkg_get_installed_files(old_pkg);
-     new_files = pkg_get_installed_files(pkg);
+     old_files = pkg_get_installed_files(conf, old_pkg);
+     new_files = pkg_get_installed_files(conf, pkg);
 
      new_files_table.entries = NULL;
      hash_table_init("new_files" , &new_files_table, 20);
