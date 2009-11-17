@@ -991,9 +991,12 @@ pkg_version_str_alloc(pkg_t *pkg)
 	return version;
 }
 
+/*
+ * XXX: this should be broken into two functions
+ */
 str_list_t *pkg_get_installed_files(opkg_conf_t *conf, pkg_t *pkg)
 {
-     int err;
+     int err, fd;
      char *list_file_name = NULL;
      FILE *list_file = NULL;
      char *line;
@@ -1019,27 +1022,42 @@ str_list_t *pkg_get_installed_files(opkg_conf_t *conf, pkg_t *pkg)
 	     file. In other words, change deb_extract so that it can
 	     simply return the file list as a char *[] rather than
 	     insisting on writing in to a FILE * as it does now. */
-	  list_file = tmpfile();
+	  sprintf_alloc(&list_file_name, "%s/%s.list.XXXXXX",
+					  conf->tmp_dir, pkg->name);
+	  fd = mkstemp(list_file_name);
+	  if (fd == -1) {
+	       opkg_message(conf, OPKG_ERROR, "%s: mkstemp(%s): %s",
+			       __FUNCTION__, list_file_name, strerror(errno));
+	       free(list_file_name);
+	       return pkg->installed_files;
+	  }
+	  list_file = fdopen(fd, "rw");
+	  if (list_file == NULL) {
+	       opkg_message(conf, OPKG_ERROR, "%s: fdopen: %s",
+			       __FUNCTION__, strerror(errno));
+	       close(fd);
+	       unlink(list_file_name);
+	       free(list_file_name);
+	       return pkg->installed_files;
+	  }
 	  err = pkg_extract_data_file_names_to_stream(pkg, list_file);
 	  if (err) {
+	       opkg_message(conf, OPKG_ERROR, "%s: Error extracting file list "
+			       "from %s: %s\n", __FUNCTION__,
+			       pkg->local_filename, strerror(err));
 	       fclose(list_file);
-	       fprintf(stderr, "%s: Error extracting file list from %s: %s\n",
-		       __FUNCTION__, pkg->local_filename, strerror(err));
+	       unlink(list_file_name);
+	       free(list_file_name);
 	       return pkg->installed_files;
 	  }
 	  rewind(list_file);
      } else {
 	  sprintf_alloc(&list_file_name, "%s/%s.list",
 			pkg->dest->info_dir, pkg->name);
-	  if (! file_exists(list_file_name)) {
-	       free(list_file_name);
-	       return pkg->installed_files;
-	  }
-
 	  list_file = fopen(list_file_name, "r");
 	  if (list_file == NULL) {
-	       fprintf(stderr, "WARNING: Cannot open %s: %s\n",
-		       list_file_name, strerror(errno));
+	       opkg_message(conf, OPKG_ERROR, "%s: fopen(%s): %s\n",
+		       __FUNCTION__, list_file_name, strerror(errno));
 	       free(list_file_name);
 	       return pkg->installed_files;
 	  }
@@ -1059,7 +1077,7 @@ str_list_t *pkg_get_installed_files(opkg_conf_t *conf, pkg_t *pkg)
 	  str_chomp(line);
 	  file_name = line;
 
-	  if (pkg->state_status == SS_NOT_INSTALLED) {
+	  if (pkg->state_status == SS_NOT_INSTALLED || pkg->dest == NULL) {
 	       if (*file_name == '.') {
 		    file_name++;
 	       }
@@ -1084,6 +1102,11 @@ str_list_t *pkg_get_installed_files(opkg_conf_t *conf, pkg_t *pkg)
      }
 
      fclose(list_file);
+
+     if (pkg->state_status == SS_NOT_INSTALLED || pkg->dest == NULL) {
+	  unlink(list_file_name);
+	  free(list_file_name);
+     }
 
      return pkg->installed_files;
 }
