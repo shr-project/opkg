@@ -1560,7 +1560,7 @@ static int resolve_conffiles(opkg_conf_t *conf, pkg_t *pkg)
                   if (conf->force_maintainer) {
                       opkg_message(conf, OPKG_NOTICE, "Conffile %s using maintainer's setting.\n", cf_backup);
                   } else if (conf->force_defaults
-                          || user_prefers_old_conffile(cf->name, cf_backup) ) {
+                          || user_prefers_old_conffile(root_filename, cf_backup) ) {
                       rename(cf_backup, root_filename);
                   }
               }
