@@ -1062,25 +1062,25 @@ static int opkg_depends_cmd(opkg_conf_t *conf, int argc, char **argv)
 	       const char *target = argv[i];
 	       int j;
 
-	       opkg_message(conf, OPKG_ERROR, "target=%s\n", target);
+	       opkg_message(conf, OPKG_NOTICE, "target=%s\n", target);
 
 	       for (j = 0; j < available_pkgs->len; j++) {
 		    pkg_t *pkg = available_pkgs->pkgs[j];
 		    if (fnmatch(target, pkg->name, 0) == 0) {
 			 int k;
 			 int count = pkg->depends_count + pkg->pre_depends_count;
-			 opkg_message(conf, OPKG_ERROR, "What %s (arch=%s) %s\n",
+			 opkg_message(conf, OPKG_NOTICE, "What %s (arch=%s) %s\n",
 				      target, pkg->architecture, rel_str);
 			 for (k = 0; k < count; k++) {
 			      compound_depend_t *cdepend = &pkg->depends[k];
 			      int l;
 			      for (l = 0; l < cdepend->possibility_count; l++) {
 				   depend_t *possibility = cdepend->possibilities[l];
-				   opkg_message(conf, OPKG_ERROR, "    %s", possibility->pkg->name);
+				   opkg_message(conf, OPKG_NOTICE, "    %s", possibility->pkg->name);
 				   if (conf->verbosity >= OPKG_NOTICE) {
-					opkg_message(conf, OPKG_NOTICE, " %s", possibility->version);
 					if (possibility->version) {
 					     char *typestr = NULL;
+					     opkg_message(conf, OPKG_NOTICE, " %s", possibility->version);
 					     switch (possibility->constraint) {
 					     case NONE: typestr = "none"; break;
 					     case EARLIER: typestr = "<"; break;
@@ -1092,7 +1092,7 @@ static int opkg_depends_cmd(opkg_conf_t *conf, int argc, char **argv)
 					     opkg_message(conf, OPKG_NOTICE, " (%s %s)", typestr, possibility->version);
 					}
 				   }
-				   opkg_message(conf, OPKG_ERROR, "\n");
+				   opkg_message(conf, OPKG_NOTICE, "\n");
 			      }
 			 }
 		    }
