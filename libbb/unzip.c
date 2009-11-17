@@ -98,7 +98,7 @@ static const unsigned short mask_bits[] = {
 static void abort_gzip()
 {
 	error_msg("gzip aborted\n");
-	exit(ERROR);
+	_exit(ERROR);
 }
 
 static void make_crc_table()
@@ -148,7 +148,8 @@ static void flush_window(void)
 	}
 
 	if (fwrite(window, 1, outcnt, out_file) != outcnt) {
-		error_msg_and_die("Couldnt write");
+		error_msg("Couldnt write");
+		_exit(EXIT_FAILURE);
 	}
 	bytes_out += (unsigned long) outcnt;
 	outcnt = 0;

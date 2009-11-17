@@ -48,7 +48,7 @@ extern FILE *gz_open(FILE *compressed_file, int *pid)
 		fflush(NULL);
 		fclose(compressed_file);
 		close(unzip_pipe[1]);
-		exit(EXIT_SUCCESS);
+		_exit(EXIT_SUCCESS);
 	}
 	close(unzip_pipe[1]);
 	return(fdopen(unzip_pipe[0], "r"));
