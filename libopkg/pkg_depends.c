@@ -642,6 +642,11 @@ void buildDepends(hash_table_t * hash, pkg_t * pkg)
 	  depends++;
      }
 
+     for(i = 0; i < pkg->depends_count; i++){
+	  parseDepends(depends, hash, pkg->depends_str[i]);
+	  depends++;
+     }
+
      for(i = 0; i < pkg->recommends_count; i++){
 	  parseDepends(depends, hash, pkg->recommends_str[i]);
 	  depends->type = RECOMMEND;
@@ -651,11 +656,6 @@ void buildDepends(hash_table_t * hash, pkg_t * pkg)
      for(i = 0; i < pkg->suggests_count; i++){
 	  parseDepends(depends, hash, pkg->suggests_str[i]);
 	  depends->type = SUGGEST;
-	  depends++;
-     }
-
-     for(i = 0; i < pkg->depends_count; i++){
-	  parseDepends(depends, hash, pkg->depends_str[i]);
 	  depends++;
      }
 }
@@ -675,6 +675,11 @@ char *pkg_depend_str(pkg_t *pkg, int index)
      }
      index -= pkg->pre_depends_count;
 
+     if (index < pkg->depends_count) {
+	  return pkg->depends_str[index];
+     }
+     index -= pkg->depends_count;
+
      if (index < pkg->recommends_count) {
 	  return pkg->recommends_str[index];
      }
@@ -683,15 +688,15 @@ char *pkg_depend_str(pkg_t *pkg, int index)
      if (index < pkg->suggests_count) {
 	  return pkg->suggests_str[index];
      }
-     index -= pkg->suggests_count;
 
-     if (index < pkg->depends_count) {
-	  return pkg->depends_str[index];
-     }
      fprintf(stderr, "pkg_depend_str: index %d out of range for pkg=%s\n", index, pkg->name);
      return NULL;
 }
 
+/*
+ * WARNING: This function assumes pre_depends and depends are at the
+ * start of the pkg->depends array.
+ */
 void buildDependedUponBy(pkg_t * pkg, abstract_pkg_t * ab_pkg)
 {
      compound_depend_t * depends;
