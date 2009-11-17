@@ -315,26 +315,48 @@ void pkg_deinit(pkg_t *pkg)
 	pkg->tags = NULL;
 }
 
-int pkg_init_from_file(pkg_t *pkg, const char *filename)
+int
+pkg_init_from_file(pkg_t *pkg, const char *filename)
 {
-     int err;
-     FILE *control_file;
+	int fd, err = 0;
+	FILE *control_file;
+	char *control_path;
 
-     err = pkg_init(pkg);
-     if (err) { return err; }
+	pkg_init(pkg);
 
-     pkg->local_filename = xstrdup(filename);
-    
-     control_file = tmpfile();
-     err = pkg_extract_control_file_to_stream(pkg, control_file);
-     if (err) { return err; }
+	pkg->local_filename = xstrdup(filename);
 
-     rewind(control_file);
-     pkg_parse_from_stream(pkg, control_file, PFM_ALL);
+	sprintf_alloc(&control_path, "%s.control.XXXXXX", filename);
+	fd = mkstemp(control_path);
+	if (fd == -1) {
+		perror_msg("%s: mkstemp(%s)", __FUNCTION__, control_path);
+		err = -1;
+		goto err0;
+	}
 
-     fclose(control_file);
+	control_file = fdopen(fd, "rw");
+	if (control_file == NULL) {
+		perror_msg("%s: fdopen", __FUNCTION__, control_path);
+		close(fd);
+		err = -1;
+		goto err1;
+	}
 
-     return 0;
+	err = pkg_extract_control_file_to_stream(pkg, control_file);
+	if (err)
+		goto err2;
+
+	rewind(control_file);
+	pkg_parse_from_stream(pkg, control_file, PFM_ALL);
+
+err2:
+	fclose(control_file);
+err1:
+	unlink(control_path);
+err0:
+	free(control_path);
+
+	return err;
 }
 
 /* Merge any new information in newpkg into oldpkg */
