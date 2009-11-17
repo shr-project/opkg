@@ -92,67 +92,6 @@ int pkg_extract_data_files_to_dir(pkg_t *pkg, const char *dir)
     return 0;
 }
 
-int pkg_extract_data_file_names_to_file(pkg_t *pkg, const char *file_name)
-{
-     int err=0;
-     char *line, *data_file;
-     FILE *file;
-     FILE *tmp;
-
-     file = fopen(file_name, "w");
-     if (file == NULL) {
-	  fprintf(stderr, "%s: ERROR: Failed to open %s for writing.\n",
-		  __FUNCTION__, file_name);
-	  return EINVAL;
-     }
-
-     tmp = tmpfile();
-     if (pkg->installed_files) {
-	  str_list_elt_t *elt;
-	  for (elt = str_list_first(pkg->installed_files); elt; elt = str_list_next(pkg->installed_files, elt)) {
-	       fprintf(file, "%s\n", (char *)elt->data);
-	  }
-     } else {
-	  err = pkg_extract_data_file_names_to_stream(pkg, tmp);
-	  if (err) {
-	       fclose(file);
-	       fclose(tmp);
-	       return err;
-	  }
-
-	  /* Fixup data file names by removing the initial '.' */
-	  rewind(tmp);
-	  while (1) {
-	       line = file_read_line_alloc(tmp);
-	       if (line == NULL) {
-		    break;
-	       }
-
-	       data_file = line;
-	       if (*data_file == '.') {
-		    data_file++;
-	       }
-
-	       if (*data_file != '/') {
-		    fputs("/", file);
-	       }
-
-	       /* I have no idea why, but this is what dpkg does */
-	       if (strcmp(data_file, "/\n") == 0) {
-		    fputs("/.\n", file);
-	       } else {
-		    fputs(data_file, file);
-	       }
-	       free(line);
-	       line=NULL;
-	  }
-     }
-     fclose(tmp);
-     fclose(file);
-
-     return err;
-}
-
 int pkg_extract_data_file_names_to_stream(pkg_t *pkg, FILE *file)
 {
     char *buffer = NULL;

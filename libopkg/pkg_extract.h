@@ -26,7 +26,6 @@ int pkg_extract_control_files_to_dir_with_prefix(pkg_t *pkg,
 						 const char *dir,
 						 const char *prefix);
 int pkg_extract_data_files_to_dir(pkg_t *pkg, const char *dir);
-int pkg_extract_data_file_names_to_file(pkg_t *pkg, const char *file_name);
 int pkg_extract_data_file_names_to_stream(pkg_t *pkg, FILE *file);
 
 #endif
