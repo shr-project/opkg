@@ -766,10 +766,8 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     }
   }
 
-  tmp = xstrdup("/tmp/opkg.XXXXXX");
-
-  if (mkdtemp (tmp) == NULL)
-  {
+  sprintf_alloc(&tmp, "%s/update-XXXXXX", opkg->conf->tmp_dir);
+  if (mkdtemp (tmp) == NULL) {
     /* XXX: Error: could not create temporary file name */
     free (lists_dir);
     free (tmp);
