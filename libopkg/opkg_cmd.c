@@ -340,7 +340,8 @@ static int opkg_finalize_intercepts(opkg_intercept_t ctx)
 	    
 	    sprintf_alloc (&path, "%s/%s", ctx->statedir, de->d_name);
 	    if (access (path, X_OK) == 0) {
-		xsystem (path);
+		const char *argv[] = {"sh", "-c", path, NULL};
+		xsystem (argv);
 	    }
 	    free (path);
 	}

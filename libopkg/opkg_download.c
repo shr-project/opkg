@@ -147,16 +147,21 @@ int opkg_download(opkg_conf_t *conf, const char *src,
 #else
     {
       int res;
-      char *wgetcmd;
-      char *wgetopts;
-      wgetopts = getenv("OPKG_WGETOPTS");
-      sprintf_alloc(&wgetcmd, "wget -q %s%s -O \"%s\" \"%s\"",
-		    (conf->http_proxy || conf->ftp_proxy) ? "-Y on " : "",
-		    (wgetopts!=NULL) ? wgetopts : "",
-		    tmp_file_location, src);
-      opkg_message(conf, OPKG_INFO, "Executing: %s\n", wgetcmd);
-      res = xsystem(wgetcmd);
-      free(wgetcmd);
+      const char *argv[8];
+      int i = 0;
+
+      argv[i++] = "wget";
+      argv[i++] = "-q";
+      if (conf->http_proxy || conf->ftp_proxy) {
+	argv[i++] = "-Y";
+	argv[i++] = "on";
+      }
+      argv[i++] = "-O";
+      argv[i++] = tmp_file_location;
+      argv[i++] = src;
+      argv[i++] = NULL;
+      res = xsystem(argv);
+
       if (res) {
 	opkg_message(conf, OPKG_ERROR, "Failed to download %s, error %d\n", src, res);
 	free(tmp_file_location);

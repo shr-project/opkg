@@ -1195,8 +1195,10 @@ int pkg_run_script(opkg_conf_t *conf, pkg_t *pkg,
 
      sprintf_alloc(&cmd, "%s %s", path, args);
      free(path);
-
-     err = xsystem(cmd);
+     {
+	  const char *argv[] = {"sh", "-c", cmd, NULL};
+	  err = xsystem(argv);
+     }
      free(cmd);
 
      if (err) {

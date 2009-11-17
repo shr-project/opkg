@@ -25,7 +25,6 @@
 #include "opkg_message.h"
 #include "file_util.h"
 #include "str_util.h"
-#include "xsystem.h"
 #include "opkg_defines.h"
 #include "libbb/libbb.h"
 

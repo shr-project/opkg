@@ -1610,13 +1610,8 @@ static int user_prefers_old_conffile(const char *file_name, const char *backup)
 	  }
 
 	  if (strcmp(response, "d") == 0) {
-	       char *cmd;
-
-	       free(response);
-	       /* XXX: BUG rewrite to use exec or busybox's internal diff */
-	       sprintf_alloc(&cmd, "diff -u %s %s", backup, file_name);
-	       xsystem(cmd);
-	       free(cmd);
+	       const char *argv[] = {"diff", "-u", backup, file_name, NULL};
+	       xsystem(argv);
 	       printf("    [Press ENTER to continue]\n");
 	       response = file_read_line_alloc(stdin);
 	       free(response);

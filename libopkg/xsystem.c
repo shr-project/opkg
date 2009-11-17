@@ -19,12 +19,7 @@
 #include <sys/wait.h>
 
 #include "xsystem.h"
-
-/* XXX: FEATURE: I shouldn't actually use system(3) at all. I don't
-   really need the /bin/sh invocation which takes resources and
-   introduces security problems. I should switch all of this to a sort
-   of execl() or execv() interface/implementation.
-*/
+#include "libbb/libbb.h"
 
 /* Like system(3), but with error messages printed if the fork fails
    or if the child process dies due to an uncaught signal. Also, the
@@ -34,31 +29,44 @@
    Otherwise, the 8-bit return value of the program ala WEXITSTATUS
    as defined in <sys/wait.h>.
 */
-int xsystem(const char *cmd)
+int
+xsystem(const char *argv[])
 {
-    int err;
+	int status;
+	pid_t pid;
 
-    err = system(cmd);
+	pid = vfork();
 
-    if (err == -1) {
-	fprintf(stderr, "%s: ERROR: fork failed before execution: `%s'\n",
-		__FUNCTION__, cmd);
-	return -1;
-    }
+	switch (pid) {
+	case -1:
+		perror_msg("%s: %s: vfork", __FUNCTION__, argv[0]);
+		return -1;
+	case 0:
+		/* child */
+		execvp(argv[0], (char*const*)argv);
+		_exit(-1);
+	default:
+		/* parent */
+		break;
+	}
 
-    if (WIFSIGNALED(err)) {
-	fprintf(stderr, "%s: ERROR: Child process died due to signal %d: `%s'\n",
-		__FUNCTION__, WTERMSIG(err), cmd);
-	return -1;
-    }
+	if (waitpid(pid, &status, 0) == -1) {
+		perror_msg("%s: %s: waitpid", __FUNCTION__, argv[0]);
+		return -1;
+	}
 
-    if (WIFEXITED(err)) {
-	/* Normal child exit */
-	return WEXITSTATUS(err);
-    }
+	if (WIFSIGNALED(status)) {
+		error_msg("%s: %s: Child killed by signal %d\n",
+			__FUNCTION__, argv[0], WTERMSIG(status));
+		return -1;
+	}
 
-    fprintf(stderr, "%s: ERROR: Received unintelligible return value from system: %d",
-	    __FUNCTION__, err);
-    return -1;
+	if (!WIFEXITED(status)) {
+		/* shouldn't happen */
+		error_msg("%s: %s: Your system is broken: got status %d "
+			"from waitpid\n", __FUNCTION__, argv[0], status);
+		return -1;
+	}
+
+	return WEXITSTATUS(status);
 }
-	 
