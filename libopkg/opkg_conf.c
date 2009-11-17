@@ -415,7 +415,12 @@ void opkg_conf_deinit(opkg_conf_t *conf)
      if (&conf->obs_file_hash)
 	            hash_table_deinit(&conf->obs_file_hash);
 
-     lockf(conf->lock_fd, F_ULOCK, 0);
+     /* lockf maybe defined with warn_unused_result */
+     if(lockf(conf->lock_fd, F_ULOCK, 0) != 0){
+              opkg_message(conf, OPKG_DEBUG, "%s: unlock failed: %s\n",
+                              __FUNCTION__, 
+                              strerror(errno));
+     }
      close(conf->lock_fd);
 }
 
