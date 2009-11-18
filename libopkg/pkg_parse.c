@@ -152,6 +152,7 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 {
 	/* these flags are a bit hackish... */
 	static int reading_conffiles = 0, reading_description = 0;
+	int ret = 0;
 
 	switch (*line) {
 	case 'A':
@@ -279,12 +280,14 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 			parse_conffiles(pkg, line);
 			goto dont_reset_flags;
 		}
-		break;
 
+		/* FALLTHROUGH */
 	default:
 		/* For package lists, signifies end of package. */
-		if(line_is_blank(line))
-			return 1;
+		if(line_is_blank(line)) {
+			ret = 1;
+			break;
+		}
 	}
 
 	reading_description = 0;
@@ -292,7 +295,7 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 
 dont_reset_flags:
 
-	return 0;
+	return ret;
 }
 
 int
