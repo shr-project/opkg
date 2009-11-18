@@ -334,7 +334,7 @@ pkg_init_from_file(pkg_t *pkg, const char *filename)
 		goto err0;
 	}
 
-	control_file = fdopen(fd, "rw");
+	control_file = fdopen(fd, "rw+");
 	if (control_file == NULL) {
 		perror_msg("%s: fdopen", __FUNCTION__, control_path);
 		close(fd);
