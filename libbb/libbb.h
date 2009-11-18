@@ -238,7 +238,6 @@ typedef struct file_headers_s {
 } file_header_t;
 file_header_t *get_header_ar(FILE *in_file);
 void free_header_ar(file_header_t *ar_entry);
-file_header_t *get_header_cpio(FILE *src_stream);
 file_header_t *get_header_tar(FILE *tar_stream);
 void free_header_tar(file_header_t *tar_entry);
 
