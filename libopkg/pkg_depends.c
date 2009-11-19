@@ -576,11 +576,14 @@ void buildProvides(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
     for (i=1; i<pkg->provides_count; i++) {
 	abstract_pkg_t *provided_abpkg = ensure_abstract_pkg_by_name(hash,
 			pkg->provides_str[i-1]);
+	free(pkg->provides_str[i-1]);
 
 	pkg->provides[i] = provided_abpkg;
 
 	abstract_pkg_vec_insert(provided_abpkg->provided_by, ab_pkg);
     }
+    if (pkg->provides_str)
+	free(pkg->provides_str);
 }
 
 /* Abhaya: added conflicts support */
@@ -597,8 +600,11 @@ void buildConflicts(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 	 conflicts->type = CONFLICTS;
 	 parseDepends(conflicts, hash,
 		      pkg->conflicts_str[i]);
+	 free(pkg->conflicts_str[i]);
 	 conflicts++;
     }
+    if (pkg->conflicts_str)
+	free(pkg->conflicts_str);
 }
 
 void buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
@@ -614,6 +620,7 @@ void buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 	  abstract_pkg_t *old_abpkg = ensure_abstract_pkg_by_name(hash, pkg->replaces_str[i]);
 
 	  pkg->replaces[i] = old_abpkg;
+	  free(pkg->replaces_str[i]);
 
 	  if (!old_abpkg->replaced_by)
 	       old_abpkg->replaced_by = abstract_pkg_vec_alloc();
@@ -623,6 +630,9 @@ void buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg)
 	  if (pkg_conflicts_abstract(pkg, old_abpkg))
 	       abstract_pkg_vec_insert(old_abpkg->replaced_by, ab_pkg);
      }
+
+     if (pkg->replaces_str)
+	     free(pkg->replaces_str);
 }
 
 void buildDepends(hash_table_t * hash, pkg_t * pkg)

@@ -208,21 +208,6 @@ void pkg_deinit(pkg_t *pkg)
 	free(pkg->depends_str);
 	pkg->depends_str = NULL;
 
-	for (i = 0; i < pkg->provides_count-1; i++)
-		free (pkg->provides_str[i]);
-	free(pkg->provides_str);
-	pkg->provides_str = NULL;
-
-	for (i = 0; i < pkg->conflicts_count; i++)
-		free (pkg->conflicts_str[i]);
-	free(pkg->conflicts_str);
-	pkg->conflicts_str = NULL;
-
-	for (i = 0; i < pkg->replaces_count; i++)
-		free (pkg->replaces_str[i]);
-	free(pkg->replaces_str);
-	pkg->replaces_str = NULL;
-
 	for (i = 0; i < pkg->recommends_count; i++)
 		free (pkg->recommends_str[i]);
 	free(pkg->recommends_str);
@@ -425,9 +410,7 @@ int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
 	  newpkg->suggests_count = 0;
      }
 
-     if (!oldpkg->provides_str) {
-	  oldpkg->provides_str = newpkg->provides_str;
-	  newpkg->provides_str = NULL;
+     if (oldpkg->provides_count <= 1) {
 	  oldpkg->provides_count = newpkg->provides_count;
 	  newpkg->provides_count = 0;
 
@@ -437,9 +420,7 @@ int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
 	  }
      }
 
-     if (!oldpkg->conflicts_str) {
-	  oldpkg->conflicts_str = newpkg->conflicts_str;
-	  newpkg->conflicts_str = NULL;
+     if (!oldpkg->conflicts_count) {
 	  oldpkg->conflicts_count = newpkg->conflicts_count;
 	  newpkg->conflicts_count = 0;
 
@@ -447,9 +428,7 @@ int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
 	  newpkg->conflicts = NULL;
      }
 
-     if (!oldpkg->replaces_str) {
-	  oldpkg->replaces_str = newpkg->replaces_str;
-	  newpkg->replaces_str = NULL;
+     if (!oldpkg->replaces_count) {
 	  oldpkg->replaces_count = newpkg->replaces_count;
 	  newpkg->replaces_count = 0;
 
@@ -546,6 +525,27 @@ void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){
      return;
 }
 
+const char*
+constraint_to_str(enum version_constraint c)
+{
+	switch (c) {
+	case NONE:
+		return "";
+	case EARLIER:
+		return "< ";
+	case EARLIER_EQUAL:
+	       return "<= ";
+	case EQUAL:
+	       return "= ";
+	case LATER_EQUAL:
+	      return ">= ";
+	case LATER:
+	     return "> ";
+	}
+
+	return "";
+}
+
 void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
 {
      int i;
@@ -586,10 +586,18 @@ void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
 		    }
 	       }
 	  } else if (strcasecmp(field, "Conflicts") == 0) {
+	       struct depend *cdep;
 	       if (pkg->conflicts_count) {
                     fprintf(fp, "Conflicts:");
 		    for(i = 0; i < pkg->conflicts_count; i++) {
-                        fprintf(fp, "%s %s", i == 0 ? "" : ",", pkg->conflicts_str[i]);
+			cdep = pkg->conflicts[i].possibilities[0];
+                        fprintf(fp, "%s %s", i == 0 ? "" : ",",
+				cdep->pkg->name);
+			if (cdep->version) {
+				fprintf(fp, "(%s%s)",
+					constraint_to_str(cdep->constraint),
+					cdep->version);
+			}
                     }
                     fprintf(fp, "\n");
 	       }
@@ -658,8 +666,9 @@ void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
 	  } else if (strcasecmp(field, "Provides") == 0) {
 	       if (pkg->provides_count) {
                   fprintf(fp, "Provides:");
-		  for(i = 0; i < pkg->provides_count-1; i++) {
-                      fprintf(fp, "%s %s", i == 0 ? "" : ",", pkg->provides_str[i]);
+		  for(i = 1; i < pkg->provides_count; i++) {
+                      fprintf(fp, "%s %s", i == 1 ? "" : ",",
+				      pkg->provides[i]->name);
                   }
                   fprintf(fp, "\n");
                }
@@ -673,7 +682,8 @@ void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
 	       if (pkg->replaces_count) {
                     fprintf(fp, "Replaces:");
 		    for (i = 0; i < pkg->replaces_count; i++) {
-                        fprintf(fp, "%s %s", i == 0 ? "" : ",", pkg->replaces_str[i]);
+                        fprintf(fp, "%s %s", i == 0 ? "" : ",",
+					pkg->replaces[i]->name);
                     }
                     fprintf(fp, "\n");
 	       }
