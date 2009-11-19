@@ -30,13 +30,19 @@ struct hash_entry {
 struct hash_table {
   const char *name; 
   hash_entry_t * entries;  
-  int n_entries; /* number of buckets */
-  int n_elements;
-  const char * (*hash_entry_key)(void * data);
+  unsigned int n_buckets;
+  unsigned int n_elements;
+
+  /* useful stats */
+  unsigned int n_used_buckets;
+  unsigned int n_collisions;
+  unsigned int max_bucket_len;
+  unsigned int n_hits, n_misses;
 };
 
 int hash_table_init(const char *name, hash_table_t *hash, int len);
 void hash_table_deinit(hash_table_t *hash);
+void hash_print_stats(hash_table_t *hash);
 void *hash_table_get(hash_table_t *hash, const char *key);
 int hash_table_insert(hash_table_t *hash, const char *key, void *value);
 int hash_table_remove(hash_table_t *has, const char *key);

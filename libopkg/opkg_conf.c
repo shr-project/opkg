@@ -235,7 +235,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 
      pkg_hash_init("pkg-hash", &conf->pkg_hash, OPKG_CONF_DEFAULT_HASH_LEN);
      hash_table_init("file-hash", &conf->file_hash, OPKG_CONF_DEFAULT_HASH_LEN);
-     hash_table_init("obs-file-hash", &conf->obs_file_hash, OPKG_CONF_DEFAULT_HASH_LEN);
+     hash_table_init("obs-file-hash", &conf->obs_file_hash, OPKG_CONF_DEFAULT_HASH_LEN/16);
 
      if (conf->lists_dir == NULL)
         conf->lists_dir = xstrdup(OPKG_CONF_LISTS_DIR);
@@ -381,31 +381,9 @@ void opkg_conf_deinit(opkg_conf_t *conf)
 #endif
 
      if (conf->verbosity >= OPKG_DEBUG) { 
-	  int i;
-	  hash_table_t *hashes[] = {
-	       &conf->pkg_hash,
-	       &conf->file_hash,
-	       &conf->obs_file_hash };
-	  for (i = 0; i < 3; i++) {
-	       hash_table_t *hash = hashes[i];
-	       int c = 0;
-	       int n_conflicts = 0;
-	       int j;
-	       for (j = 0; j < hash->n_entries; j++) {
-		    int len = 0;
-		    hash_entry_t *e = &hash->entries[j];
-		    if (e->next)
-			 n_conflicts++;
-		    while (e && e->key) {
-			 len++;
-			 e = e->next;
-		    }
-		    if (len > c) 
-			 c = len;
-	       }
-	       opkg_message(conf, OPKG_DEBUG, "hash_table[%s] n_buckets=%d n_elements=%d max_conflicts=%d n_conflicts=%d\n", 
-			    hash->name, hash->n_entries, hash->n_elements, c, n_conflicts);
-	  }
+	hash_print_stats(&conf->pkg_hash);
+	hash_print_stats(&conf->file_hash);
+	hash_print_stats(&conf->obs_file_hash);
      }
 
      if (&conf->pkg_hash)

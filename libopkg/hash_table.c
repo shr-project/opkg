@@ -24,54 +24,61 @@
 #include "libbb/libbb.h"
 
 
-static int hash_index(hash_table_t *hash, const char *pkg_name);
-static int rotating(const char *key, int len, int prime);
-
-static int hash_index(hash_table_t *hash, const char *pkg_name)
+static unsigned long
+djb2_hash(const unsigned char *str)
 {
-    return rotating(pkg_name, strlen(pkg_name), hash->n_entries);
-}
-  
-static int rotating(const char *key, int len, int prime)
-{
-    unsigned int hash, i;
-    for (hash=len, i=0; i<len; ++i)
-	hash = (hash<<4)^(hash>>28)^key[i];
-    return (hash % prime);
+	unsigned long hash = 5381;
+	int c;
+	while ((c = *str++))
+		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+	return hash;
 }
 
+static int
+hash_index(hash_table_t *hash, const char *key)
+{
+	return djb2_hash((const unsigned char *)key) % hash->n_buckets;
+}
 
 /*
  * this is an open table keyed by strings
  */
-int hash_table_init(const char *name, hash_table_t *hash, int len)
+int
+hash_table_init(const char *name, hash_table_t *hash, int len)
 {
-    static int primes_table[] = {
-	379, 761, 983, 1423, 2711, 3361, 3931, 4679, 5519, 6701, 9587,
-	19471, 23143, 33961, 46499, 49727, 99529, 0
-    };
-    int *picker;
+	if (hash->entries != NULL) {
+		fprintf(stderr, "ERROR: %s called on a non empty hash table\n",
+				__FUNCTION__);
+		return -1;
+	}
 
-    if (hash->entries != NULL) {
-    	/* we have been here already */
-    	return 0;
-    }
+	memset(hash, 0, sizeof(hash_table_t));
 
-    hash->name = name;
-    hash->entries = NULL;
-    hash->n_entries = 0;
-    hash->hash_entry_key = NULL;
+	hash->name = name;
+	hash->n_buckets = len;
+	hash->entries = xcalloc(hash->n_buckets, sizeof(hash_entry_t));
 
-    picker = primes_table;
-    while(*picker && (*picker++ < len));
-    if(!*picker)
-	fprintf(stderr, "%s: primes table might not be big enough (! << %d)\n", __FUNCTION__, len);
-    --picker;
+	return 0;
+}
 
-    hash->n_entries = *picker;
-    hash->entries = xcalloc(hash->n_entries, sizeof(hash_entry_t));
-
-    return 0;
+void
+hash_print_stats(hash_table_t *hash)
+{
+	printf("hash_table: %s, %d bytes\n"
+		"\tn_buckets=%d, n_elements=%d, n_collisions=%d\n"
+		"\tmax_bucket_len=%d, n_used_buckets=%d, ave_bucket_len=%.2f\n"
+		"\tn_hits=%d, n_misses=%d\n",
+		hash->name,
+		hash->n_buckets*sizeof(hash_entry_t),
+		hash->n_buckets,
+		hash->n_elements,
+		hash->n_collisions,
+		hash->max_bucket_len,
+		hash->n_used_buckets,
+		(hash->n_used_buckets ?
+			((float)hash->n_elements)/hash->n_used_buckets : 0.0f),
+		hash->n_hits,
+		hash->n_misses);
 }
 
 void hash_table_deinit(hash_table_t *hash)
@@ -81,7 +88,7 @@ void hash_table_deinit(hash_table_t *hash)
         return;
 
     /* free the reminaing entries */
-    for (i = 0; i < hash->n_entries; i++) {
+    for (i = 0; i < hash->n_buckets; i++) {
 	hash_entry_t *hash_entry = (hash->entries + i);
 	free (hash_entry->key);
 	/* skip the first entry as this is part of the array */
@@ -98,7 +105,7 @@ void hash_table_deinit(hash_table_t *hash)
     free (hash->entries);
 
     hash->entries = NULL;
-    hash->n_entries = 0;
+    hash->n_buckets = 0;
 }
 
 void *hash_table_get(hash_table_t *hash, const char *key)
@@ -111,16 +118,19 @@ void *hash_table_get(hash_table_t *hash, const char *key)
     {
       if (strcmp(key, hash_entry->key) == 0) {
          // opkg_message(NULL, OPKG_DEBUG, "Function: %s. Key found for '%s' \n", __FUNCTION__, key);
+	 hash->n_hits++;
 	 return hash_entry->data;
       }
     }
     hash_entry = hash_entry->next;
   }
+  hash->n_misses++;
   return NULL;
 }
 
 int hash_table_insert(hash_table_t *hash, const char *key, void *value)
 {
+     int bucket_len = 0;
      int ndx= hash_index(hash, key);
      hash_entry_t *hash_entry = hash->entries + ndx;
      if (hash_entry->key) {
@@ -140,12 +150,19 @@ int hash_table_insert(hash_table_t *hash, const char *key, void *value)
                         hash_entry->data = value;
                         return 0;
                     }
+		    bucket_len++;
                }
 	       hash_entry->next = xcalloc(1, sizeof(hash_entry_t));
 	       hash_entry = hash_entry->next;
 	       hash_entry->next = NULL;
+
+	       hash->n_collisions++;
+	       if (++bucket_len > hash->max_bucket_len)
+		    hash->max_bucket_len = bucket_len;
 	  }
-     }
+     } else
+	  hash->n_used_buckets++;
+
      hash->n_elements++;
      hash_entry->key = xstrdup(key);
      hash_entry->data = value;
@@ -191,7 +208,7 @@ void hash_table_foreach(hash_table_t *hash, void (*f)(const char *key, void *ent
     if (!hash || !f)
 	return;
 
-    for (i = 0; i < hash->n_entries; i++) {
+    for (i = 0; i < hash->n_buckets; i++) {
 	hash_entry_t *hash_entry = (hash->entries + i);
 	do {
 	    if(hash_entry->key) {
