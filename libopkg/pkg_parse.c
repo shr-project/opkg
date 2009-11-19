@@ -319,7 +319,7 @@ pkg_parse_from_stream_nomalloc(pkg_t *pkg, FILE *fp, uint mask,
 				fprintf(stderr, "%s: fgets: %s\n",
 					__FUNCTION__, strerror(errno));
 				ret = -1;
-			} else if (strlen(*buf0) == buflen-1) {
+			} else if (strlen(*buf0) == buf0len-1) {
 				fprintf(stderr, "%s: missing new line character"
 						" at end of file!\n",
 					__FUNCTION__);
