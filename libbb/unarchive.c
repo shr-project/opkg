@@ -612,13 +612,11 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 		  const int extract_function, const char *prefix, const char *filename)
 {
 	FILE *deb_stream = NULL;
-	FILE *uncompressed_stream = NULL;
 	file_header_t *ar_header = NULL;
 	const char **file_list = NULL;
 	char *output_buffer = NULL;
 	char *ared_file = NULL;
 	char ar_magic[8];
-	int gunzip_pid = 0;
 
 	if (filename != NULL) {
 		file_list = xmalloc(sizeof(char *) * 2);
@@ -652,6 +650,8 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 
 		while ((ar_header = get_header_ar(deb_stream)) != NULL) {
 			if (strcmp(ared_file, ar_header->name) == 0) {
+				int gunzip_pid = 0;
+				FILE *uncompressed_stream;
 				/* open a stream of decompressed data */
 				uncompressed_stream = gz_open(deb_stream, &gunzip_pid);
 				if (uncompressed_stream == NULL) {
@@ -660,13 +660,14 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 
 				archive_offset = 0;
 				output_buffer = unarchive(uncompressed_stream, out_stream, get_header_tar, free_header_tar, extract_function, prefix, file_list);
+				fclose(uncompressed_stream);
+				gz_close(gunzip_pid);
+				break;
 			}
 			seek_sub_file(deb_stream, ar_header->size);
 			free (ar_header->name);
 			free (ar_header);
 		}
-		gz_close(gunzip_pid);
-		fclose(uncompressed_stream);
 		goto cleanup;
 	} else if (strncmp(ar_magic, "\037\213", 2) == 0) {
 		/* it's a gz file, let's assume it's an opkg */
@@ -687,6 +688,8 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
                         if (strncmp(tar_header->name, "./", 2) == 0)
                                 name_offset = 2;
 			if (strcmp(ared_file, tar_header->name+name_offset) == 0) {
+				int gunzip_pid = 0;
+				FILE *uncompressed_stream;
 				/* open a stream of decompressed data */
 				uncompressed_stream = gz_open(unzipped_opkg_stream, &gunzip_pid);
 				if (uncompressed_stream == NULL) {
@@ -703,15 +706,15 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 							  file_list);
                                 /*fprintf(stderr, __FUNCTION__ ":%d: unarchive complete\n", __LINE__);*/
 				free_header_tar(tar_header);
-				gz_close(gunzip_pid);
 				fclose(uncompressed_stream);
+				gz_close(gunzip_pid);
 				break;
 			}
 			seek_sub_file(unzipped_opkg_stream, tar_header->size);
 			free_header_tar(tar_header);
 		}
-		gz_close(unzipped_opkg_pid);
 		fclose(unzipped_opkg_stream);
+		gz_close(unzipped_opkg_pid);
                 /*fprintf(stderr, __FUNCTION__ ":%d: done\n", __LINE__);*/
 		goto cleanup;
 	} else {
