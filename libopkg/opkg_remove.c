@@ -208,6 +208,8 @@ static int remove_autoinstalled (opkg_conf_t *conf, pkg_t *pkg)
 	else
 	   opkg_message (conf, OPKG_INFO, "%s was autoinstalled and is still required by "
 	                 "%d installed packages\n", buffer, deps);
+	if (dependents)
+	   free(dependents);
     }
     free (buffer);
   }
