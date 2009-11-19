@@ -358,6 +358,9 @@ int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
 	  return 0;
      }
 
+     if (!oldpkg->auto_installed)
+	  oldpkg->auto_installed = newpkg->auto_installed;
+
      if (!oldpkg->src)
 	  oldpkg->src = newpkg->src;
      if (!oldpkg->dest)
