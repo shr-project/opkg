@@ -163,58 +163,58 @@ static int user_prefers_removing_dependents(opkg_conf_t *conf, abstract_pkg_t *a
     return 0;
 }
 
-static int remove_autoinstalled (opkg_conf_t *conf, pkg_t *pkg)
+/*
+ * Find and remove packages that were autoinstalled and are orphaned
+ * by the removal of pkg.
+ */
+static int
+remove_autoinstalled(opkg_conf_t *conf, pkg_t *pkg)
 {
-  /*
-   * find and remove packages that were autoinstalled and are orphaned by the removal of pkg
-   */
+	int i, j;
+	int n_deps;
+	pkg_t *p;
+	struct compound_depend *cdep;
+	abstract_pkg_t **dependents;
 
-  char *buffer, *d_str;
-  int i;
+	for (i=0; i<pkg->depends_count; i++) {
+		cdep = &pkg->depends[i];
+		if (cdep->type != DEPEND)
+			continue;
+		for (j=0; j<cdep->possibility_count; j++) {
+			p = pkg_hash_fetch_installed_by_name (&conf->pkg_hash,
+					cdep->possibilities[j]->pkg->name);
 
-  for (i = 0; i < pkg->depends_count; ++i)
-  {
-    int x = 0;
-    pkg_t *p;
-    d_str = pkg->depends_str[i];
-    buffer = xcalloc(1, strlen (d_str) + 1);
+			/* If the package is not installed, this could have
+			 * been a circular dependency and the package has
+			 * already been removed.
+			 */
+			if (!p)
+				return -1;
 
-    while (d_str[x] != '\0' && d_str[x] != ' ')
-    {
-      buffer[x] = d_str[x];
-      ++x;
-    }
-    buffer[x] = '\0';
-    buffer = xrealloc (buffer, strlen (buffer) + 1);
-    p = pkg_hash_fetch_installed_by_name (&conf->pkg_hash, buffer);
+			if (!p->auto_installed)
+				continue;
 
-    /* if the package is not installed, this could have been a circular
-     * depenancy and the package has already been removed */
-    if (!p)
-      return -1;
+			n_deps = pkg_has_installed_dependents(conf, NULL, p,
+					&dependents);
+			if (n_deps == 0) {
+				 opkg_message(conf, OPKG_NOTICE,
+				               "%s was autoinstalled and is "
+					       "now orphaned, removing\n",
+					       p->name);
+			         opkg_remove_pkg(conf, p, 0);
+			} else
+				opkg_message(conf, OPKG_INFO,
+						"%s was autoinstalled and is "
+						"still required by %d "
+						"installed packages.\n",
+						p->name, n_deps);
 
-    if (p->auto_installed)
-    {
-      int deps;
-      abstract_pkg_t **dependents;
+			if (dependents)
+				free(dependents);
+		}
+	}
 
-      deps = pkg_has_installed_dependents(conf, NULL, p, &dependents);
-      if (deps == 0)
-      {
-	 opkg_message (conf, OPKG_INFO,
-	               "%s was autoinstalled but is now orphaned\n", buffer);
-         opkg_remove_pkg(conf, p,0);
-      }
-	else
-	   opkg_message (conf, OPKG_INFO, "%s was autoinstalled and is still required by "
-	                 "%d installed packages\n", buffer, deps);
-	if (dependents)
-	   free(dependents);
-    }
-    free (buffer);
-  }
-
-  return 0;
+	return 0;
 }
 
 int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)

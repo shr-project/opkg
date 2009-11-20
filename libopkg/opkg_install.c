@@ -573,56 +573,83 @@ static int unpack_pkg_control_files(opkg_conf_t *conf, pkg_t *pkg)
      return 0;
 }
 
-static int pkg_remove_orphan_dependent(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg) 
+/*
+ * Remove packages which were auto_installed due to a dependency by old_pkg,
+ * which are no longer a dependency in the new (upgraded) pkg.
+ */
+static int
+pkg_remove_orphan_dependent(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg) 
 {
-    int i, j, found;
-    char *buf, *d_str;
-    pkg_t *p;
+	int i, j, k, l, found;
+	int n_deps;
+	pkg_t *p;
+	struct compound_depend *cd0, *cd1;
+        abstract_pkg_t **dependents;
 
-    if (!old_pkg) 
-        return 0;
+	for (i=0; i<old_pkg->depends_count; i++) {
+		cd0 = &old_pkg->depends[i];
+		if (cd0->type != DEPEND)
+			continue;
+		for (j=0; j<cd0->possibility_count; j++) {
 
-    if (old_pkg->depends_count == 0) 
-        return 0;
+			found = 0;
 
-    for (i=0;i<old_pkg->depends_count;i++) {
-        found = 0;
-        for (j=0;j<pkg->depends_count;j++) {
-            if (!strcmp(old_pkg->depends_str[i], pkg->depends_str[j])) {
-                found = 1;
-                break;
-            }
-        }
-        if (found)
-            continue;
-        d_str = old_pkg->depends_str[i];
-        buf = xcalloc(1, strlen (d_str) + 1);
-        j=0;
-        while (d_str[j] != '\0' && d_str[j] != ' ') {
-            buf[j]=d_str[j];
-            ++j;
-        }
-        buf[j]='\0';
-        buf = xrealloc (buf, strlen (buf) + 1);
-        p = pkg_hash_fetch_installed_by_name (&conf->pkg_hash, buf);
-        if (!p) {
-            fprintf(stderr, "The pkg %s had been removed!!\n", buf);
-            free(buf);
-            continue;
-        }
-        if (p->auto_installed) {
-            int deps;
-            abstract_pkg_t **dependents;
-            deps = pkg_has_installed_dependents(conf, NULL, p, &dependents);
-            if (deps == 0) {
-                opkg_message (conf, OPKG_NOTICE,"%s was autoinstalled but is now orphaned, remove it.\n", buf);
-                opkg_remove_pkg(conf, p, 0);
-            } else 
-                opkg_message (conf, OPKG_INFO, "%s was autoinstalled and is still required by %d installed packages\n", buf, deps);
-        }
-        free(buf);
-    }
-    return 0;
+			for (k=0; k<pkg->depends_count; k++) {
+				cd1 = &pkg->depends[i];
+				if (cd1->type != DEPEND)
+					continue;
+				for (l=0; l<cd1->possibility_count; l++) {
+					if (cd0->possibilities[j]
+					 == cd1->possibilities[l]) {
+						found = 1;
+						break;
+					}
+				}
+				if (found)
+					break;
+			}
+
+			if (found)
+				continue;
+
+			/*
+			 * old_pkg has a dependency that pkg does not.
+			 */
+			p = pkg_hash_fetch_installed_by_name (&conf->pkg_hash,
+					cd0->possibilities[j]->pkg->name);
+
+			if (!p)
+				continue;
+
+			if (!p->auto_installed)
+				continue;
+
+			n_deps = pkg_has_installed_dependents(conf, NULL, p,
+					&dependents);
+			n_deps--; /* don't count old_pkg */
+
+			if (n_deps == 0) {
+				opkg_message (conf, OPKG_NOTICE,
+						"%s was autoinstalled and is "
+						"now orphaned, removing.\n",
+						p->name);
+
+				/* p has one installed dependency (old_pkg),
+				 * which we need to ignore during removal. */
+				p->state_flag |= SF_REPLACE;
+
+				opkg_remove_pkg(conf, p, 0);
+			} else 
+				opkg_message(conf, OPKG_INFO,
+						"%s was autoinstalled and is "
+						"still required by %d "
+						"installed packages.\n",
+						p->name, n_deps);
+
+		}
+	}
+
+	return 0;
 }
 
 /* returns number of installed replacees */
@@ -923,7 +950,8 @@ int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 	  opkg_state_changed++;
 	  pkg->state_flag |= SF_FILELIST_CHANGED;
 
-          pkg_remove_orphan_dependent(conf, pkg, old_pkg);
+	  if (old_pkg)
+               pkg_remove_orphan_dependent(conf, pkg, old_pkg);
 
 	  /* XXX: BUG: we really should treat replacement more like an upgrade
 	   *      Instead, we're going to remove the replacees 
