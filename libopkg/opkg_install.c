@@ -586,7 +586,16 @@ pkg_remove_orphan_dependent(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 	struct compound_depend *cd0, *cd1;
         abstract_pkg_t **dependents;
 
-	for (i=0; i<old_pkg->depends_count; i++) {
+	int count0 = old_pkg->pre_depends_count +
+				old_pkg->depends_count +
+				old_pkg->recommends_count +
+				old_pkg->suggests_count;
+	int count1 = pkg->pre_depends_count +
+				pkg->depends_count +
+				pkg->recommends_count +
+				pkg->suggests_count;
+
+	for (i=0; i<count0; i++) {
 		cd0 = &old_pkg->depends[i];
 		if (cd0->type != DEPEND)
 			continue;
@@ -594,7 +603,7 @@ pkg_remove_orphan_dependent(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 
 			found = 0;
 
-			for (k=0; k<pkg->depends_count; k++) {
+			for (k=0; k<count1; k++) {
 				cd1 = &pkg->depends[i];
 				if (cd1->type != DEPEND)
 					continue;

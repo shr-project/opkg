@@ -176,7 +176,12 @@ remove_autoinstalled(opkg_conf_t *conf, pkg_t *pkg)
 	struct compound_depend *cdep;
 	abstract_pkg_t **dependents;
 
-	for (i=0; i<pkg->depends_count; i++) {
+	int count = pkg->pre_depends_count +
+				pkg->depends_count +
+				pkg->recommends_count +
+				pkg->suggests_count;
+
+	for (i=0; i<count; i++) {
 		cdep = &pkg->depends[i];
 		if (cdep->type != DEPEND)
 			continue;
