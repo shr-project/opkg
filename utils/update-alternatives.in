@@ -21,7 +21,7 @@
 set -e
 
 # admin dir
-ad="$OPKG_OFFLINE_ROOT/usr/lib/opkg/alternatives"
+ad="$OPKG_OFFLINE_ROOT@opkglibdir@/opkg/alternatives"
 
 usage() {
 	echo "update-alternatives: $*

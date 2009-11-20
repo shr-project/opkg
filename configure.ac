@@ -260,5 +260,6 @@ AC_OUTPUT(
     src/Makefile
     libbb/Makefile
     utils/Makefile
+    utils/update-alternatives
     libopkg.pc
     )
