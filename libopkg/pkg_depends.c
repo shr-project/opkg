@@ -125,10 +125,10 @@ int pkg_hash_fetch_unsatisfied_dependencies(opkg_conf_t *conf, pkg_t * pkg,
 										tmp_vec,
 										&newstuff);
 				   if (newstuff == NULL) {
-					int i;
+					int m;
 					int ok = 1;
-					for (i = 0; i < rc; i++) {
-					    pkg_t *p = tmp_vec->pkgs[i];
+					for (m = 0; m < rc; m++) {
+					    pkg_t *p = tmp_vec->pkgs[m];
 					    if (p->state_want == SW_INSTALL)
 						continue;
 					    opkg_message(conf, OPKG_DEBUG, "not installing %s due to requirement for %s\n", pkg_scout->name, p->name);
