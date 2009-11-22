@@ -37,7 +37,11 @@ int pkg_extract_control_file_to_stream(pkg_t *pkg, FILE *stream)
 	return EINVAL;
     }
 
-    fputs(buffer, stream);
+    if (fputs(buffer, stream) == EOF) {
+	free(buffer);
+	return EINVAL;
+    }
+
     free(buffer);
 
     return 0;
