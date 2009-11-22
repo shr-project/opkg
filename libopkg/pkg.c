@@ -319,7 +319,7 @@ pkg_init_from_file(pkg_t *pkg, const char *filename)
 		goto err0;
 	}
 
-	control_file = fdopen(fd, "rw+");
+	control_file = fdopen(fd, "r+");
 	if (control_file == NULL) {
 		perror_msg("%s: fdopen", __FUNCTION__, control_path);
 		close(fd);
@@ -1044,7 +1044,7 @@ str_list_t *pkg_get_installed_files(opkg_conf_t *conf, pkg_t *pkg)
 	       free(list_file_name);
 	       return pkg->installed_files;
 	  }
-	  list_file = fdopen(fd, "rw+");
+	  list_file = fdopen(fd, "r+");
 	  if (list_file == NULL) {
 	       opkg_message(conf, OPKG_ERROR, "%s: fdopen: %s",
 			       __FUNCTION__, strerror(errno));
