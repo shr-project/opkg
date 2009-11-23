@@ -662,6 +662,8 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 				output_buffer = unarchive(uncompressed_stream, out_stream, get_header_tar, free_header_tar, extract_function, prefix, file_list);
 				fclose(uncompressed_stream);
 				gz_close(gunzip_pid);
+				free (ar_header->name);
+				free (ar_header);
 				break;
 			}
 			seek_sub_file(deb_stream, ar_header->size);
@@ -708,6 +710,7 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 				free_header_tar(tar_header);
 				fclose(uncompressed_stream);
 				gz_close(gunzip_pid);
+				free_header_tar(tar_header);
 				break;
 			}
 			seek_sub_file(unzipped_opkg_stream, tar_header->size);
