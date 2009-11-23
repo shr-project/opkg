@@ -42,7 +42,6 @@ enum long_args_opt
      ARGS_OPT_FORCE_SPACE,
      ARGS_OPT_NOACTION,
      ARGS_OPT_NODEPS,
-     ARGS_OPT_VERBOSITY,
      ARGS_OPT_MULTIPLE_PROVIDERS,
      ARGS_OPT_AUTOREMOVE,
      ARGS_OPT_CACHE,
@@ -166,9 +165,6 @@ int args_parse(args_t *args, int argc, char *argv[])
 	  case 'p':
 	       args->offline_root_path = xstrdup(optarg);
 	       break;
-	  case 'n':
-	       args->noaction = 1;
-	       break;
 	  case 't':
 	       args->tmp_dir = xstrdup(optarg);
 	       break;
@@ -176,11 +172,7 @@ int args_parse(args_t *args, int argc, char *argv[])
 	       print_version();
 	       exit(0);
 	  case 'V':
-	  case ARGS_OPT_VERBOSITY:
-	       if (optarg)
-		    args->verbosity = atoi(optarg);
-	       else
-		    args->verbosity += 1;
+	       args->verbosity = atoi(optarg);
 	       break;
 	  case ARGS_OPT_AUTOREMOVE:
 	       args->autoremove = 1;
@@ -253,77 +245,74 @@ void args_usage(char *complaint)
      printf("where sub-command is one of:\n");
     
      printf("\nPackage Manipulation:\n");
-     printf("\tupdate  		Update list of available packages\n");
-     printf("\tupgrade			Upgrade all installed packages to latest version\n");
-     printf("\tinstall <pkg>		Download and install <pkg> (and dependencies)\n");
-     printf("\tinstall <file.opk>	Install package <file.opk>\n");
-     printf("\tconfigure [<pkg>]	Configure unpacked packages\n");
-     printf("\tremove <pkg|regexp>	Remove package <pkg|packages following regexp>\n");
-     printf("\tflag <flag> <pkg> ...	Flag package(s) <pkg>\n");
-     printf("\t <flag>=hold|noprune|user|ok|installed|unpacked (one per invocation)	\n");
+     printf("\tupdate			Update list of available packages\n");
+     printf("\tupgrade			Upgrade installed packages\n");
+     printf("\tinstall <pkgs>		Install package(s)\n");
+     printf("\tconfigure <pkgs>	Configure unpacked package(s)\n");
+     printf("\tremove <pkgs|regexp>	Remove package(s)\n");
+     printf("\tflag <flag> <pkgs>	Flag package(s)\n");
+     printf("\t <flag>=hold|noprune|user|ok|installed|unpacked (one per invocation)\n");
     
      printf("\nInformational Commands:\n");
-     printf("\tlist    		List available packages and descriptions\n");
-     printf("\tlist_installed		List all and only the installed packages and description \n");
-     printf("\tlist_upgradable		List all the installed and upgradable packages\n");
-     printf("\tfiles <pkg>		List all files belonging to <pkg>\n");
-     printf("\tsearch <file|regexp>		Search for a package providing <file>\n");
-     printf("\tinfo [pkg|regexp]		Display all info for <pkg>\n");
-     printf("\tstatus [pkg|regexp]		Display all status for <pkg>\n");
-     printf("\tdownload <pkg>		Download <pkg> to current directory.\n");
-     printf("\tcompare_versions <v1> <op> <v2>\n");
-     printf("\t                          compare versions using <= < > >= = << >>\n");
-     printf("\tprint_architecture      prints the architecture.\n");
-     printf("\tprint_installation_architecture\n");
+     printf("\tlist			List available packages\n");
+     printf("\tlist-installed		List installed packages\n");
+     printf("\tlist-upgradable		List installed and upgradable packages\n");
+     printf("\tfiles <pkg>		List files belonging to <pkg>\n");
+     printf("\tsearch <file|regexp>	List package providing <file>\n");
+     printf("\tinfo [pkg|regexp]	Display all info for <pkg>\n");
+     printf("\tstatus [pkg|regexp]	Display all status for <pkg>\n");
+     printf("\tdownload <pkg>		Download <pkg> to current directory\n");
+     printf("\tcompare-versions <v1> <op> <v2>\n");
+     printf("\t                    compare versions using <= < > >= = << >>\n");
+     printf("\tprint-architecture	List installable package architectures\n");
      printf("\twhatdepends [-A] [pkgname|pat]+\n");
      printf("\twhatdependsrec [-A] [pkgname|pat]+\n");
      printf("\twhatprovides [-A] [pkgname|pat]+\n");
      printf("\twhatconflicts [-A] [pkgname|pat]+\n");
      printf("\twhatreplaces [-A] [pkgname|pat]+\n");
-     printf("\t                        prints the installation architecture.\n");    
+
      printf("\nOptions:\n");
-     printf("\t-A                      Query all packages with whatdepends, whatprovides, whatreplaces, whatconflicts\n"); 
-     printf("\t-V <level>               Set verbosity level to <level>. If no value is\n");
-     printf("\t--verbosity <level>      provided increase verbosity by one. Verbosity levels:\n");
-     printf("\t                         0 errors only\n");
-     printf("\t                         1 normal messages (default)\n");
-     printf("\t                         2 informative messages\n");
-     printf("\t                         3 debug output\n");
+     printf("\t-A			Query all packages not just those installed\n"); 
+     printf("\t-V <level>		Set verbosity level to <level>.\n");
+     printf("\t--verbosity <level>	Verbosity levels:\n");
+     printf("\t				0 errors only\n");
+     printf("\t				1 normal messages (default)\n");
+     printf("\t				2 informative messages\n");
+     printf("\t				3 debug\n");
+     printf("\t				4 debug level 2\n");
      printf("\t-f <conf_file>		Use <conf_file> as the opkg configuration file\n");
-     printf("\t--cache <directory>	Use a package cache\n");
-     printf("\t-conf <conf_file>	Default configuration file location\n");
+     printf("\t--conf <conf_file>	Default configuration file location\n");
      printf("				is %s/%s\n", ARGS_DEFAULT_CONF_FILE_DIR, ARGS_DEFAULT_CONF_FILE_NAME);
+     printf("\t--cache <directory>	Use a package cache\n");
      printf("\t-d <dest_name>		Use <dest_name> as the the root directory for\n");
-     printf("\t-dest <dest_name>	package installation, removal, upgrading.\n");
+     printf("\t--dest <dest_name>	package installation, removal, upgrading.\n");
      printf("				<dest_name> should be a defined dest name from\n");
      printf("				the configuration file, (but can also be a\n");
      printf("				directory name in a pinch).\n");
-     printf("\t-o <offline_root>	Use <offline_root> as the root directory for\n");
-     printf("\t-offline <offline_root>	offline installation of packages.\n");
-     printf("\t-p <path>		Path to utilities for runing postinst\n");
-     printf("\t-offline-path <path>	script in offline mode.\n");
+     printf("\t-o <dir>		Use <dir> as the root directory for\n");
+     printf("\t--offline-root <dir>	offline installation of packages.\n");
+     printf("\t--offline-path <path>	$PATH for postinsts scripts in offline mode\n");
 
-     printf("\nForce Options (use when opkg is too smart for its own good):\n");
-     printf("\t-force-depends		Make dependency checks warnings instead of errors\n");
-     printf("\t				Install/remove package in spite of failed dependences\n");
-     printf("\t-force-defaults		Use default options for questions asked by opkg.\n");
-     printf("				(no prompts). Note that this will not prevent\n");
-     printf("				package installation scripts from prompting.\n");
-     printf("\t-force-reinstall 	Allow opkg to reinstall a package.\n");
-     printf("\t-force-overwrite 	Allow opkg to overwrite files from another package during an install.\n");
-     printf("\t-force-downgrade 	Allow opkg to downgrade packages.\n");
-     printf("\t-force_space            Install even if there does not seem to be enough space.\n");
-     printf("\t-noaction               No action -- test only\n");
-     printf("\t-nodeps                 Do not follow dependences\n");
-     printf("\t-force-removal-of-dependent-packages\n");
-     printf("\t-recursive	 	Allow opkg to remove package and all that depend on it.\n");
-     printf("\t-autoremove	 	Allow opkg to remove packages that where installed automatically to satisfy dependencies.\n");
-     printf("\t-test                   No action -- test only\n");
-     printf("\t-t	 	        Specify tmp-dir.\n");
-     printf("\t--tmp-dir 	        Specify tmp-dir.\n");
+     printf("\nForce Options:\n");
+     printf("\t--force-depends		Install/remove despite failed dependences\n");
+     printf("\t--force-defaults	Use default options for questions asked by opkg\n");
+     printf("\t--force-reinstall	Reinstall package(s)\n");
+     printf("\t--force-overwrite	Overwrite files from other package(s)\n");
+     printf("\t--force-downgrade	Allow opkg to downgrade packages\n");
+     printf("\t--force-space		Disable free space checks\n");
+     printf("\t--noaction		No action -- test only\n");
+     printf("\t--nodeps		Do not follow dependences\n");
+     printf("\t--force-removal-of-dependent-packages\n");
+     printf("\t			Remove package and all dependencies\n");
+     printf("\t--autoremove		Remove packages that were installed\n");
+     printf("\t			automatically to satisfy dependencies\n");
+     printf("\t-t			Specify tmp-dir.\n");
+     printf("\t--tmp-dir		Specify tmp-dir.\n");
+
      printf("\n");
-     printf("\tregexp could be something like 'pkgname*' '*file*' or similar\n");
-     printf("\teg: opkg info 'libstd*'  or opkg search '*libop*' or opkg remove 'libncur*'\n");
+
+     printf(" regexp could be something like 'pkgname*' '*file*' or similar\n");
+     printf(" e.g. opkg info 'libstd*' or opkg search '*libop*' or opkg remove 'libncur*'\n");
      /* -force-removal-of-essential-packages	Let opkg remove essential packages. 
 	Using this option is almost guaranteed to break your system, hence this option
 	is not even advertised in the usage statement. */
