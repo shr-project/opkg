@@ -85,7 +85,7 @@ int opkg_install_from_file(opkg_conf_t *conf, const char *filename)
 
      pkg = pkg_new();
 
-     err = pkg_init_from_file(pkg, filename);
+     err = pkg_init_from_file(conf, pkg, filename);
      if (err) {
 	  return err;
      }

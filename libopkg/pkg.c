@@ -301,7 +301,7 @@ void pkg_deinit(pkg_t *pkg)
 }
 
 int
-pkg_init_from_file(pkg_t *pkg, const char *filename)
+pkg_init_from_file(opkg_conf_t *conf, pkg_t *pkg, const char *filename)
 {
 	int fd, err = 0;
 	FILE *control_file;
@@ -311,7 +311,9 @@ pkg_init_from_file(pkg_t *pkg, const char *filename)
 
 	pkg->local_filename = xstrdup(filename);
 
-	sprintf_alloc(&control_path, "%s.control.XXXXXX", filename);
+	sprintf_alloc(&control_path, "%s/%s.control.XXXXXX", 
+                        conf->tmp_dir,
+                        basename(filename));
 	fd = mkstemp(control_path);
 	if (fd == -1) {
 		perror_msg("%s: mkstemp(%s)", __FUNCTION__, control_path);
