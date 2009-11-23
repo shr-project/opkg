@@ -138,6 +138,7 @@ int args_parse(args_t *args, int argc, char *argv[])
 	  {"offline-root-path", 1, 0, 'p'},
 	  {"test", 0, 0, ARGS_OPT_NOACTION},
 	  {"tmp-dir", 1, 0, 't'},
+	  {"tmp_dir", 1, 0, 't'},
 	  {"verbosity", 2, 0, 'V'},
 	  {"version", 0, 0, 'v'},
 	  {0, 0, 0, 0}

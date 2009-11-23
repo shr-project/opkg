@@ -71,6 +71,7 @@ void opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options)
 	  { "proxy_passwd", OPKG_OPT_TYPE_STRING, &conf->proxy_passwd },
 	  { "proxy_user", OPKG_OPT_TYPE_STRING, &conf->proxy_user },
 	  { "query-all", OPKG_OPT_TYPE_BOOL, &conf->query_all },
+	  { "tmp_dir", OPKG_OPT_TYPE_STRING, &conf->tmp_dir },
 	  { "verbosity", OPKG_OPT_TYPE_BOOL, &conf->verbosity },
 #if defined(HAVE_OPENSSL)
 	  { "signature_ca_file", OPKG_OPT_TYPE_STRING, &conf->signature_ca_file },
@@ -119,7 +120,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 {
      int err;
      int errno_copy;
-     char *tmp_dir_base;
+     char *tmp_dir_base, *tmp2;
      nv_pair_list_t tmp_dest_nv_pair_list;
      char *lock_file = NULL;
      glob_t globbuf;
@@ -198,6 +199,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 			       args->offline_root_post_script_cmd);
 
      opkg_conf_override_string(&conf->cache, args->cache);
+     opkg_conf_override_string(&conf->tmp_dir, args->tmp_dir);
 
      /* check for lock file */
      if (conf->offline_root)
@@ -218,18 +220,20 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
      }
      free(lock_file);
 
-     if (args->tmp_dir)
-	  tmp_dir_base = args->tmp_dir;
+     if (conf->tmp_dir)
+	  tmp_dir_base = conf->tmp_dir;
      else 
 	  tmp_dir_base = getenv("TMPDIR");
-     sprintf_alloc(&conf->tmp_dir, "%s/%s",
+     sprintf_alloc(&tmp2, "%s/%s",
 		   tmp_dir_base ? tmp_dir_base : OPKG_CONF_DEFAULT_TMP_DIR_BASE,
 		   OPKG_CONF_TMP_DIR_SUFFIX);
-     conf->tmp_dir = mkdtemp(conf->tmp_dir);
+     if (conf->tmp_dir)
+	     free(conf->tmp_dir);
+     conf->tmp_dir = mkdtemp(tmp2);
      if (conf->tmp_dir == NULL) {
 	  opkg_message(conf, OPKG_ERROR,
 			  "%s: Creating temp dir %s failed: %s\n",
-			  conf->tmp_dir, strerror(errno));
+			  __FUNCTION__, tmp2, strerror(errno));
 	  return OPKG_CONF_ERR_TMP_DIR;
      }
 
