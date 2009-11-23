@@ -1,6 +1,6 @@
 /* opkglib.c - the opkg package management system
 
-   Florina Boor
+   Florian Boor
 
    Copyright (C) 2003 kernel concepts
 

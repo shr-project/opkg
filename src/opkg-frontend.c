@@ -1,6 +1,6 @@
 /* opkg-frontend.c - the itsy package management system
 
-   Florina Boor
+   Florian Boor
 
    Copyright (C) 2003 kernel concepts
 
