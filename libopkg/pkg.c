@@ -578,7 +578,7 @@ void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
                         fprintf(fp, "%s %s", i == 0 ? "" : ",",
 				cdep->pkg->name);
 			if (cdep->version) {
-				fprintf(fp, "(%s%s)",
+				fprintf(fp, " (%s%s)",
 					constraint_to_str(cdep->constraint),
 					cdep->version);
 			}
