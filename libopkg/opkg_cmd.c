@@ -849,7 +849,6 @@ static int opkg_remove_cmd(opkg_conf_t *conf, int argc, char **argv)
      pkg_t *pkg;
      pkg_t *pkg_to_remove;
      pkg_vec_t *available;
-     char *pkg_name = NULL;
      global_conf = conf;
      signal(SIGINT, sigint_handler);
 
@@ -862,11 +861,9 @@ static int opkg_remove_cmd(opkg_conf_t *conf, int argc, char **argv)
         available = pkg_vec_alloc();
         pkg_hash_fetch_all_installed(&conf->pkg_hash, available);
         for (i=0; i < argc; i++) {
-           pkg_name = xcalloc(1, strlen(argv[i])+2);
-           strcpy(pkg_name,argv[i]);
            for (a=0; a < available->len; a++) {
                pkg = available->pkgs[a];
-	       if (pkg_name && fnmatch(pkg_name, pkg->name, 0)) {
+	       if (fnmatch(argv[i], pkg->name, 0)) {
                   continue;
                }
                if (conf->restrict_to_default_dest) {
@@ -888,7 +885,6 @@ static int opkg_remove_cmd(opkg_conf_t *conf, int argc, char **argv)
                opkg_remove_pkg(conf, pkg_to_remove,0);
                done = 1;
            }
-           free (pkg_name);
         }
         pkg_vec_free(available);
      } else {
