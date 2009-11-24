@@ -326,12 +326,6 @@ int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)
      return 0;
 }
 
-int opkg_purge_pkg(opkg_conf_t *conf, pkg_t *pkg)
-{
-    opkg_remove_pkg(conf, pkg,0);
-    return 0;
-}
-
 int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
 {
      str_list_t installed_dirs;

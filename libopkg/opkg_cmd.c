@@ -52,7 +52,6 @@ static int opkg_install_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_list_installed_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_list_upgradable_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_remove_cmd(opkg_conf_t *conf, int argc, char **argv);
-static int opkg_purge_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_flag_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_files_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_search_cmd(opkg_conf_t *conf, int argc, char **argv);
@@ -85,7 +84,6 @@ static opkg_cmd_t cmds[] = {
      {"status", 0, (opkg_cmd_fun_t)opkg_status_cmd},
      {"install", 1, (opkg_cmd_fun_t)opkg_install_cmd},
      {"remove", 1, (opkg_cmd_fun_t)opkg_remove_cmd},
-     {"purge", 1, (opkg_cmd_fun_t)opkg_purge_cmd},
      {"configure", 0, (opkg_cmd_fun_t)opkg_configure_cmd},
      {"files", 1, (opkg_cmd_fun_t)opkg_files_cmd},
      {"search", 1, (opkg_cmd_fun_t)opkg_search_cmd},
@@ -850,37 +848,6 @@ static int opkg_remove_cmd(opkg_conf_t *conf, int argc, char **argv)
 
      if (done == 0)
         opkg_message(conf, OPKG_NOTICE, "No packages removed.\n");
-
-     write_status_files_if_changed(conf);
-     return 0;
-}
-
-static int opkg_purge_cmd(opkg_conf_t *conf, int argc, char **argv)
-{
-     int i;
-     pkg_t *pkg;
-
-     global_conf = conf;
-     signal(SIGINT, sigint_handler);
-
-     pkg_info_preinstall_check(conf);
-
-     for (i=0; i < argc; i++) {
-	  if (conf->restrict_to_default_dest) {
-	       pkg = pkg_hash_fetch_installed_by_name_dest(&conf->pkg_hash,
-							   argv[i],
-							   conf->default_dest);
-	  } else {
-	       pkg = pkg_hash_fetch_installed_by_name(&conf->pkg_hash, argv[i]);
-	  }
-
-	  if (pkg == NULL) {
-	       opkg_message(conf, OPKG_ERROR,
-			    "Package %s is not installed.\n", argv[i]);
-	       continue;
-	  }
-	  opkg_purge_pkg(conf, pkg);
-     }
 
      write_status_files_if_changed(conf);
      return 0;
