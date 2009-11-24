@@ -935,61 +935,52 @@ static int opkg_files_cmd(opkg_conf_t *conf, int argc, char **argv)
 
 static int opkg_depends_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
+	int i, j, k;
+	int depends_count;
+	pkg_vec_t *available_pkgs;
+	compound_depend_t *cdep;
+	pkg_t *pkg;
+	char *str;
 
-     if (argc > 0) {
-	  pkg_vec_t *available_pkgs = pkg_vec_alloc();
-	  const char *rel_str = "depends on";
-	  int i;
-     
-	  pkg_info_preinstall_check(conf);
+	pkg_info_preinstall_check(conf);
 
-	  if (conf->query_all)
+	available_pkgs = pkg_vec_alloc();
+	if (conf->query_all)
 	       pkg_hash_fetch_available(&conf->pkg_hash, available_pkgs);
-	  else
+	else
 	       pkg_hash_fetch_all_installed(&conf->pkg_hash, available_pkgs);
-	  for (i = 0; i < argc; i++) {
-	       const char *target = argv[i];
-	       int j;
 
-	       opkg_message(conf, OPKG_NOTICE, "target=%s\n", target);
+	for (i=0; i<argc; i++) {
+		for (j=0; j<available_pkgs->len; j++) {
+			pkg = available_pkgs->pkgs[j];
 
-	       for (j = 0; j < available_pkgs->len; j++) {
-		    pkg_t *pkg = available_pkgs->pkgs[j];
-		    if (fnmatch(target, pkg->name, 0) == 0) {
-			 int k;
-			 int count = pkg->depends_count + pkg->pre_depends_count;
-			 opkg_message(conf, OPKG_NOTICE, "What %s (arch=%s) %s\n",
-				      target, pkg->architecture, rel_str);
-			 for (k = 0; k < count; k++) {
-			      compound_depend_t *cdepend = &pkg->depends[k];
-			      int l;
-			      for (l = 0; l < cdepend->possibility_count; l++) {
-				   depend_t *possibility = cdepend->possibilities[l];
-				   opkg_message(conf, OPKG_NOTICE, "    %s", possibility->pkg->name);
-				   if (conf->verbosity >= OPKG_NOTICE) {
-					if (possibility->version) {
-					     char *typestr = NULL;
-					     opkg_message(conf, OPKG_NOTICE, " %s", possibility->version);
-					     switch (possibility->constraint) {
-					     case NONE: typestr = "none"; break;
-					     case EARLIER: typestr = "<"; break;
-					     case EARLIER_EQUAL: typestr = "<="; break;
-					     case EQUAL: typestr = "="; break;
-					     case LATER_EQUAL: typestr = ">="; break;
-					     case LATER: typestr = ">"; break;
-					     }
-					     opkg_message(conf, OPKG_NOTICE, " (%s %s)", typestr, possibility->version);
-					}
-				   }
-				   opkg_message(conf, OPKG_NOTICE, "\n");
-			      }
-			 }
-		    }
+			if (fnmatch(argv[i], pkg->name, 0) != 0)
+				continue;
+
+			depends_count = pkg->depends_count +
+					pkg->pre_depends_count +
+					pkg->recommends_count +
+					pkg->suggests_count;
+
+			opkg_message(conf, OPKG_NOTICE, "%s depends on:\n",
+				      pkg->name);
+
+			for (k=0; k<depends_count; k++) {
+				cdep = &pkg->depends[k];
+
+				if (cdep->type != DEPEND)
+				      continue;
+
+				str = pkg_depend_str(pkg, k);
+				opkg_message(conf, OPKG_NOTICE, "\t%s\n", str);
+				free(str);
+			}
+
 	       }
-	  }
-	  pkg_vec_free(available_pkgs);
-     }
-     return 0;
+	}
+
+	pkg_vec_free(available_pkgs);
+	return 0;
 }
 
 enum what_field_type {
@@ -1003,105 +994,114 @@ enum what_field_type {
 
 static int opkg_what_depends_conflicts_cmd(opkg_conf_t *conf, enum depend_type what_field_type, int recursive, int argc, char **argv)
 {
+	depend_t *possibility;
+	compound_depend_t *cdep;
+	pkg_vec_t *available_pkgs;
+	pkg_t *pkg;
+	int i, j, k, l;
+	int changed, count;
+	const char *rel_str = NULL;
+	char *ver;
 
-     if (argc > 0) {
-	  pkg_vec_t *available_pkgs = pkg_vec_alloc();
-	  const char *rel_str = NULL;
-	  int i;
-	  int changed;
-
-	  switch (what_field_type) {
-	  case DEPEND: rel_str = "depends on"; break;
-	  case CONFLICTS: rel_str = "conflicts with"; break;
-	  case SUGGEST: rel_str = "suggests"; break;
-	  case RECOMMEND: rel_str = "recommends"; break;
-	  default: return -1;
-	  }
+	switch (what_field_type) {
+	case DEPEND: rel_str = "depends on"; break;
+	case CONFLICTS: rel_str = "conflicts with"; break;
+	case SUGGEST: rel_str = "suggests"; break;
+	case RECOMMEND: rel_str = "recommends"; break;
+	default: return -1;
+	}
      
-	  if (conf->query_all)
+	available_pkgs = pkg_vec_alloc();
+
+	if (conf->query_all)
 	       pkg_hash_fetch_available(&conf->pkg_hash, available_pkgs);
-	  else
+	else
 	       pkg_hash_fetch_all_installed(&conf->pkg_hash, available_pkgs);
 
-	  /* mark the root set */
-	  pkg_vec_clear_marks(available_pkgs);
-	  opkg_message(conf, OPKG_NOTICE, "Root set:\n");
-	  for (i = 0; i < argc; i++) {
-	       const char *dependee_pattern = argv[i];
-	       pkg_vec_mark_if_matches(available_pkgs, dependee_pattern);
-	  }
-	  for (i = 0; i < available_pkgs->len; i++) {
-	       pkg_t *pkg = available_pkgs->pkgs[i];
+	/* mark the root set */
+	pkg_vec_clear_marks(available_pkgs);
+	opkg_message(conf, OPKG_NOTICE, "Root set:\n");
+	for (i = 0; i < argc; i++)
+	       pkg_vec_mark_if_matches(available_pkgs, argv[i]);
+
+	for (i = 0; i < available_pkgs->len; i++) {
+	       pkg = available_pkgs->pkgs[i];
 	       if (pkg->state_flag & SF_MARKED) {
 		    /* mark the parent (abstract) package */
 		    pkg_mark_provides(pkg);
 		    opkg_message(conf, OPKG_NOTICE, "  %s\n", pkg->name);
 	       }
-	  }
+	}
 
-	  opkg_message(conf, OPKG_NOTICE, "What %s root set\n", rel_str);
-	  do {
-	       int j;
-	       changed = 0;
+	opkg_message(conf, OPKG_NOTICE, "What %s root set\n", rel_str);
+	do {
+		changed = 0;
 
-	       for (j = 0; j < available_pkgs->len; j++) {
-		    pkg_t *pkg = available_pkgs->pkgs[j];
-		    int k;
-		    int count = ((what_field_type == CONFLICTS)
+		for (j=0; j<available_pkgs->len; j++) {
+
+			pkg = available_pkgs->pkgs[j];
+			count = ((what_field_type == CONFLICTS)
 				 ? pkg->conflicts_count
-				 : pkg->pre_depends_count + pkg->depends_count + pkg->recommends_count + pkg->suggests_count);
-		    /* skip this package if it is already marked */
-		    if (pkg->parent->state_flag & SF_MARKED) {
-			 continue;
-		    }
-		    for (k = 0; k < count; k++) {
-			 compound_depend_t *cdepend = 
-			      (what_field_type == CONFLICTS) ? &pkg->conflicts[k] : &pkg->depends[k];
-			 int l;
-			 if (what_field_type != cdepend->type)
-				 continue;
-			 for (l = 0; l < cdepend->possibility_count; l++) {
-			      depend_t *possibility = cdepend->possibilities[l];
-			      if (possibility->pkg->state_flag & SF_MARKED) {
-				   /* mark the depending package so we won't visit it again */
-				   pkg->state_flag |= SF_MARKED;
-				   pkg_mark_provides(pkg);
-				   changed++;
+				 : pkg->pre_depends_count +
+				 pkg->depends_count +
+				 pkg->recommends_count +
+				 pkg->suggests_count);
 
-				   if (conf->verbosity >= OPKG_NOTICE) {
-					char *ver = pkg_version_str_alloc(pkg); 
-				        opkg_message(conf, OPKG_NOTICE, "    %s", pkg->name);
-					opkg_message(conf, OPKG_NOTICE, " %s", ver);
-					opkg_message(conf, OPKG_NOTICE, "\t%s %s", rel_str, possibility->pkg->name);
-					if (possibility->version) {
-					     char *typestr = NULL;
-					     switch (possibility->constraint) {
-					     case NONE: typestr = "none"; break;
-					     case EARLIER: typestr = "<"; break;
-					     case EARLIER_EQUAL: typestr = "<="; break;
-					     case EQUAL: typestr = "="; break;
-					     case LATER_EQUAL: typestr = ">="; break;
-					     case LATER: typestr = ">"; break;
-					     }
-					     opkg_message(conf, OPKG_NOTICE, " (%s %s)", typestr, possibility->version);
-					}
+			/* skip this package if it is already marked */
+			if (pkg->parent->state_flag & SF_MARKED)
+				continue;
+
+			for (k=0; k<count; k++) {
+				cdep = (what_field_type == CONFLICTS)
+					? &pkg->conflicts[k]
+					: &pkg->depends[k];
+
+				if (what_field_type != cdep->type)
+					continue;
+
+				for (l=0; l<cdep->possibility_count; l++) {
+					possibility = cdep->possibilities[l];
+
+					if ((possibility->pkg->state_flag
+								& SF_MARKED)
+							!= SF_MARKED)
+						continue;
+					
+					/* mark the depending package so we
+					* won't visit it again */
+					pkg->state_flag |= SF_MARKED;
+					pkg_mark_provides(pkg);
+					changed++;
+
+					ver = pkg_version_str_alloc(pkg); 
+				        opkg_message(conf, OPKG_NOTICE,
+							"\t%s %s\t%s %s",
+							pkg->name,
+							ver,
+							rel_str,
+							possibility->pkg->name);
 					free(ver);
+					if (possibility->version) {
+						opkg_message(conf, OPKG_NOTICE,
+							" (%s%s)",
+							constraint_to_str(possibility->constraint),
+							possibility->version);
+					}
 					if (!pkg_dependence_satisfiable(conf, possibility))
-					     opkg_message(conf, OPKG_NOTICE, " unsatisfiable");
-				   }
-				   opkg_message(conf, OPKG_NOTICE, "\n");
-				   goto next_package;
-			      }
-			 }
-		    }
-	       next_package:
-		    ;
-	       }
-	  } while (changed && recursive);
-	  pkg_vec_free(available_pkgs);
-     }
+						opkg_message(conf, OPKG_NOTICE,
+							" unsatisfiable");
+					opkg_message(conf, OPKG_NOTICE, "\n");
+					goto next_package;
+				}
+			}
+next_package:
+			;
+		}
+	} while (changed && recursive);
 
-     return 0;
+	pkg_vec_free(available_pkgs);
+
+	return 0;
 }
 
 static int pkg_mark_provides(pkg_t *pkg)
