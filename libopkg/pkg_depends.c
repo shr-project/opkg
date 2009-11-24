@@ -726,7 +726,7 @@ pkg_depend_str(pkg_t *pkg, int index)
 
 		len += strlen(dep->pkg->name);
 
-		if (dep->constraint != NONE) {
+		if (dep->version) {
 			len += 2; /* space, left parenthesis */
 			len += 3; /* constraint string (<=, >=, etc), space */
 			len += strlen(dep->version);
@@ -745,7 +745,7 @@ pkg_depend_str(pkg_t *pkg, int index)
 
 		strncat(str, dep->pkg->name, len);
 
-		if (dep->constraint != NONE) {
+		if (dep->version) {
 			strncat(str, " (", len);
 			strncat(str, constraint_to_str(dep->constraint), len);
 			strncat(str, dep->version, len);
