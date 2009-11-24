@@ -29,20 +29,10 @@ const char *applet_name = "opkg";
 
 int pkg_extract_control_file_to_stream(pkg_t *pkg, FILE *stream)
 {
-    char *buffer = deb_extract(pkg->local_filename, stderr,
+    deb_extract(pkg->local_filename, stream,
 			       extract_control_tar_gz
-			       | extract_one_to_buffer,
+			       | extract_to_stdout, /* to stream actually */
 			       NULL, "./control");
-    if (buffer == NULL) {
-	return EINVAL;
-    }
-
-    if (fputs(buffer, stream) == EOF) {
-	free(buffer);
-	return EINVAL;
-    }
-
-    free(buffer);
 
     return 0;
 }
