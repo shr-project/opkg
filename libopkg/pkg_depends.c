@@ -647,26 +647,38 @@ void buildDepends(hash_table_t * hash, pkg_t * pkg)
 
      for(i = 0; i < pkg->pre_depends_count; i++){
 	  parseDepends(depends, hash, pkg->pre_depends_str[i]);
+	  free(pkg->pre_depends_str[i]);
 	  depends->type = PREDEPEND;
 	  depends++;
      }
+     if (pkg->pre_depends_str)
+	     free(pkg->pre_depends_str);
 
      for(i = 0; i < pkg->depends_count; i++){
 	  parseDepends(depends, hash, pkg->depends_str[i]);
+	  free(pkg->depends_str[i]);
 	  depends++;
      }
+     if (pkg->depends_str)
+	     free(pkg->depends_str);
 
      for(i = 0; i < pkg->recommends_count; i++){
 	  parseDepends(depends, hash, pkg->recommends_str[i]);
+	  free(pkg->recommends_str[i]);
 	  depends->type = RECOMMEND;
 	  depends++;
      }
+     if(pkg->recommends_str)
+	  free(pkg->recommends_str);
 
      for(i = 0; i < pkg->suggests_count; i++){
 	  parseDepends(depends, hash, pkg->suggests_str[i]);
+	  free(pkg->suggests_str[i]);
 	  depends->type = SUGGEST;
 	  depends++;
      }
+     if(pkg->suggests_str)
+	  free(pkg->suggests_str);
 }
 
 const char*

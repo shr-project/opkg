@@ -203,21 +203,6 @@ void pkg_deinit(pkg_t *pkg)
 		free (pkg->replaces);
 	pkg->replaces = NULL;
 
-	for (i = 0; i < pkg->depends_count; i++)
-		free (pkg->depends_str[i]);
-	free(pkg->depends_str);
-	pkg->depends_str = NULL;
-
-	for (i = 0; i < pkg->recommends_count; i++)
-		free (pkg->recommends_str[i]);
-	free(pkg->recommends_str);
-	pkg->recommends_str = NULL;
-
-	for (i = 0; i < pkg->suggests_count; i++)
-		free (pkg->suggests_str[i]);
-	free(pkg->suggests_str);
-	pkg->suggests_str = NULL;
-
 	if (pkg->depends) {
 		int count = pkg->pre_depends_count
 				+ pkg->depends_count
@@ -239,10 +224,6 @@ void pkg_deinit(pkg_t *pkg)
 		free (pkg->provides);
 
 	pkg->pre_depends_count = 0;
-	if (pkg->pre_depends_str)
-		free(pkg->pre_depends_str);
-	pkg->pre_depends_str = NULL;
-	
 	pkg->provides_count = 0;
 	
 	if (pkg->filename)
@@ -390,27 +371,19 @@ int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
 	  oldpkg->state_flag |= newpkg->state_flag;
      }
 
-     if (!oldpkg->depends_str && !oldpkg->pre_depends_str && !oldpkg->recommends_str && !oldpkg->suggests_str) {
-	  oldpkg->depends_str = newpkg->depends_str;
-	  newpkg->depends_str = NULL;
+     if (!oldpkg->depends_count && !oldpkg->pre_depends_count && !oldpkg->recommends_count && !oldpkg->suggests_count) {
 	  oldpkg->depends_count = newpkg->depends_count;
 	  newpkg->depends_count = 0;
 
 	  oldpkg->depends = newpkg->depends;
 	  newpkg->depends = NULL;
 
-	  oldpkg->pre_depends_str = newpkg->pre_depends_str;
-	  newpkg->pre_depends_str = NULL;
 	  oldpkg->pre_depends_count = newpkg->pre_depends_count;
 	  newpkg->pre_depends_count = 0;
 
-	  oldpkg->recommends_str = newpkg->recommends_str;
-	  newpkg->recommends_str = NULL;
 	  oldpkg->recommends_count = newpkg->recommends_count;
 	  newpkg->recommends_count = 0;
 
-	  oldpkg->suggests_str = newpkg->suggests_str;
-	  newpkg->suggests_str = NULL;
 	  oldpkg->suggests_count = newpkg->suggests_count;
 	  newpkg->suggests_count = 0;
      }
@@ -532,7 +505,12 @@ void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){
 
 void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
 {
-     int i;
+     int i, j;
+     char *str;
+     int depends_count = pkg->pre_depends_count +
+			 pkg->depends_count +
+			 pkg->recommends_count +
+			 pkg->suggests_count;
 
      if (strlen(field) < PKG_MINIMUM_FIELD_NAME_LEN) {
 	  goto UNKNOWN_FMT_FIELD;
@@ -594,10 +572,13 @@ void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
 	  if (strcasecmp(field, "Depends") == 0) {
 	       if (pkg->depends_count) {
                     fprintf(fp, "Depends:");
-		    for(i = 0; i < pkg->depends_count; i++) {
-			char *str = pkg_depend_str(pkg, i);
-			fprintf(fp, "%s %s", i == 0 ? "" : ",", str);
+		    for (j=0, i=0; i<depends_count; i++) {
+			if (pkg->depends[i].type != DEPEND)
+				continue;
+			str = pkg_depend_str(pkg, i);
+			fprintf(fp, "%s %s", j == 0 ? "" : ",", str);
 			free(str);
+			j++;
                     }
 		    fprintf(fp, "\n");
 	       }
@@ -676,8 +657,13 @@ void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
 	  } else if (strcasecmp (field, "Recommends") == 0) {
 	       if (pkg->recommends_count) {
                     fprintf(fp, "Recommends:");
-		    for(i = 0; i < pkg->recommends_count; i++) {
-                        fprintf(fp, "%s %s", i == 0 ? "" : ",", pkg->recommends_str[i]);
+		    for (j=0, i=0; i<depends_count; i++) {
+			if (pkg->depends[i].type != RECOMMEND)
+				continue;
+			str = pkg_depend_str(pkg, i);
+			fprintf(fp, "%s %s", j == 0 ? "" : ",", str);
+			free(str);
+			j++;
                     }
                     fprintf(fp, "\n");
 	       }
@@ -721,8 +707,13 @@ void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
 	  } else if (strcasecmp(field, "Suggests") == 0) {
 	       if (pkg->suggests_count) {
                     fprintf(fp, "Suggests:");
-		    for(i = 0; i < pkg->suggests_count; i++) {
-                        fprintf(fp, "%s %s", i == 0 ? "" : ",", pkg->suggests_str[i]);
+		    for (j=0, i=0; i<depends_count; i++) {
+			if (pkg->depends[i].type != SUGGEST)
+				continue;
+			str = pkg_depend_str(pkg, i);
+			fprintf(fp, "%s %s", j == 0 ? "" : ",", str);
+			free(str);
+			j++;
                     }
                     fprintf(fp, "\n");
 	       }
