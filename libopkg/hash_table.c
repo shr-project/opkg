@@ -69,7 +69,7 @@ hash_print_stats(hash_table_t *hash)
 		"\tmax_bucket_len=%d, n_used_buckets=%d, ave_bucket_len=%.2f\n"
 		"\tn_hits=%d, n_misses=%d\n",
 		hash->name,
-		hash->n_buckets*sizeof(hash_entry_t),
+		hash->n_buckets*(int)sizeof(hash_entry_t),
 		hash->n_buckets,
 		hash->n_elements,
 		hash->n_collisions,
