@@ -3,12 +3,17 @@ AC_INIT(libopkg/libopkg.c)
 
 AC_CONFIG_AUX_DIR([conf])
 AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIR([shave])
 
 AM_INIT_AUTOMAKE([opkg], [0.1.6])
 AM_CONFIG_HEADER(libopkg/config.h)
 
 AC_CANONICAL_HOST
 AC_GNU_SOURCE 
+
+# Disable C++/Fortran checks
+define([AC_LIBTOOL_LANG_CXX_CONFIG], [:])
+define([AC_LIBTOOL_LANG_F77_CONFIG], [:])
 
 
 for top_builddir in . .. ../.. $ac_auxdir $ac_auxdir/..; do
@@ -253,6 +258,9 @@ fi
 AC_SUBST(opkglibdir)
 AC_SUBST(opkgetcdir)
 
+# Setup output beautifier.
+SHAVE_INIT([shave], [enable])
+
 AC_OUTPUT(
     Makefile
     libopkg/Makefile
@@ -262,4 +270,6 @@ AC_OUTPUT(
     utils/Makefile
     utils/update-alternatives
     libopkg.pc
+    shave/shave
+    shave/shave-libtool
     )

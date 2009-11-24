@@ -1,4 +1,7 @@
+ACLOCAL_AMFLAGS = -I shave
+
 SUBDIRS = libbb libopkg src tests utils
+
 
 HOST_CPU=@host_cpu@
 BUILD_CPU=@build_cpu@
