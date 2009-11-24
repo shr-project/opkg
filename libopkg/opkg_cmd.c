@@ -845,91 +845,51 @@ static int opkg_install_pending_cmd(opkg_conf_t *conf, int argc, char **argv)
 
 static int opkg_remove_cmd(opkg_conf_t *conf, int argc, char **argv)
 {
-     int i,a,done;
+     int i, a, done;
      pkg_t *pkg;
      pkg_t *pkg_to_remove;
      pkg_vec_t *available;
+
      global_conf = conf;
+     done = 0;
+
      signal(SIGINT, sigint_handler);
 
-// ENH: Add the "no pkg removed" just in case.
-
-    done = 0;
-
      pkg_info_preinstall_check(conf);
-     if ( argc > 0 ) {
-        available = pkg_vec_alloc();
-        pkg_hash_fetch_all_installed(&conf->pkg_hash, available);
-        for (i=0; i < argc; i++) {
-           for (a=0; a < available->len; a++) {
-               pkg = available->pkgs[a];
-	       if (fnmatch(argv[i], pkg->name, 0)) {
-                  continue;
-               }
-               if (conf->restrict_to_default_dest) {
-	            pkg_to_remove = pkg_hash_fetch_installed_by_name_dest(&conf->pkg_hash,
-							        pkg->name,
-							        conf->default_dest);
-               } else {
-	            pkg_to_remove = pkg_hash_fetch_installed_by_name(&conf->pkg_hash, pkg->name );
-               }
+
+     available = pkg_vec_alloc();
+     pkg_hash_fetch_all_installed(&conf->pkg_hash, available);
+
+     for (i=0; i<argc; i++) {
+        for (a=0; a<available->len; a++) {
+            pkg = available->pkgs[a];
+	    if (fnmatch(argv[i], pkg->name, 0)) {
+               continue;
+            }
+            if (conf->restrict_to_default_dest) {
+	         pkg_to_remove = pkg_hash_fetch_installed_by_name_dest(&conf->pkg_hash,
+				        pkg->name,
+				        conf->default_dest);
+            } else {
+	         pkg_to_remove = pkg_hash_fetch_installed_by_name(&conf->pkg_hash, pkg->name );
+            }
         
-               if (pkg_to_remove == NULL) {
-	            opkg_message(conf, OPKG_ERROR, "Package %s is not installed.\n", pkg->name);
-	            continue;
-               }
-               if (pkg->state_status == SS_NOT_INSTALLED) {    // Added the control, so every already removed package could be skipped
-	            opkg_message(conf, OPKG_ERROR, "Package seems to be %s not installed (STATUS = NOT_INSTALLED).\n", pkg->name);
-                    continue;
-               }
-               opkg_remove_pkg(conf, pkg_to_remove,0);
-               done = 1;
-           }
+            if (pkg_to_remove == NULL) {
+	         opkg_message(conf, OPKG_ERROR, "Package %s is not installed.\n", pkg->name);
+	         continue;
+            }
+            if (pkg->state_status == SS_NOT_INSTALLED) {    // Added the control, so every already removed package could be skipped
+	         opkg_message(conf, OPKG_ERROR, "Package seems to be %s not installed (STATUS = NOT_INSTALLED).\n", pkg->name);
+                 continue;
+            }
+            opkg_remove_pkg(conf, pkg_to_remove, 0);
+            done = 1;
         }
-        pkg_vec_free(available);
-     } else {
-	  pkg_vec_t *installed_pkgs = pkg_vec_alloc();
-	  int i;
-	  int flagged_pkg_count = 0;
-	  int removed;
-
-	  pkg_hash_fetch_all_installed(&conf->pkg_hash, installed_pkgs);
-
-	  for (i = 0; i < installed_pkgs->len; i++) {
-	       pkg_t *pkg = installed_pkgs->pkgs[i];
-	       if (pkg->state_flag & SF_USER) {
-		    flagged_pkg_count++;
-	       } else {
-		    if (!pkg_has_installed_dependents(conf, pkg->parent, pkg, NULL))
-			 opkg_message(conf, OPKG_NOTICE, "Non-user leaf package: %s\n", pkg->name);
-	       }
-	  }
-	  if (!flagged_pkg_count) {
-	       opkg_message(conf, OPKG_NOTICE, "No packages flagged as installed by user, \n"
-			    "so refusing to uninstall unflagged non-leaf packages\n");
-	       return 0;
-	  }
-
-	  /* find packages not flagged SF_USER (i.e., installed to
-	   * satisfy a dependence) and not having any dependents, and
-	   * remove them */
-	  do {
-	       removed = 0;
-	       for (i = 0; i < installed_pkgs->len; i++) {
-		    pkg_t *pkg = installed_pkgs->pkgs[i];
-		    if (!(pkg->state_flag & SF_USER)
-			&& !pkg_has_installed_dependents(conf, pkg->parent, pkg, NULL)) {
-			 removed++;
-			 opkg_message(conf, OPKG_NOTICE, "Removing non-user leaf package %s\n");
-			 opkg_remove_pkg(conf, pkg,0);
-                         done = 1;
-		    }
-	       }
-	  } while (removed);
-	  pkg_vec_free(installed_pkgs);
      }
 
-     if ( done == 0 ) 
+     pkg_vec_free(available);
+
+     if (done == 0)
         opkg_message(conf, OPKG_NOTICE, "No packages removed.\n");
 
      write_status_files_if_changed(conf);
