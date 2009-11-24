@@ -550,14 +550,13 @@ char ** add_unresolved_dep(pkg_t * pkg, char ** the_lost, int ref_ndx)
 {
     int count;
     char ** resized;
-    char *depend_str = pkg_depend_str(pkg, ref_ndx);
 
     count = 0;
     while(the_lost && the_lost[count]) count++;
 
     count++;  /* need one to hold the null */
     resized = xrealloc(the_lost, sizeof(char *) * (count + 1));
-    resized[count - 1] = xstrdup(depend_str);
+    resized[count - 1] = pkg_depend_str(pkg, ref_ndx);
     resized[count] = NULL;
     
     return resized;
@@ -670,37 +669,79 @@ void buildDepends(hash_table_t * hash, pkg_t * pkg)
      }
 }
 
-/*
- * pkg_depend_string: returns the depends string specified by index.
- *   All 4 kinds of dependences: dependence, pre-dependence, recommend, and suggest are number starting from 0.
- *   [0,npredepends) -> returns pre_depends_str[index]
- *   [npredepends,npredepends+nrecommends) -> returns recommends_str[index]
- *   [npredepends+nrecommends,npredepends+nrecommends+nsuggests) -> returns recommends_str[index]
- *   [npredepends+nrecommends+nsuggests,npredepends+nrecommends+nsuggests+ndepends) -> returns depends_str[index]
- */
-char *pkg_depend_str(pkg_t *pkg, int index)
+const char*
+constraint_to_str(enum version_constraint c)
 {
-     if (index < pkg->pre_depends_count) {
-	  return pkg->pre_depends_str[index];
-     }
-     index -= pkg->pre_depends_count;
+	switch (c) {
+	case NONE:
+		return "";
+	case EARLIER:
+		return "< ";
+	case EARLIER_EQUAL:
+	       return "<= ";
+	case EQUAL:
+	       return "= ";
+	case LATER_EQUAL:
+	      return ">= ";
+	case LATER:
+	     return "> ";
+	}
 
-     if (index < pkg->depends_count) {
-	  return pkg->depends_str[index];
-     }
-     index -= pkg->depends_count;
+	return "";
+}
 
-     if (index < pkg->recommends_count) {
-	  return pkg->recommends_str[index];
-     }
-     index -= pkg->recommends_count;
+/*
+ * Returns a printable string for pkg's dependency at the specified index. The
+ * resultant string must be passed to free() by the caller.
+ */
+char *
+pkg_depend_str(pkg_t *pkg, int index)
+{
+	int i, len;
+	char *str;
+	compound_depend_t *cdep;
+	depend_t *dep;
 
-     if (index < pkg->suggests_count) {
-	  return pkg->suggests_str[index];
-     }
+	len = 0;
+	cdep = &pkg->depends[index];
 
-     fprintf(stderr, "pkg_depend_str: index %d out of range for pkg=%s\n", index, pkg->name);
-     return NULL;
+	/* calculate string length */
+	for (i=0; i<cdep->possibility_count; i++) {
+		dep = cdep->possibilities[i];
+
+		if (i != 0)
+			len += 3; /* space, pipe, space */
+
+		len += strlen(dep->pkg->name);
+
+		if (dep->constraint != NONE) {
+			len += 2; /* space, left parenthesis */
+			len += 3; /* constraint string (<=, >=, etc), space */
+			len += strlen(dep->version);
+			len += 1; /* right parenthesis */
+		}
+	}
+
+	str = xmalloc(len + 1); /* +1 for the NULL terminator */
+	str[0] = '\0';
+
+	for (i=0; i<cdep->possibility_count; i++) {
+		dep = cdep->possibilities[i];
+
+		if (i != 0)
+			strncat(str, " | ", len);
+
+		strncat(str, dep->pkg->name, len);
+
+		if (dep->constraint != NONE) {
+			strncat(str, " (", len);
+			strncat(str, constraint_to_str(dep->constraint), len);
+			strncat(str, dep->version, len);
+			strncat(str, ")", len);
+		}
+	}
+
+	return str;
 }
 
 /*

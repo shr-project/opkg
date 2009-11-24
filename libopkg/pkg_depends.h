@@ -88,5 +88,6 @@ int pkg_hash_fetch_unsatisfied_dependencies(opkg_conf_t *conf, pkg_t * pkg, pkg_
 pkg_vec_t * pkg_hash_fetch_conflicts(hash_table_t * hash, pkg_t * pkg);
 int pkg_dependence_satisfiable(opkg_conf_t *conf, depend_t *depend);
 int pkg_dependence_satisfied(opkg_conf_t *conf, depend_t *depend);
+const char* constraint_to_str(enum version_constraint c);
 
 #endif

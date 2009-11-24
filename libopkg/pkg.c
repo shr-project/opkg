@@ -530,27 +530,6 @@ void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){
      return;
 }
 
-const char*
-constraint_to_str(enum version_constraint c)
-{
-	switch (c) {
-	case NONE:
-		return "";
-	case EARLIER:
-		return "< ";
-	case EARLIER_EQUAL:
-	       return "<= ";
-	case EQUAL:
-	       return "= ";
-	case LATER_EQUAL:
-	      return ">= ";
-	case LATER:
-	     return "> ";
-	}
-
-	return "";
-}
-
 void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
 {
      int i;
@@ -616,7 +595,9 @@ void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
 	       if (pkg->depends_count) {
                     fprintf(fp, "Depends:");
 		    for(i = 0; i < pkg->depends_count; i++) {
-                        fprintf(fp, "%s %s", i == 0 ? "" : ",", pkg->depends_str[i]);
+			char *str = pkg_depend_str(pkg, i);
+			fprintf(fp, "%s %s", i == 0 ? "" : ",", str);
+			free(str);
                     }
 		    fprintf(fp, "\n");
 	       }
