@@ -251,8 +251,6 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
             conf->lists_dir = tmp;
      }
 
-     sprintf_alloc(&conf->pending_dir, "%s/pending", conf->lists_dir);
-
      /* if no architectures were defined, then default all, noarch, and host architecture */
      if (nv_pair_list_empty(&conf->arch_list)) {
 	  nv_pair_list_append(&conf->arch_list, "all", "1");
@@ -348,7 +346,6 @@ void opkg_conf_deinit(opkg_conf_t *conf)
 
      free(conf->tmp_dir);
      free(conf->lists_dir);
-     free(conf->pending_dir);
 
      pkg_src_list_deinit(&conf->pkg_src_list);
      pkg_dest_list_deinit(&conf->pkg_dest_list);

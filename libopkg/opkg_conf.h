@@ -31,7 +31,6 @@ typedef struct opkg_conf opkg_conf_t;
 #define OPKG_CONF_DEFAULT_TMP_DIR_BASE "/tmp"
 #define OPKG_CONF_TMP_DIR_SUFFIX "opkg-XXXXXX"
 #define OPKG_CONF_LISTS_DIR  OPKG_STATE_DIR_PREFIX "/lists"
-#define OPKG_CONF_PENDING_DIR OPKG_STATE_DIR_PREFIX "/pending"
 
 /* In case the config file defines no dest */
 #define OPKG_CONF_DEFAULT_DEST_NAME "root"
@@ -51,7 +50,6 @@ struct opkg_conf
 
      char *tmp_dir;
      char *lists_dir;
-     char *pending_dir;
 
      /* options */
      int autoremove;

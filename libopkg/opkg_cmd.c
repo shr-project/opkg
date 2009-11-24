@@ -48,7 +48,6 @@ static int opkg_upgrade_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_list_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_info_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_status_cmd(opkg_conf_t *conf, int argc, char **argv);
-static int opkg_install_pending_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_install_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_list_installed_cmd(opkg_conf_t *conf, int argc, char **argv);
 static int opkg_list_upgradable_cmd(opkg_conf_t *conf, int argc, char **argv);
@@ -84,8 +83,6 @@ static opkg_cmd_t cmds[] = {
      {"info", 0, (opkg_cmd_fun_t)opkg_info_cmd},
      {"flag", 1, (opkg_cmd_fun_t)opkg_flag_cmd},
      {"status", 0, (opkg_cmd_fun_t)opkg_status_cmd},
-     {"install_pending", 0, (opkg_cmd_fun_t)opkg_install_pending_cmd},
-     {"install-pending", 0, (opkg_cmd_fun_t)opkg_install_pending_cmd},
      {"install", 1, (opkg_cmd_fun_t)opkg_install_cmd},
      {"remove", 1, (opkg_cmd_fun_t)opkg_remove_cmd},
      {"purge", 1, (opkg_cmd_fun_t)opkg_purge_cmd},
@@ -801,44 +798,6 @@ static int opkg_configure_cmd(opkg_conf_t *conf, int argc, char **argv)
      }
 
      write_status_files_if_changed(conf);
-
-     return err;
-}
-
-static int opkg_install_pending_cmd(opkg_conf_t *conf, int argc, char **argv)
-{
-     int i, err;
-     char *globpattern;
-     glob_t globbuf;
-    
-     sprintf_alloc(&globpattern, "%s/*" OPKG_PKG_EXTENSION, conf->pending_dir);
-     err = glob(globpattern, 0, NULL, &globbuf);
-     free(globpattern);
-     if (err) {
-	  return 0;
-     }
-
-     opkg_message(conf, OPKG_NOTICE,
-		  "The following packages in %s will now be installed.\n",
-		  conf->pending_dir);
-     for (i = 0; i < globbuf.gl_pathc; i++) {
-	  opkg_message(conf, OPKG_NOTICE,
-		       "%s%s", i == 0 ? "" : " ", globbuf.gl_pathv[i]);
-     }
-     opkg_message(conf, OPKG_NOTICE, "\n");
-     for (i = 0; i < globbuf.gl_pathc; i++) {
-	  err = opkg_install_from_file(conf, globbuf.gl_pathv[i]);
-	  if (err == 0) {
-	       err = unlink(globbuf.gl_pathv[i]);
-	       if (err) {
-		    opkg_message(conf, OPKG_ERROR,
-				 "%s: ERROR: failed to unlink %s: %s\n",
-				 __FUNCTION__, globbuf.gl_pathv[i], strerror(err));
-		    return err;
-	       }
-	  }
-     }
-     globfree(&globbuf);
 
      return err;
 }
