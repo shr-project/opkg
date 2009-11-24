@@ -880,11 +880,15 @@ static int opkg_flag_cmd(opkg_conf_t *conf, int argc, char **argv)
               ( strcmp(flags,"user")==0)||( strcmp(flags,"ok")==0)) {
 	      pkg->state_flag = pkg_state_flag_from_str(flags);
           }
-/* pb_ asked this feature 03292004 */
-/* Actually I will use only this two, but this is an open for various status */
+
+	  /* 
+	   * Useful if a package is installed in an offline_root, and
+	   * should be configured by opkg-cl configure at a later date.
+	   */
           if (( strcmp(flags,"installed")==0)||( strcmp(flags,"unpacked")==0)){
 	      pkg->state_status = pkg_state_status_from_str(flags);
           }
+
 	  opkg_state_changed++;
 	  opkg_message(conf, OPKG_NOTICE,
 		       "Setting flags for package %s to %s\n",
