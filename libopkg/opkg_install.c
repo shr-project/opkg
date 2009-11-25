@@ -1477,13 +1477,10 @@ opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 				 "  removing obsolesced files\n");
 		    remove_obsolesced_files(conf, pkg, old_pkg);
 	       }
+
                /* removing files from old package, to avoid ghost files */ 
                remove_data_files_and_list(conf, old_pkg);
-/* Pigi : It should be better to remove also maintainer and postrem scripts here, just in case*/
-               remove_maintainer_scripts_except_postrm(conf, old_pkg);
-               remove_postrm(conf, old_pkg);
-/* Pigi */
-
+               remove_maintainer_scripts(conf, old_pkg);
 	  }
 
 

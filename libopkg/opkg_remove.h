@@ -22,11 +22,9 @@
 #include "opkg_conf.h"
 
 int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message);
-int possible_broken_removal_of_packages (opkg_conf_t *conf, pkg_t *pkg);
 int pkg_has_installed_dependents(opkg_conf_t *conf, abstract_pkg_t *parent_apkg, pkg_t *pkg, abstract_pkg_t *** pdependents);
-int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg);
-int remove_maintainer_scripts_except_postrm (opkg_conf_t *conf, pkg_t *pkg);
-int remove_postrm (opkg_conf_t *conf, pkg_t *pkg);
+void remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg);
+void remove_maintainer_scripts(opkg_conf_t *conf, pkg_t *pkg);
 
 
 #endif

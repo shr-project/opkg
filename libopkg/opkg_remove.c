@@ -33,7 +33,8 @@
  * Returns number of the number of packages depending on the packages provided by this package.
  * Every package implicitly provides itself.
  */
-int pkg_has_installed_dependents(opkg_conf_t *conf, abstract_pkg_t *parent_apkg, pkg_t *pkg, abstract_pkg_t *** pdependents)
+int
+pkg_has_installed_dependents(opkg_conf_t *conf, abstract_pkg_t *parent_apkg, pkg_t *pkg, abstract_pkg_t *** pdependents)
 {
      int nprovides = pkg->provides_count;
      abstract_pkg_t **provides = pkg->provides;
@@ -81,7 +82,8 @@ int pkg_has_installed_dependents(opkg_conf_t *conf, abstract_pkg_t *parent_apkg,
      return n_installed_dependents;
 }
 
-int opkg_remove_dependent_pkgs (opkg_conf_t *conf, pkg_t *pkg, abstract_pkg_t **dependents)
+static int
+opkg_remove_dependent_pkgs (opkg_conf_t *conf, pkg_t *pkg, abstract_pkg_t **dependents)
 {
     int i;
     int a;
@@ -145,7 +147,8 @@ int opkg_remove_dependent_pkgs (opkg_conf_t *conf, pkg_t *pkg, abstract_pkg_t **
     return err;
 }
 
-static int user_prefers_removing_dependents(opkg_conf_t *conf, abstract_pkg_t *abpkg, pkg_t *pkg, abstract_pkg_t **dependents)
+static void
+print_dependents_warning(opkg_conf_t *conf, abstract_pkg_t *abpkg, pkg_t *pkg, abstract_pkg_t **dependents)
 {
     abstract_pkg_t *dep_ab_pkg;
     opkg_message(conf, OPKG_ERROR, "Package %s is depended upon by packages:\n", pkg->name);
@@ -155,12 +158,9 @@ static int user_prefers_removing_dependents(opkg_conf_t *conf, abstract_pkg_t *a
     }
     opkg_message(conf, OPKG_ERROR, "These might cease to work if package %s is removed.\n\n", pkg->name);
     opkg_message(conf, OPKG_ERROR, "");
-    opkg_message(conf, OPKG_ERROR, "You can force removal of this package with -force-depends.\n");
+    opkg_message(conf, OPKG_ERROR, "You can force removal of this package with --force-depends.\n");
     opkg_message(conf, OPKG_ERROR, "You can force removal of this package and its dependents\n");
-    opkg_message(conf, OPKG_ERROR, "with -force-removal-of-dependent-packages or -recursive\n");
-    opkg_message(conf, OPKG_ERROR, "or by setting option force_removal_of_dependent_packages\n");
-    opkg_message(conf, OPKG_ERROR, "in opkg.conf.\n");
-    return 0;
+    opkg_message(conf, OPKG_ERROR, "with --force-removal-of-dependent-packages\n");
 }
 
 /*
@@ -222,16 +222,17 @@ remove_autoinstalled(opkg_conf_t *conf, pkg_t *pkg)
 	return 0;
 }
 
-int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)
+int
+opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 {
-/* Actually, when "message == 1" I have been called from an upgrade, and not from a normal remove
-   thus I wan't check for essential, as I'm upgrading.
-   I hope it won't break anything :) 
-*/
      int err;
      abstract_pkg_t *parent_pkg = NULL;
 
-     if (pkg->essential && !message) {
+/*
+ * If called from an upgrade and not from a normal remove,
+ * ignore the essential flag.
+ */
+     if (pkg->essential && !from_upgrade) {
 	  if (conf->force_removal_of_essential_packages) {
 	       fprintf(stderr, "WARNING: Removing essential package %s under your coercion.\n"
 		       "\tIf your system breaks, you get to keep both pieces\n",
@@ -240,7 +241,7 @@ int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)
 	       fprintf(stderr, "ERROR: Refusing to remove essential package %s.\n"
 		       "\tRemoving an essential package may lead to an unusable system, but if\n"
 		       "\tyou enjoy that kind of pain, you can force opkg to proceed against\n"
-		       "\tits will with the option: -force-removal-of-essential-packages\n",
+		       "\tits will with the option: --force-removal-of-essential-packages\n",
 		       pkg->name);
 	       return OPKG_PKG_IS_ESSENTIAL;
 	  }
@@ -261,12 +262,12 @@ int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)
 
 	  if (has_installed_dependents) {
 	       /*
-		* if this package is depended up by others, then either we should
+		* if this package is depended upon by others, then either we should
 		* not remove it or we should remove it and all of its dependents 
 		*/
 
-	       if (!conf->force_removal_of_dependent_packages
-		   && !user_prefers_removing_dependents(conf, parent_pkg, pkg, dependents)) {
+	       if (!conf->force_removal_of_dependent_packages) {
+		    print_dependents_warning(conf, parent_pkg, pkg, dependents);
 		    free(dependents);
 		    return OPKG_PKG_HAS_DEPENDENTS;
 	       }
@@ -282,10 +283,9 @@ int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)
               free(dependents);
      }
 
-     if ( message==0 ){
+     if (from_upgrade == 0) {
          opkg_message (conf, OPKG_NOTICE,
 	               "Removing package %s from %s...\n", pkg->name, pkg->dest->name);
-         fflush(stdout);
      }
      pkg->state_flag |= SF_FILELIST_CHANGED;
 
@@ -303,30 +303,21 @@ int opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg,int message)
 
      pkg_run_script(conf, pkg, "postrm", "remove");
 
-     remove_maintainer_scripts_except_postrm(conf, pkg);
-
-     /* Aman Gupta - Since opkg is made for handheld devices with limited
-      * space, it doesn't make sense to leave extra configurations, files, 
-      * and maintainer scripts left around. So, we make remove like purge, 
-      * and take out all the crap :) */
-
-     remove_postrm(conf, pkg);
+     remove_maintainer_scripts(conf, pkg);
      pkg->state_status = SS_NOT_INSTALLED;
 
      if (parent_pkg) 
 	  parent_pkg->state_status = SS_NOT_INSTALLED;
 
-
      /* remove autoinstalled packages that are orphaned by the removal of this one */
      if (conf->autoremove)
        remove_autoinstalled (conf, pkg);
 
-
-
      return 0;
 }
 
-int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
+void
+remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
 {
      str_list_t installed_dirs;
      str_list_t *installed_files;
@@ -354,15 +345,9 @@ int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
 
 	  conffile = pkg_get_conffile(pkg, file_name+rootdirlen);
 	  if (conffile) {
-	       /* XXX: QUESTION: Is this right? I figure we only need to
-		  save the conffile if it has been modified. Is that what
-		  dpkg does? Or does dpkg preserve all conffiles? If so,
-		  this seems like a better thing to do to conserve
-		  space. */
 	       if (conffile_has_been_modified(conf, conffile)) {
 		    opkg_message (conf, OPKG_NOTICE,
 		                  "  not deleting modified conffile %s\n", file_name);
-		    fflush(stdout);
 		    continue;
 	       }
 	  }
@@ -372,6 +357,7 @@ int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
 	       unlink(file_name);
      }
 
+     /* Remove empty directories */
      if (!conf->noaction) {
 	  do {
 	       removed_a_dir = 0;
@@ -388,8 +374,6 @@ int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
      }
 
      pkg_free_installed_files(pkg);
-     /* We have to remove the file list now, so that
-	find_pkg_owning_file does not always just report this package */
      pkg_remove_installed_files_list(conf, pkg);
 
      /* Don't print warning for dirs that are provided by other packages */
@@ -411,48 +395,30 @@ int remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
         free(iter);
      }
      str_list_deinit(&installed_dirs);
-
-     return 0;
 }
 
-int remove_maintainer_scripts_except_postrm(opkg_conf_t *conf, pkg_t *pkg)
+void
+remove_maintainer_scripts(opkg_conf_t *conf, pkg_t *pkg)
 {
-    int i, err;
-    char *globpattern;
-    glob_t globbuf;
-    
-    if (conf->noaction) return 0;
+	int i, err;
+	char *globpattern;
+	glob_t globbuf;
 
-    sprintf_alloc(&globpattern, "%s/%s.*",
-		  pkg->dest->info_dir, pkg->name);
-    err = glob(globpattern, 0, NULL, &globbuf);
-    free(globpattern);
-    if (err) {
-	return 0;
-    }
+	if (conf->noaction)
+		return;
 
-    for (i = 0; i < globbuf.gl_pathc; i++) {
-	if (str_ends_with(globbuf.gl_pathv[i], ".postrm")) {
-	    continue;
+	sprintf_alloc(&globpattern, "%s/%s.*",
+			pkg->dest->info_dir, pkg->name);
+
+	err = glob(globpattern, 0, NULL, &globbuf);
+	free(globpattern);
+	if (err)
+		return;
+
+	for (i = 0; i < globbuf.gl_pathc; i++) {
+		opkg_message(conf, OPKG_INFO, "deleting %s\n",
+				globbuf.gl_pathv[i]);
+		unlink(globbuf.gl_pathv[i]);
 	}
-        opkg_message(conf, OPKG_INFO, "  deleting %s\n", globbuf.gl_pathv[i]);
-	unlink(globbuf.gl_pathv[i]);
-    }
-    globfree(&globbuf);
-
-    return 0;
-}
-
-int remove_postrm(opkg_conf_t *conf, pkg_t *pkg)
-{
-    char *postrm_file_name;
-
-    if (conf->noaction) return 0;
-
-    sprintf_alloc(&postrm_file_name, "%s/%s.postrm",
-		  pkg->dest->info_dir, pkg->name);
-    unlink(postrm_file_name);
-    free(postrm_file_name);
-
-    return 0;
+	globfree(&globbuf);
 }
