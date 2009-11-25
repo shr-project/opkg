@@ -23,14 +23,6 @@
 #include "opkg_error.h"
 
 opkg_error_t opkg_install_by_name(opkg_conf_t *conf, const char *pkg_name);
-opkg_error_t opkg_install_multi_by_name(opkg_conf_t *conf, const char *pkg_name);
-int opkg_install_from_file(opkg_conf_t *conf, const char *filename);
-int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg,int from_upgrading);
-int satisfy_dependencies_for(opkg_conf_t *conf, pkg_t *pkg);
-
-int opkg_satisfy_all_dependences(opkg_conf_t *conf);
-
-int pkg_mark_dependencies_for_installation(opkg_conf_t *conf, pkg_t *pkg_name, pkg_vec_t *pkgs_needed);
-int name_mark_dependencies_for_installation(opkg_conf_t *conf, const char *pkg_name, pkg_vec_t *pkgs_needed);
+int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrading);
 
 #endif
