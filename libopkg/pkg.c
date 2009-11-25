@@ -75,17 +75,8 @@ static const enum_map_t pkg_state_status_map[] = {
 static int verrevcmp(const char *val, const char *ref);
 
 
-pkg_t *pkg_new(void)
-{
-     pkg_t *pkg;
-
-     pkg = xcalloc(1, sizeof(pkg_t));
-     pkg_init(pkg);
-
-     return pkg;
-}
-
-int pkg_init(pkg_t *pkg)
+static void
+pkg_init(pkg_t *pkg)
 {
      pkg->name = NULL;
      pkg->epoch = 0;
@@ -139,8 +130,16 @@ int pkg_init(pkg_t *pkg)
      pkg->installed_files_ref_cnt = 0;
      pkg->essential = 0;
      pkg->provided_by_hand = 0;
+}
 
-     return 0;
+pkg_t *pkg_new(void)
+{
+     pkg_t *pkg;
+
+     pkg = xcalloc(1, sizeof(pkg_t));
+     pkg_init(pkg);
+
+     return pkg;
 }
 
 void compound_depend_deinit (compound_depend_t *depends)
@@ -449,33 +448,22 @@ int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
      return 0;
 }
 
+static void
+abstract_pkg_init(abstract_pkg_t *ab_pkg)
+{
+     ab_pkg->provided_by = abstract_pkg_vec_alloc();
+     ab_pkg->dependencies_checked = 0;
+     ab_pkg->state_status = SS_NOT_INSTALLED;
+}
+
 abstract_pkg_t *abstract_pkg_new(void)
 {
      abstract_pkg_t * ab_pkg;
 
      ab_pkg = xcalloc(1, sizeof(abstract_pkg_t));
-
-     if (ab_pkg == NULL) {
-	  fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	  return NULL;
-     }
-
-     if ( abstract_pkg_init(ab_pkg) < 0 ) 
-        return NULL;
+     abstract_pkg_init(ab_pkg);
 
      return ab_pkg;
-}
-
-int abstract_pkg_init(abstract_pkg_t *ab_pkg)
-{
-     ab_pkg->provided_by = abstract_pkg_vec_alloc();
-     if (ab_pkg->provided_by==NULL){
-        return -1;
-     }
-     ab_pkg->dependencies_checked = 0;
-     ab_pkg->state_status = SS_NOT_INSTALLED;
-
-     return 0;
 }
 
 void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){

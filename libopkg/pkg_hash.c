@@ -609,7 +609,6 @@ static abstract_pkg_t * add_new_abstract_pkg_by_name(hash_table_t * hash, const 
   abstract_pkg_t * ab_pkg;
 
   ab_pkg = abstract_pkg_new();
-  if (ab_pkg == NULL) { return NULL; }
 
   ab_pkg->name = xstrdup(pkg_name);
   hash_table_insert(hash, pkg_name, ab_pkg);

@@ -188,11 +188,9 @@ struct pkg
 };
 
 pkg_t *pkg_new(void);
-int pkg_init(pkg_t *pkg);
 void pkg_deinit(pkg_t *pkg);
 int pkg_init_from_file(opkg_conf_t *conf, pkg_t *pkg, const char *filename);
 abstract_pkg_t *abstract_pkg_new(void);
-int abstract_pkg_init(abstract_pkg_t *ab_pkg);
 
 /* 
  * merges fields from newpkg into oldpkg.
