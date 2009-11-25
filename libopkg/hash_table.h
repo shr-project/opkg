@@ -40,7 +40,7 @@ struct hash_table {
   unsigned int n_hits, n_misses;
 };
 
-int hash_table_init(const char *name, hash_table_t *hash, int len);
+void hash_table_init(const char *name, hash_table_t *hash, int len);
 void hash_table_deinit(hash_table_t *hash);
 void hash_print_stats(hash_table_t *hash);
 void *hash_table_get(hash_table_t *hash, const char *key);

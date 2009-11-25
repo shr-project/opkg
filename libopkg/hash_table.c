@@ -43,13 +43,13 @@ hash_index(hash_table_t *hash, const char *key)
 /*
  * this is an open table keyed by strings
  */
-int
+void
 hash_table_init(const char *name, hash_table_t *hash, int len)
 {
 	if (hash->entries != NULL) {
 		fprintf(stderr, "ERROR: %s called on a non empty hash table\n",
 				__FUNCTION__);
-		return -1;
+		return;
 	}
 
 	memset(hash, 0, sizeof(hash_table_t));
@@ -57,8 +57,6 @@ hash_table_init(const char *name, hash_table_t *hash, int len)
 	hash->name = name;
 	hash->n_buckets = len;
 	hash->entries = xcalloc(hash->n_buckets, sizeof(hash_entry_t));
-
-	return 0;
 }
 
 void
