@@ -1,62 +1,46 @@
-Things to do for opkg, in a partial order:
 
-1) Bug fixes
-
-1.a) fix all code marked "XXX: BUG"
-
-1.b) fix all outstanding opkg bugzilla bugs
-
-1.c) Make sure Suggests, Recommends, (Enhances?), all work, (I know
-     some of these are not yet implemented)
-
-1.d) Audit all dpkg package fields for both parsing and printing support.
-
-1.e) "opkg status" and "opkg info" need to complain about unknown
-  packages. For that matter, these two commands should probably just
-  become aliases to the same functionality.
+See issue list: http://code.google.com/p/opkg/issues/list
 
 
-2) Implement new features
+ * Regression test suite.
 
-2.a) start with all "XXX: FEATURE" comments
+ * Fix comments marked "XXX".
 
-2.b) implement all accepted opkg bugzilla feature requests, (also
-     check old post "Subject: Reinventing opkg" to see if we forgot
-     any of the good ideas we had once upon a time)
+ * Clean up out of date comments.
 
-2.c) Add support for:
-	opkg install foo from some-feed
-	opkg install foo-0.4.3
-	opkg install foo-latest # Only needed if we add a feed-order-priority option
-     or something like that.
+ * Consistent indentation.
 
-2.d) Experiment with making a small statically linked binary. Can we
-     eliminate some library calls, (glob, regcomp)? Can we get
-     something like uclibc to work well?
+ * Propagate errors up the call stack. In particular, unarchive.c fails to do
+   this. Errors and error messages must be usable by libopkg frontends.
+   Don't try to use errno after its been clobbered by other libc calls.
 
-2.e) Add support for a deb-src in /etc/opkg.conf. (ARGH! Name clash
-     alert! In apt-land, deb-src means something very different than
-     what I would mean here. Hrm... Maybe src-deb would be cleaner? )
+ * Remove dead and duplicate code. Refactor duplicated functionality.
 
-     (What is this?  Jamey 7/23/2002) 
+ * Reduce memory used per pkg_t and peak memory use in general.
 
-2.f) Figure out a clever chroot mechanism for running maintainer scripts in
-     offline_root mode.
+ * Refactor opkg_conf_t *conf.
+   Make it global instead of passing it to every function.
+   Remove args_t args in favour of conf.
 
-2.g) Implement opkg history mechanism, with undo and redo?  Keep track of
-     packages removed/installed by each call to opkg.
+ * #includes are a mess.
 
+ * Refactor opkg_install_pkg() into more precise functions.
 
-3) Cleanup the code
-
-3.a) Start with all comments marked "XXX: CLEANUP"
-
-3.b) Clean up out of date comments. That really confusing
-
-4) refactorying opkg_install_pkg into more precise functions
-4.1) refactory upgrade list first
-4.2) Finding canditate is linear search O(P*PN) and is very slow (been called very frequently)
+ * pkg_hash_fetch_best_installation_candidate() is linear search O(P*PN)
+   and is slow (frequently called).
       P provider
       PN pkgs in a provider
-     It's can be O(P) if there we use hash table. 
-     It should be refacotry to a faster one. 
+   It can be O(P) if a hash table is used.
+
+ * Update libbb.
+
+
+
+FEATURES
+
+ * Start with all "XXX: FEATURE" comments. Remove them if they are bogus.
+
+ * Implement chrooting to an offline_root for running maintainer scripts.
+
+ * Improve dpkg compatibility, according to the Debian Policy Manual.
+   http://www.debian.org/doc/debian-policy/ch-controlfields.html
