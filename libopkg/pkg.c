@@ -72,9 +72,6 @@ static const enum_map_t pkg_state_status_map[] = {
      { SS_REMOVAL_FAILED, "removal-failed" }
 };
 
-static int verrevcmp(const char *val, const char *ref);
-
-
 static void
 pkg_init(pkg_t *pkg)
 {
@@ -132,7 +129,8 @@ pkg_init(pkg_t *pkg)
      pkg->provided_by_hand = 0;
 }
 
-pkg_t *pkg_new(void)
+pkg_t *
+pkg_new(void)
 {
      pkg_t *pkg;
 
@@ -142,7 +140,8 @@ pkg_t *pkg_new(void)
      return pkg;
 }
 
-void compound_depend_deinit (compound_depend_t *depends)
+static void
+compound_depend_deinit(compound_depend_t *depends)
 {
     int i;
     for (i = 0; i < depends->possibility_count; i++)
@@ -155,7 +154,8 @@ void compound_depend_deinit (compound_depend_t *depends)
     free (depends->possibilities);
 }
 
-void pkg_deinit(pkg_t *pkg)
+void
+pkg_deinit(pkg_t *pkg)
 {
 	int i;
 
@@ -334,7 +334,8 @@ err0:
  * uh, i thought that i had originally written this so that it took 
  * two pkgs and returned a new one?  we can do that again... -sma
  */
-int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
+int
+pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
 {
      if (oldpkg == newpkg) {
 	  return 0;
@@ -456,7 +457,8 @@ abstract_pkg_init(abstract_pkg_t *ab_pkg)
      ab_pkg->state_status = SS_NOT_INSTALLED;
 }
 
-abstract_pkg_t *abstract_pkg_new(void)
+abstract_pkg_t *
+abstract_pkg_new(void)
 {
      abstract_pkg_t * ab_pkg;
 
@@ -466,7 +468,8 @@ abstract_pkg_t *abstract_pkg_new(void)
      return ab_pkg;
 }
 
-void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){
+void
+set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){
      char *file_name;
      FILE *fp;
 
@@ -491,7 +494,133 @@ void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){
      return;
 }
 
-void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
+static char *
+pkg_state_want_to_str(pkg_state_want_t sw)
+{
+     int i;
+
+     for (i=0; i < ARRAY_SIZE(pkg_state_want_map); i++) {
+	  if (pkg_state_want_map[i].value == sw) {
+	       return pkg_state_want_map[i].str;
+	  }
+     }
+
+     fprintf(stderr, "%s: ERROR: Illegal value for state_want: %d\n",
+	     __FUNCTION__, sw);
+     return "<STATE_WANT_UNKNOWN>";
+}
+
+pkg_state_want_t
+pkg_state_want_from_str(char *str)
+{
+     int i;
+
+     for (i=0; i < ARRAY_SIZE(pkg_state_want_map); i++) {
+	  if (strcmp(str, pkg_state_want_map[i].str) == 0) {
+	       return pkg_state_want_map[i].value;
+	  }
+     }
+
+     fprintf(stderr, "%s: ERROR: Illegal value for state_want string: %s\n",
+	     __FUNCTION__, str);
+     return SW_UNKNOWN;
+}
+
+static char *
+pkg_state_flag_to_str(pkg_state_flag_t sf)
+{
+	int i;
+	int len;
+	char *str;
+
+	/* clear the temporary flags before converting to string */
+	sf &= SF_NONVOLATILE_FLAGS;
+
+	if (sf == 0)
+		return xstrdup("ok");
+
+	len = 0;
+	for (i=0; i < ARRAY_SIZE(pkg_state_flag_map); i++) {
+		if (sf & pkg_state_flag_map[i].value)
+			len += strlen(pkg_state_flag_map[i].str) + 1;
+	}
+
+	str = xmalloc(len+1);
+	str[0] = '\0';
+
+	for (i=0; i < ARRAY_SIZE(pkg_state_flag_map); i++) {
+		if (sf & pkg_state_flag_map[i].value) {
+			strncat(str, pkg_state_flag_map[i].str, len);
+			strncat(str, ",", len);
+		}
+	}
+
+	len = strlen(str);
+	str[len-1] = '\0'; /* squash last comma */
+
+	return str;
+}
+
+pkg_state_flag_t
+pkg_state_flag_from_str(const char *str)
+{
+     int i;
+     int sf = SF_OK;
+
+     if (strcmp(str, "ok") == 0) {
+	  return SF_OK;
+     }
+     for (i=0; i < ARRAY_SIZE(pkg_state_flag_map); i++) {
+	  const char *sfname = pkg_state_flag_map[i].str;
+	  int sfname_len = strlen(sfname);
+	  if (strncmp(str, sfname, sfname_len) == 0) {
+	       sf |= pkg_state_flag_map[i].value;
+	       str += sfname_len;
+	       if (str[0] == ',') {
+		    str++;
+	       } else {
+		    break;
+	       }
+	  }
+     }
+
+     return sf;
+}
+
+static char *
+pkg_state_status_to_str(pkg_state_status_t ss)
+{
+     int i;
+
+     for (i=0; i < ARRAY_SIZE(pkg_state_status_map); i++) {
+	  if (pkg_state_status_map[i].value == ss) {
+	       return pkg_state_status_map[i].str;
+	  }
+     }
+
+     fprintf(stderr, "%s: ERROR: Illegal value for state_status: %d\n",
+	     __FUNCTION__, ss);
+     return "<STATE_STATUS_UNKNOWN>";
+}
+
+pkg_state_status_t
+pkg_state_status_from_str(const char *str)
+{
+     int i;
+
+     for (i=0; i < ARRAY_SIZE(pkg_state_status_map); i++) {
+	  if (strcmp(str, pkg_state_status_map[i].str) == 0) {
+	       return pkg_state_status_map[i].value;
+	  }
+     }
+
+     fprintf(stderr, "%s: ERROR: Illegal value for state_status string: %s\n",
+	     __FUNCTION__, str);
+     return SS_NOT_INSTALLED;
+}
+
+void
+pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
 {
      int i, j;
      char *str;
@@ -681,17 +810,11 @@ void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
                }
 	  } else if (strcasecmp(field, "Status") == 0) {
                char *pflag = pkg_state_flag_to_str(pkg->state_flag);
-               char *pstat = pkg_state_status_to_str(pkg->state_status);
-               char *pwant = pkg_state_want_to_str(pkg->state_want);
-
-	       if (pflag == NULL || pstat == NULL || pwant == NULL)
-		       return;
-
-               fprintf(fp, "Status: %s %s %s\n", pwant, pflag, pstat);
-
+               fprintf(fp, "Status: %s %s %s\n",
+               	               pkg_state_want_to_str(pkg->state_want),
+			       pflag,
+                               pkg_state_status_to_str(pkg->state_status));
                free(pflag);
-               free(pwant);
-               free(pstat);
 	  } else if (strcasecmp(field, "Suggests") == 0) {
 	       if (pkg->suggests_count) {
                     fprintf(fp, "Suggests:");
@@ -737,7 +860,8 @@ UNKNOWN_FMT_FIELD:
      fprintf(stderr, "%s: ERROR: Unknown field name: %s\n", __FUNCTION__, field);
 }
 
-void pkg_formatted_info(FILE *fp, pkg_t *pkg)
+void
+pkg_formatted_info(FILE *fp, pkg_t *pkg)
 {
 	pkg_formatted_field(fp, pkg, "Package");
 	pkg_formatted_field(fp, pkg, "Version");
@@ -763,7 +887,8 @@ void pkg_formatted_info(FILE *fp, pkg_t *pkg)
 	fputs("\n", fp);
 }
 
-void pkg_print_status(pkg_t * pkg, FILE * file)
+void
+pkg_print_status(pkg_t * pkg, FILE * file)
 {
      if (pkg == NULL) {
 	  return;
@@ -812,30 +937,6 @@ void pkg_print_status(pkg_t * pkg, FILE * file)
  *
  * Copyright (C) 1995 Ian Jackson <iwj10@cus.cam.ac.uk>
  */
-int pkg_compare_versions(const pkg_t *pkg, const pkg_t *ref_pkg)
-{
-     int r;
-
-     if (pkg->epoch > ref_pkg->epoch) {
-	  return 1;
-     }
-
-     if (pkg->epoch < ref_pkg->epoch) {
-	  return -1;
-     }
-
-     r = verrevcmp(pkg->version, ref_pkg->version);
-     if (r) {
-	  return r;
-     }
-
-     r = verrevcmp(pkg->revision, ref_pkg->revision);
-     if (r) {
-	  return r;
-     }
-
-     return r;
-}
 
 /* assume ascii; warning: evaluates x multiple times! */
 #define order(x) ((x) == '~' ? -1 \
@@ -844,7 +945,8 @@ int pkg_compare_versions(const pkg_t *pkg, const pkg_t *ref_pkg)
 		: isalpha((x)) ? (x) \
 		: (x) + 256)
 
-static int verrevcmp(const char *val, const char *ref) {
+static int
+verrevcmp(const char *val, const char *ref) {
   if (!val) val= "";
   if (!ref) ref= "";
 
@@ -870,7 +972,35 @@ static int verrevcmp(const char *val, const char *ref) {
   return 0;
 }
 
-int pkg_version_satisfied(pkg_t *it, pkg_t *ref, const char *op)
+int
+pkg_compare_versions(const pkg_t *pkg, const pkg_t *ref_pkg)
+{
+     int r;
+
+     if (pkg->epoch > ref_pkg->epoch) {
+	  return 1;
+     }
+
+     if (pkg->epoch < ref_pkg->epoch) {
+	  return -1;
+     }
+
+     r = verrevcmp(pkg->version, ref_pkg->version);
+     if (r) {
+	  return r;
+     }
+
+     r = verrevcmp(pkg->revision, ref_pkg->revision);
+     if (r) {
+	  return r;
+     }
+
+     return r;
+}
+
+
+int
+pkg_version_satisfied(pkg_t *it, pkg_t *ref, const char *op)
 {
      int r;
 
@@ -900,7 +1030,8 @@ int pkg_version_satisfied(pkg_t *it, pkg_t *ref, const char *op)
      return 0;
 }
 
-int pkg_name_version_and_architecture_compare(const void *p1, const void *p2)
+int
+pkg_name_version_and_architecture_compare(const void *p1, const void *p2)
 {
      const pkg_t *a = *(const pkg_t**) p1;
      const pkg_t *b = *(const pkg_t**) p2;
@@ -930,7 +1061,8 @@ int pkg_name_version_and_architecture_compare(const void *p1, const void *p2)
      return 0;
 }
 
-int abstract_pkg_name_compare(const void *p1, const void *p2)
+int
+abstract_pkg_name_compare(const void *p1, const void *p2)
 {
      const abstract_pkg_t *a = *(const abstract_pkg_t **)p1;
      const abstract_pkg_t *b = *(const abstract_pkg_t **)p2;
@@ -969,7 +1101,8 @@ pkg_version_str_alloc(pkg_t *pkg)
 /*
  * XXX: this should be broken into two functions
  */
-str_list_t *pkg_get_installed_files(opkg_conf_t *conf, pkg_t *pkg)
+str_list_t *
+pkg_get_installed_files(opkg_conf_t *conf, pkg_t *pkg)
 {
      int err, fd;
      char *list_file_name = NULL;
@@ -1091,44 +1224,37 @@ str_list_t *pkg_get_installed_files(opkg_conf_t *conf, pkg_t *pkg)
    convention. Nor the alloc/free convention. But, then again, neither
    of these conventions currrently fit the way these two functions
    work. */
-int pkg_free_installed_files(pkg_t *pkg)
+void
+pkg_free_installed_files(pkg_t *pkg)
 {
      pkg->installed_files_ref_cnt--;
 
      if (pkg->installed_files_ref_cnt > 0)
-	  return 0;
+	  return;
 
      if (pkg->installed_files) {
          str_list_purge(pkg->installed_files);
      }
 
      pkg->installed_files = NULL;
-
-     return 0;
 }
 
-int pkg_remove_installed_files_list(opkg_conf_t *conf, pkg_t *pkg)
+void
+pkg_remove_installed_files_list(opkg_conf_t *conf, pkg_t *pkg)
 {
-     int err;
-     char *list_file_name;
+	char *list_file_name;
 
-     //I don't think pkg_free_installed_files should be called here. Jamey
-     //pkg_free_installed_files(pkg);
+	sprintf_alloc(&list_file_name, "%s/%s.list",
+		pkg->dest->info_dir, pkg->name);
 
-     sprintf_alloc(&list_file_name, "%s/%s.list",
-		   pkg->dest->info_dir, pkg->name);
-     if (!conf->noaction) {
-	  err = unlink(list_file_name);
-	  free(list_file_name);
+	if (!conf->noaction)
+		(void)unlink(list_file_name);
 
-	  if (err) {
-	       return errno;
-	  }
-     }
-     return 0;
+	free(list_file_name);
 }
 
-conffile_t *pkg_get_conffile(pkg_t *pkg, const char *file_name)
+conffile_t *
+pkg_get_conffile(pkg_t *pkg, const char *file_name)
 {
      conffile_list_elt_t *iter;
      conffile_t *conffile;
@@ -1148,8 +1274,9 @@ conffile_t *pkg_get_conffile(pkg_t *pkg, const char *file_name)
      return NULL;
 }
 
-int pkg_run_script(opkg_conf_t *conf, pkg_t *pkg,
-		   const char *script, const char *args)
+int
+pkg_run_script(opkg_conf_t *conf, pkg_t *pkg,
+		const char *script, const char *args)
 {
      int err;
      char *path;
@@ -1229,124 +1356,8 @@ int pkg_run_script(opkg_conf_t *conf, pkg_t *pkg,
      return 0;
 }
 
-char *pkg_state_want_to_str(pkg_state_want_t sw)
-{
-     int i;
-
-     for (i=0; i < ARRAY_SIZE(pkg_state_want_map); i++) {
-	  if (pkg_state_want_map[i].value == sw) {
-	       return xstrdup(pkg_state_want_map[i].str);
-	  }
-     }
-
-     fprintf(stderr, "%s: ERROR: Illegal value for state_want: %d\n",
-	     __FUNCTION__, sw);
-     return xstrdup("<STATE_WANT_UNKNOWN>");
-}
-
-pkg_state_want_t pkg_state_want_from_str(char *str)
-{
-     int i;
-
-     for (i=0; i < ARRAY_SIZE(pkg_state_want_map); i++) {
-	  if (strcmp(str, pkg_state_want_map[i].str) == 0) {
-	       return pkg_state_want_map[i].value;
-	  }
-     }
-
-     fprintf(stderr, "%s: ERROR: Illegal value for state_want string: %s\n",
-	     __FUNCTION__, str);
-     return SW_UNKNOWN;
-}
-
-char *pkg_state_flag_to_str(pkg_state_flag_t sf)
-{
-     int i;
-     int len = 3; /* ok\000 is minimum */
-     char *str = NULL;
-
-     /* clear the temporary flags before converting to string */
-     sf &= SF_NONVOLATILE_FLAGS;
-
-     if (sf == 0) {
-	  return xstrdup("ok");
-     } else {
-
-	  for (i=0; i < ARRAY_SIZE(pkg_state_flag_map); i++) {
-	       if (sf & pkg_state_flag_map[i].value) {
-		    len += strlen(pkg_state_flag_map[i].str) + 1;
-	       }
-	  }
-	  str = xmalloc(len);
-	  str[0] = 0;
-	  for (i=0; i < ARRAY_SIZE(pkg_state_flag_map); i++) {
-	       if (sf & pkg_state_flag_map[i].value) {
-		    strcat(str, pkg_state_flag_map[i].str);
-		    strcat(str, ",");
-	       }
-	  }
-	  len = strlen(str);
-	  str[len-1] = 0; /* squash last comma */
-	  return str;
-     }
-}
-
-pkg_state_flag_t pkg_state_flag_from_str(const char *str)
-{
-     int i;
-     int sf = SF_OK;
-
-     if (strcmp(str, "ok") == 0) {
-	  return SF_OK;
-     }
-     for (i=0; i < ARRAY_SIZE(pkg_state_flag_map); i++) {
-	  const char *sfname = pkg_state_flag_map[i].str;
-	  int sfname_len = strlen(sfname);
-	  if (strncmp(str, sfname, sfname_len) == 0) {
-	       sf |= pkg_state_flag_map[i].value;
-	       str += sfname_len;
-	       if (str[0] == ',') {
-		    str++;
-	       } else {
-		    break;
-	       }
-	  }
-     }
-
-     return sf;
-}
-
-char *pkg_state_status_to_str(pkg_state_status_t ss)
-{
-     int i;
-
-     for (i=0; i < ARRAY_SIZE(pkg_state_status_map); i++) {
-	  if (pkg_state_status_map[i].value == ss) {
-	       return xstrdup(pkg_state_status_map[i].str);
-	  }
-     }
-
-     fprintf(stderr, "%s: ERROR: Illegal value for state_status: %d\n",
-	     __FUNCTION__, ss);
-     return xstrdup("<STATE_STATUS_UNKNOWN>");
-}
-
-pkg_state_status_t pkg_state_status_from_str(const char *str)
-{
-     int i;
-
-     for (i=0; i < ARRAY_SIZE(pkg_state_status_map); i++) {
-	  if (strcmp(str, pkg_state_status_map[i].str) == 0) {
-	       return pkg_state_status_map[i].value;
-	  }
-     }
-
-     fprintf(stderr, "%s: ERROR: Illegal value for state_status string: %s\n",
-	     __FUNCTION__, str);
-     return SS_NOT_INSTALLED;
-}
-
-int pkg_arch_supported(opkg_conf_t *conf, pkg_t *pkg)
+int
+pkg_arch_supported(opkg_conf_t *conf, pkg_t *pkg)
 {
      nv_pair_list_elt_t *l;
 
@@ -1365,7 +1376,8 @@ int pkg_arch_supported(opkg_conf_t *conf, pkg_t *pkg)
      return 0;
 }
 
-int pkg_get_arch_priority(opkg_conf_t *conf, const char *archname)
+int
+pkg_get_arch_priority(opkg_conf_t *conf, const char *archname)
 {
      nv_pair_list_elt_t *l;
 
@@ -1379,7 +1391,8 @@ int pkg_get_arch_priority(opkg_conf_t *conf, const char *archname)
      return 0;
 }
 
-int pkg_info_preinstall_check(opkg_conf_t *conf)
+void
+pkg_info_preinstall_check(opkg_conf_t *conf)
 {
      int i;
      hash_table_t *pkg_hash = &conf->pkg_hash;
@@ -1436,8 +1449,6 @@ int pkg_info_preinstall_check(opkg_conf_t *conf)
 	  pkg_free_installed_files(pkg);
      }
      pkg_vec_free(installed_pkgs);
-
-     return 0;
 }
 
 struct pkg_write_filelist_data {
@@ -1446,7 +1457,8 @@ struct pkg_write_filelist_data {
      FILE *stream;
 };
 
-void pkg_write_filelist_helper(const char *key, void *entry_, void *data_)
+void
+pkg_write_filelist_helper(const char *key, void *entry_, void *data_)
 {
      struct pkg_write_filelist_data *data = data_;
      pkg_t *entry = entry_;
@@ -1455,62 +1467,61 @@ void pkg_write_filelist_helper(const char *key, void *entry_, void *data_)
      }
 }
 
-int pkg_write_filelist(opkg_conf_t *conf, pkg_t *pkg)
+int
+pkg_write_filelist(opkg_conf_t *conf, pkg_t *pkg)
 {
-     struct pkg_write_filelist_data data;
-     char *list_file_name = NULL;
-     int err = 0;
+	struct pkg_write_filelist_data data;
+	char *list_file_name;
 
-     if (!pkg) {
-	  opkg_message(conf, OPKG_ERROR, "Null pkg\n");
-	  return -EINVAL;
-     }
-     opkg_message(conf, OPKG_INFO,
-		  "    creating %s.list file\n", pkg->name);
-     sprintf_alloc(&list_file_name, "%s/%s.list", pkg->dest->info_dir, pkg->name);
-     if (!list_file_name) {
-	  opkg_message(conf, OPKG_ERROR, "Failed to alloc list_file_name\n");
-	  return -ENOMEM;
-     }
-     opkg_message(conf, OPKG_INFO,
-		  "    creating %s file for pkg %s\n", list_file_name, pkg->name);
-     data.stream = fopen(list_file_name, "w");
-     if (!data.stream) {
-	  opkg_message(conf, OPKG_ERROR, "Could not open %s for writing: %s\n",
-		       list_file_name, strerror(errno));
-		       return errno;
-     }
-     data.pkg = pkg;
-     data.conf = conf;
-     hash_table_foreach(&conf->file_hash, pkg_write_filelist_helper, &data);
-     fclose(data.stream);
-     free(list_file_name);
+	sprintf_alloc(&list_file_name, "%s/%s.list",
+			pkg->dest->info_dir, pkg->name);
 
-     pkg->state_flag &= ~SF_FILELIST_CHANGED;
+	opkg_message(conf, OPKG_INFO, "%s: creating %s file for pkg %s\n",
+			__FUNCTION__, list_file_name, pkg->name);
 
-     return err;
+	data.stream = fopen(list_file_name, "w");
+	if (!data.stream) {
+		opkg_message(conf, OPKG_ERROR, "%s: fopen(%s, \"w\"): %s\n",
+			__FUNCTION__, list_file_name, strerror(errno));
+		free(list_file_name);
+		return -1;
+	}
+
+	data.pkg = pkg;
+	data.conf = conf;
+	hash_table_foreach(&conf->file_hash, pkg_write_filelist_helper, &data);
+	fclose(data.stream);
+	free(list_file_name);
+
+	pkg->state_flag &= ~SF_FILELIST_CHANGED;
+
+	return 0;
 }
 
-int pkg_write_changed_filelists(opkg_conf_t *conf)
+int
+pkg_write_changed_filelists(opkg_conf_t *conf)
 {
-     pkg_vec_t *installed_pkgs = pkg_vec_alloc();
-     hash_table_t *pkg_hash = &conf->pkg_hash;
-     int i;
-     int err;
-     if (conf->noaction)
-	  return 0;
+	pkg_vec_t *installed_pkgs = pkg_vec_alloc();
+	hash_table_t *pkg_hash = &conf->pkg_hash;
+	int i, err, ret = 0;
 
-     opkg_message(conf, OPKG_INFO, "%s: saving changed filelists\n", __FUNCTION__);
-     pkg_hash_fetch_all_installed(pkg_hash, installed_pkgs);
-     for (i = 0; i < installed_pkgs->len; i++) {
-	  pkg_t *pkg = installed_pkgs->pkgs[i];
-	  if (pkg->state_flag & SF_FILELIST_CHANGED) {
-               opkg_message(conf, OPKG_DEBUG, "Calling pkg_write_filelist for pkg=%s from %s\n", pkg->name, __FUNCTION__);
-	       err = pkg_write_filelist(conf, pkg);
-	       if (err)
-		    opkg_message(conf, OPKG_NOTICE, "pkg_write_filelist pkg=%s returned %d\n", pkg->name, err);
-	  }
-     }
-     pkg_vec_free (installed_pkgs);
-     return 0;
+	if (conf->noaction)
+		return 0;
+
+	opkg_message(conf, OPKG_INFO, "%s: saving changed filelists\n",
+			__FUNCTION__);
+
+	pkg_hash_fetch_all_installed(pkg_hash, installed_pkgs);
+	for (i = 0; i < installed_pkgs->len; i++) {
+		pkg_t *pkg = installed_pkgs->pkgs[i];
+		if (pkg->state_flag & SF_FILELIST_CHANGED) {
+			err = pkg_write_filelist(conf, pkg);
+			if (err)
+				ret = -1;
+		}
+	}
+
+	pkg_vec_free (installed_pkgs);
+
+	return ret;
 }
