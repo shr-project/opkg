@@ -16,6 +16,8 @@ See issue list: http://code.google.com/p/opkg/issues/list
 
  * Remove dead and duplicate code. Refactor duplicated functionality.
 
+ * Remove pkg_info_preinstall_check().
+
  * Reduce memory used per pkg_t and peak memory use in general.
 
  * Refactor opkg_conf_t *conf.
