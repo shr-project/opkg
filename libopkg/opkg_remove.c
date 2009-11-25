@@ -132,7 +132,7 @@ opkg_remove_dependent_pkgs (opkg_conf_t *conf, pkg_t *pkg, abstract_pkg_t **depe
     }
     
     if (count == 1) {
-        free(dependent_pkgs);  
+        pkg_vec_free(dependent_pkgs);  
 	return 0;
     }
     
@@ -140,10 +140,12 @@ opkg_remove_dependent_pkgs (opkg_conf_t *conf, pkg_t *pkg, abstract_pkg_t **depe
     int err=0;
     for (i = 0; i < dependent_pkgs->len; i++) {
         err = opkg_remove_pkg(conf, dependent_pkgs->pkgs[i],0);
-        if (err)
+        if (err) {
+            pkg_vec_free(dependent_pkgs);
             break;
+	}
     }
-    free(dependent_pkgs);
+    pkg_vec_free(dependent_pkgs);
     return err;
 }
 
