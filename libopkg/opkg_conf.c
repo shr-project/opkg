@@ -318,19 +318,27 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 /* Pigi: added a flag to disable the checking of structures if the command does not need to 
          read anything from there.
 */
-     if ( !(args->nocheckfordirorfile)){
-        /* need to run load the source list before dest list -Jamey */
-        if ( !(args->noreadfeedsfile))
-           set_and_load_pkg_src_list(conf, &conf->pkg_src_list);
+     if (!(args->nocheckfordirorfile)) {
+
+        if (!(args->noreadfeedsfile)) {
+           if (set_and_load_pkg_src_list(conf, &conf->pkg_src_list)) {
+               nv_pair_list_deinit(&tmp_dest_nv_pair_list);
+	       return -1;
+	   }
+	}
    
         /* Now that we have resolved conf->offline_root, we can commit to
 	   the directory names for the dests and load in all the package
 	   lists. */
-        set_and_load_pkg_dest_list(conf, &tmp_dest_nv_pair_list);
+        if (set_and_load_pkg_dest_list(conf, &tmp_dest_nv_pair_list)) {
+               nv_pair_list_deinit(&tmp_dest_nv_pair_list);
+	       return -1;
+	}
    
         if (args->dest) {
 	     err = opkg_conf_set_default_dest(conf, args->dest);
 	     if (err) {
+                  nv_pair_list_deinit(&tmp_dest_nv_pair_list);
 	          return OPKG_CONF_ERR_DEFAULT_DEST;
 	     }
         }
@@ -423,7 +431,8 @@ static int opkg_conf_set_default_dest(opkg_conf_t *conf,
      return 1;
 }
 
-static int set_and_load_pkg_src_list(opkg_conf_t *conf, pkg_src_list_t *pkg_src_list)
+static int
+set_and_load_pkg_src_list(opkg_conf_t *conf, pkg_src_list_t *pkg_src_list)
 {
      pkg_src_list_elt_t *iter;
      pkg_src_t *src;
@@ -440,7 +449,10 @@ static int set_and_load_pkg_src_list(opkg_conf_t *conf, pkg_src_list_t *pkg_src_
 			  src->name);
 
 	  if (file_exists(list_file)) {
-	       pkg_hash_add_from_file(conf, list_file, src, NULL, 0);
+	       if (pkg_hash_add_from_file(conf, list_file, src, NULL, 0)) {
+		    free(list_file);
+		    return -1;
+	       }
 	  }
 	  free(list_file);
      }
@@ -448,7 +460,8 @@ static int set_and_load_pkg_src_list(opkg_conf_t *conf, pkg_src_list_t *pkg_src_
      return 0;
 }
 
-static int set_and_load_pkg_dest_list(opkg_conf_t *conf, nv_pair_list_t *nv_pair_list)
+static int
+set_and_load_pkg_dest_list(opkg_conf_t *conf, nv_pair_list_t *nv_pair_list)
 {
      nv_pair_list_elt_t *iter;
      nv_pair_t *nv_pair;
@@ -472,8 +485,9 @@ static int set_and_load_pkg_dest_list(opkg_conf_t *conf, nv_pair_list_t *nv_pair
 	       conf->default_dest = dest;
 	  }
 	  if (file_exists(dest->status_file_name)) {
-	       pkg_hash_add_from_file(conf, dest->status_file_name,
-				      NULL, dest, 1);
+	       if (pkg_hash_add_from_file(conf, dest->status_file_name,
+				      NULL, dest, 1))
+		       return -1;
 	  }
      }
 

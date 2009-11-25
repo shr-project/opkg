@@ -314,7 +314,9 @@ pkg_init_from_file(opkg_conf_t *conf, pkg_t *pkg, const char *filename)
 		goto err2;
 
 	rewind(control_file);
-	pkg_parse_from_stream(pkg, control_file, PFM_ALL);
+
+	if (pkg_parse_from_stream(pkg, control_file, PFM_ALL))
+		err = -1;
 
 err2:
 	fclose(control_file);
