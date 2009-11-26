@@ -32,7 +32,6 @@
 #include "libbb/libbb.h"
 #include "sprintf_alloc.h"
 #include "file_util.h"
-#include "str_util.h"
 #include "xsystem.h"
 #include "opkg_conf.h"
 

@@ -19,7 +19,6 @@
 
 #include "pkg_dest.h"
 #include "file_util.h"
-#include "str_util.h"
 #include "sprintf_alloc.h"
 #include "opkg_conf.h"
 #include "opkg_cmd.h"
@@ -31,7 +30,7 @@ int pkg_dest_init(pkg_dest_t *dest, const char *name, const char *root_dir,const
     dest->name = xstrdup(name);
 
     /* Guarantee that dest->root_dir ends with a '/' */
-    if (str_ends_with(root_dir, "/")) {
+    if (root_dir[strlen(root_dir) -1] == '/') {
 	dest->root_dir = xstrdup(root_dir);
     } else {
 	sprintf_alloc(&dest->root_dir, "%s/", root_dir);
@@ -42,7 +41,7 @@ int pkg_dest_init(pkg_dest_t *dest, const char *name, const char *root_dir,const
 		  dest->root_dir, OPKG_STATE_DIR_PREFIX);
     file_mkdir_hier(dest->opkg_dir, 0755);
 
-    if (str_starts_with (lists_dir, "/")) 
+    if (lists_dir[0] == '/')
         sprintf_alloc(&dest->lists_dir, "%s", lists_dir);
     else
         sprintf_alloc(&dest->lists_dir, "/%s", lists_dir);

@@ -26,7 +26,6 @@
 
 #include "file_util.h"
 #include "sprintf_alloc.h"
-#include "str_util.h"
 #include "libbb/libbb.h"
 
 /*

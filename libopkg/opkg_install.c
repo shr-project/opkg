@@ -38,7 +38,6 @@
 
 #include "sprintf_alloc.h"
 #include "file_util.h"
-#include "str_util.h"
 #include "xsystem.h"
 #include "user.h"
 #include "libbb/libbb.h"

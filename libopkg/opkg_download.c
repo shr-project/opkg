@@ -46,7 +46,6 @@
 #include "sprintf_alloc.h"
 #include "xsystem.h"
 #include "file_util.h"
-#include "str_util.h"
 #include "opkg_defines.h"
 #include "libbb/libbb.h"
 
@@ -70,6 +69,12 @@ static X509_STORE *setup_verify(opkg_conf_t *conf, char *CAfile, char *CApath);
 static CURL *curl = NULL;
 static CURL *opkg_curl_init(opkg_conf_t *conf, curl_progress_func cb, void *data);
 #endif
+
+static int
+str_starts_with(const char *str, const char *prefix)
+{
+    return (strncmp(str, prefix, strlen(prefix)) == 0);
+}
 
 int opkg_download(opkg_conf_t *conf, const char *src,
   const char *dest_file_name, curl_progress_func cb, void *data)

@@ -30,7 +30,6 @@
 #include "sprintf_alloc.h"
 #include "pkg.h"
 #include "file_util.h"
-#include "str_util.h"
 #include "libbb/libbb.h"
 #include "opkg_utils.h"
 #include "opkg_defines.h"

@@ -18,11 +18,13 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <unistd.h>
+#include <ctype.h>
+
 #include "file_util.h"
-#include "str_util.h"
 
 char *get_user_response(const char *format, ...)
 {
+	int i;
 	va_list ap;
 	char *response;
 
@@ -37,7 +39,8 @@ char *get_user_response(const char *format, ...)
 	if (response == NULL)
 		return NULL;
 
-	str_tolower(response);
+	for (i=0; response[i]; i++)
+		response[i] = tolower(response[i]);
 
 	return response;
 }
