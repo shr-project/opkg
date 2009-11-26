@@ -23,6 +23,7 @@
 #endif
 
 #include "includes.h"
+#include "libbb/libbb.h"
 #include "opkg_message.h"
 
 #if defined(HAVE_SSLCURL) || defined(HAVE_OPENSSL)
