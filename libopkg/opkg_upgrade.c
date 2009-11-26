@@ -20,7 +20,8 @@
 #include "opkg_install.h"
 #include "opkg_message.h"
 
-int opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old)
+int
+opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old)
 {
      pkg_t *new;
      int cmp;
@@ -79,24 +80,31 @@ int opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old)
 }
 
 
-static void pkg_hash_check_installed_pkg_helper(const char *pkg_name, void *entry, void *data) {
-    struct active_list * head = (struct active_list *) data;
-    abstract_pkg_t *ab_pkg = (abstract_pkg_t *)entry;
-    pkg_vec_t *pkg_vec = ab_pkg->pkgs;
-    int j;
-    if (pkg_vec) {
-        for (j = 0; j < pkg_vec->len; j++) {
-            pkg_t *pkg = pkg_vec->pkgs[j];
-            if (pkg->state_status == SS_INSTALLED || pkg->state_status == SS_UNPACKED) {
-                active_list_add(head, &pkg->list);
-            }
-        }
-    }
+static void
+pkg_hash_check_installed_pkg_helper(const char *pkg_name, void *entry,
+		void *data)
+{
+	struct active_list *head = (struct active_list *) data;
+	abstract_pkg_t *ab_pkg = (abstract_pkg_t *)entry;
+	pkg_vec_t *pkg_vec = ab_pkg->pkgs;
+	int j;
+
+	if (!pkg_vec)
+		return;
+
+	for (j = 0; j < pkg_vec->len; j++) {
+		pkg_t *pkg = pkg_vec->pkgs[j];
+		if (pkg->state_status == SS_INSTALLED
+				|| pkg->state_status == SS_UNPACKED)
+			active_list_add(head, &pkg->list);
+	}
 }
 
-struct active_list * prepare_upgrade_list (opkg_conf_t *conf) {
-    struct active_list * head = active_list_head_new();
-    struct active_list * all = active_list_head_new();
+struct active_list *
+prepare_upgrade_list(opkg_conf_t *conf)
+{
+    struct active_list *head = active_list_head_new();
+    struct active_list *all = active_list_head_new();
     struct active_list *node=NULL;
 
     /* ensure all data is valid */
