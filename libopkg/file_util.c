@@ -66,11 +66,17 @@ file_read_line_alloc(FILE *fp)
 	int buf_len;
 	char *line = NULL;
 	int line_size = 0;
+	int got_nl = 0;
 
 	buf[0] = '\0';
 
 	while (fgets(buf, BUFSIZ, fp)) {
 		buf_len = strlen(buf);
+		if (buf[buf_len - 1] == '\n') {
+			buf_len--;
+			buf[buf_len] = '\0';
+			got_nl = 1;
+		}
 		if (line) {
 			line_size += buf_len;
 			line = xrealloc(line, line_size+1);
@@ -79,10 +85,8 @@ file_read_line_alloc(FILE *fp)
 			line_size = buf_len + 1;
 			line = xstrdup(buf);
 		}
-		if (buf[buf_len - 1] == '\n') {
-			buf[buf_len -1] = '\0';
+		if (got_nl)
 			break;
-		}
 	}
 
 	return line;
