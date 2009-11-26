@@ -25,6 +25,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <utime.h>
+#include <libgen.h>
+
 #include "libbb.h"
 
 #define CONFIG_FEATURE_TAR_OLDGNU_COMPATABILITY 1
@@ -35,21 +37,11 @@ static char *longname = NULL;
 static char *linkname = NULL;
 #endif
 
-extern void seek_sub_file(FILE *src_stream, const int count);
-extern char *extract_archive(FILE *src_stream, FILE *out_stream, const file_header_t *file_entry,
-                              const int function, const char *prefix);
-extern ssize_t seek_by_read(FILE* fd, size_t len);
-
-
-#ifdef L_archive_offset
 off_t archive_offset;
-#else
-extern off_t archive_offset;
-#endif	
 
-#ifdef L_seek_sub_file
 #define SEEK_BUF 4096
-ssize_t seek_by_read(FILE* fd, size_t len)
+static ssize_t
+seek_by_read(FILE* fd, size_t len)
 {
         ssize_t cc, total = 0;
         char buf[SEEK_BUF];
@@ -68,18 +60,16 @@ ssize_t seek_by_read(FILE* fd, size_t len)
         return total;
 }
 
-void seek_sub_file(FILE *src_stream, const int count)
+static void
+seek_sub_file(FILE *src_stream, const int count)
 {
 	/* Try to fseek as faster */
 	archive_offset += count;
         seek_by_read(src_stream, count);
 	return;
 }
-#endif	
 
 
-
-#ifdef L_extract_archive
 /* Extract the data postioned at src_stream to either filesystem, stdout or 
  * buffer depending on the value of 'function' which is defined in libbb.h 
  *
@@ -92,8 +82,10 @@ void seek_sub_file(FILE *src_stream, const int count)
  * For this reason if prefix does point to a dir then it must end with a
  * trailing '/' or else the last dir will be assumed to be the file prefix 
  */
-char *extract_archive(FILE *src_stream, FILE *out_stream, const file_header_t *file_entry,
- const int function, const char *prefix)
+static char *
+extract_archive(FILE *src_stream, FILE *out_stream,
+		const file_header_t *file_entry, const int function,
+		const char *prefix)
 {
 	FILE *dst_stream = NULL;
 	char *full_name = NULL;
@@ -123,9 +115,9 @@ char *extract_archive(FILE *src_stream, FILE *out_stream, const file_header_t *f
 		   strcat(full_link_name, file_entry->link_name);
                 }
 	} else {
-		full_name = strdup(file_entry->name);
+		full_name = xstrdup(file_entry->name);
                 if ( file_entry->link_name )
-		   full_link_name = strdup(file_entry->link_name);
+		   full_link_name = xstrdup(file_entry->link_name);
 	}
 
 
@@ -266,13 +258,14 @@ cleanup:
 
 	return(buffer); /* Maybe we should say if failed */
 }
-#endif
 
-#ifdef L_unarchive
-char *unarchive(FILE *src_stream, FILE *out_stream,
+static char *
+unarchive(FILE *src_stream, FILE *out_stream,
 		file_header_t *(*get_headers)(FILE *),
 		void (*free_headers)(file_header_t *),
-		const int extract_function, const char *prefix, const char **extract_names)
+		const int extract_function,
+		const char *prefix,
+		const char **extract_names)
 {
 	file_header_t *file_entry;
 	int extract_flag;
@@ -318,10 +311,9 @@ char *unarchive(FILE *src_stream, FILE *out_stream,
 	
 	return(buffer);
 }
-#endif
 
-#ifdef L_get_header_ar
-file_header_t *get_header_ar(FILE *src_stream)
+static file_header_t *
+get_header_ar(FILE *src_stream)
 {
 	file_header_t *typed;
 	union {
@@ -406,23 +398,23 @@ file_header_t *get_header_ar(FILE *src_stream)
 	return(typed);
 }
 
-void free_header_ar(file_header_t *ar_entry)
+static void
+free_header_ar(file_header_t *ar_entry)
 {
-    if (ar_entry == NULL) {
-	return;
-    }
+	if (ar_entry == NULL)
+		return;
 
-    free(ar_entry->name);
-    free(ar_entry->link_name);
+	free(ar_entry->name);
+	if (ar_entry->link_name)
+		free(ar_entry->link_name);
 
-    free(ar_entry);
+	free(ar_entry);
 }
-#endif
 
-#ifdef L_get_header_tar
-file_header_t *get_header_tar(FILE *tar_stream)
+
+static file_header_t *
+get_header_tar(FILE *tar_stream)
 {
-
 	union {
 		unsigned char raw[512];
 		struct {
@@ -593,22 +585,21 @@ file_header_t *get_header_tar(FILE *tar_stream)
 	return(tar_entry);
 }
 
-void free_header_tar(file_header_t *tar_entry)
+static void
+free_header_tar(file_header_t *tar_entry)
 {
-    if (tar_entry == NULL) {
-	return;
-    }
+	if (tar_entry == NULL)
+		return;
 
-    free(tar_entry->name);
-    free(tar_entry->link_name);
+	free(tar_entry->name);
+	if (tar_entry->link_name);
+		free(tar_entry->link_name);
 
-    free(tar_entry);
+	free(tar_entry);
 }
 
-#endif
-
-#ifdef L_deb_extract
-char *deb_extract(const char *package_filename, FILE *out_stream, 
+char *
+deb_extract(const char *package_filename, FILE *out_stream, 
 		  const int extract_function, const char *prefix, const char *filename)
 {
 	FILE *deb_stream = NULL;
@@ -662,13 +653,11 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 				output_buffer = unarchive(uncompressed_stream, out_stream, get_header_tar, free_header_tar, extract_function, prefix, file_list);
 				fclose(uncompressed_stream);
 				gz_close(gunzip_pid);
-				free (ar_header->name);
-				free (ar_header);
+				free_header_ar(ar_header);
 				break;
 			}
 			seek_sub_file(deb_stream, ar_header->size);
-			free (ar_header->name);
-			free (ar_header);
+			free_header_ar(ar_header);
 		}
 		goto cleanup;
 	} else if (strncmp(ar_magic, "\037\213", 2) == 0) {
@@ -732,4 +721,3 @@ cleanup:
 
 	return output_buffer;
 }
-#endif
