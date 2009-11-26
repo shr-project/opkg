@@ -268,7 +268,6 @@ unpack_pkg_control_files(opkg_conf_t *conf, pkg_t *pkg)
 	  if (cf_name == NULL) {
 	       break;
 	  }
-	  str_chomp(cf_name);
 	  if (cf_name[0] == '\0') {
 	       continue;
 	  }

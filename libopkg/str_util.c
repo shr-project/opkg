@@ -37,15 +37,6 @@ int str_ends_with(const char *str, const char *suffix)
     return (strcmp(str + str_len - suffix_len, suffix) == 0);
 }
 
-int str_chomp(char *str)
-{
-    if (str[strlen(str) - 1] == '\n') {
-	str[strlen(str) - 1] = '\0';
-	return 1;
-    }
-    return 0;
-}
-
 int str_tolower(char *str)
 {
     while (*str) {

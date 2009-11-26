@@ -30,30 +30,26 @@
 #include "sha256.h"
 #endif
 
-int file_exists(const char *file_name)
+int
+file_exists(const char *file_name)
 {
-    int err;
-    struct stat stat_buf;
+	struct stat st;
 
-    err = stat(file_name, &stat_buf);
-    if (err == 0) {
+	if (stat(file_name, &st) == -1)
+		return 0;
+
 	return 1;
-    } else {
-	return 0;
-    }
 }
 
-int file_is_dir(const char *file_name)
+int
+file_is_dir(const char *file_name)
 {
-    int err;
-    struct stat stat_buf;
+	struct stat st;
 
-    err = stat(file_name, &stat_buf);
-    if (err) {
-	return 0;
-    }
+	if (stat(file_name, &st) == -1)
+		return 0;
 
-    return S_ISDIR(stat_buf.st_mode);
+	return S_ISDIR(st.st_mode);
 }
 
 /* read a single line from a file, stopping at a newline or EOF.
@@ -63,68 +59,73 @@ int file_is_dir(const char *file_name)
 
    Return value is NULL if the file is at EOF when called.
 */
-#define FILE_READ_LINE_BUF_SIZE 1024
-char *file_read_line_alloc(FILE *file)
+char *
+file_read_line_alloc(FILE *fp)
 {
-    char buf[FILE_READ_LINE_BUF_SIZE];
-    int buf_len;
-    char *line = NULL;
-    int line_size = 0;
+	char buf[BUFSIZ];
+	int buf_len;
+	char *line = NULL;
+	int line_size = 0;
 
-    memset(buf, 0, FILE_READ_LINE_BUF_SIZE);
-    while (fgets(buf, FILE_READ_LINE_BUF_SIZE, file)) {
-	buf_len = strlen(buf);
-	if (line) {
-	    line_size += buf_len;
-	    line = xrealloc(line, line_size);
-	    strcat(line, buf);
-	} else {
-	    line_size = buf_len + 1;
-	    line = xstrdup(buf);
+	buf[0] = '\0';
+
+	while (fgets(buf, BUFSIZ, fp)) {
+		buf_len = strlen(buf);
+		if (line) {
+			line_size += buf_len;
+			line = xrealloc(line, line_size+1);
+			strncat(line, buf, line_size);
+		} else {
+			line_size = buf_len + 1;
+			line = xstrdup(buf);
+		}
+		if (buf[buf_len - 1] == '\n') {
+			buf[buf_len -1] = '\0';
+			break;
+		}
 	}
-	if (buf[buf_len - 1] == '\n') {
-	    break;
+
+	return line;
+}
+
+int
+file_move(const char *src, const char *dest)
+{
+	int err;
+
+	err = rename(src, dest);
+	if (err == -1) {
+		if (errno == EXDEV) {
+			/* src & dest live on different file systems */
+			err = file_copy(src, dest);
+			if (err == 0)
+				unlink(src);
+		} else {
+			fprintf(stderr, "%s: rename(%s, %s): %s\n",
+				__FUNCTION__, src, dest, strerror(errno));
+		}
 	}
-    }
 
-    return line;
+	return err;
 }
 
-int file_move(const char *src, const char *dest)
+int
+file_copy(const char *src, const char *dest)
 {
-    int err;
+	int err;
 
-    err = rename(src, dest);
+	err = copy_file(src, dest, FILEUTILS_FORCE | FILEUTILS_PRESERVE_STATUS);
+	if (err)
+		fprintf(stderr, "%s: copy_file(%s, %s)\n",
+				__FUNCTION__, src, dest);
 
-    if (err && errno == EXDEV) {
-	err = file_copy(src, dest);
-	unlink(src);
-    } else if (err) {
-	fprintf(stderr, "%s: ERROR: failed to rename %s to %s: %s\n",
-		__FUNCTION__, src, dest, strerror(errno));
-    }
-
-    return err;
+	return err;
 }
 
-/* I put these here to keep libbb dependencies from creeping all over
-   the opkg code */
-int file_copy(const char *src, const char *dest)
+int
+file_mkdir_hier(const char *path, long mode)
 {
-    int err;
-
-    err = copy_file(src, dest, FILEUTILS_FORCE | FILEUTILS_PRESERVE_STATUS);
-    if (err) {
-	fprintf(stderr, "%s: ERROR: failed to copy %s to %s\n",
-		__FUNCTION__, src, dest);
-    }
-
-    return err;
-}
-
-int file_mkdir_hier(const char *path, long mode)
-{
-    return make_directory(path, mode, FILEUTILS_RECUR);
+	return make_directory(path, mode, FILEUTILS_RECUR);
 }
 
 char *file_md5sum_alloc(const char *file_name)

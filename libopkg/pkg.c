@@ -1184,7 +1184,6 @@ pkg_get_installed_files(opkg_conf_t *conf, pkg_t *pkg)
 	  if (line == NULL) {
 	       break;
 	  }
-	  str_chomp(line);
 	  file_name = line;
 
 	  if (pkg->state_status == SS_NOT_INSTALLED || pkg->dest == NULL) {

@@ -540,14 +540,11 @@ static int opkg_conf_parse_file(opkg_conf_t *conf, const char *filename,
 	       break;
 	  }
 
-	  str_chomp(line);
-
 	  if (regexec(&comment_re, line, 0, 0, 0) == 0) {
 	       goto NEXT_LINE;
 	  }
 
 	  if (regexec(&valid_line_re, line, regmatch_size, regmatch, 0) == REG_NOMATCH) {
-	       str_chomp(line);
 	       fprintf(stderr, "%s:%d: Ignoring invalid line: `%s'\n",
 		       filename, line_num, line);
 	       goto NEXT_LINE;

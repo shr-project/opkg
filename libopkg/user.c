@@ -37,7 +37,6 @@ char *get_user_response(const char *format, ...)
 	if (response == NULL)
 		return NULL;
 
-	str_chomp(response);
 	str_tolower(response);
 
 	return response;
