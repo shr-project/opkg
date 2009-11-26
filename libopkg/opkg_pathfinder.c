@@ -37,9 +37,9 @@ static int pathfinder_verify_callback(X509_STORE_CTX *ctx, void *arg)
     const char *hex = "0123456789ABCDEF";
     size_t size = i2d_X509(ctx->cert, NULL);
     unsigned char *keybuf, *iend;
-    iend = keybuf = malloc(size);
+    iend = keybuf = xmalloc(size);
     i2d_X509(ctx->cert, &iend);
-    char *certdata_str = malloc(size * 2 + 1);
+    char *certdata_str = xmalloc(size * 2 + 1);
     unsigned char *cp = keybuf;
     char *certdata_str_i = certdata_str;
     while (cp < iend)
