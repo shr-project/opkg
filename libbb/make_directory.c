@@ -26,6 +26,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <libgen.h>
 
 #include "libbb.h"
 

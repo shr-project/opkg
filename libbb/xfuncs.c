@@ -26,7 +26,6 @@
 #include "libbb.h"
 
 
-#ifndef DMALLOC
 extern void *xmalloc(size_t size)
 {
 	void *ptr = malloc(size);
@@ -64,7 +63,6 @@ extern char * xstrdup (const char *s) {
 
 	return t;
 }
-#endif
 
 extern char * xstrndup (const char *s, int n) {
 	char *t;
