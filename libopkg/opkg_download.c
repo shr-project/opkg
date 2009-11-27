@@ -88,13 +88,12 @@ int opkg_download(opkg_conf_t *conf, const char *src,
     opkg_message(conf,OPKG_NOTICE,"Downloading %s\n", src);
 	
     if (str_starts_with(src, "file:")) {
-	int ret;
 	const char *file_src = src + 5;
 	opkg_message(conf,OPKG_INFO,"Copying %s to %s...", file_src, dest_file_name);
-	ret = file_copy(src + 5, dest_file_name);
+	err = file_copy(file_src, dest_file_name);
 	opkg_message(conf,OPKG_INFO,"Done\n");
         free(src_basec);
-	return ret;
+	return err;
     }
 
     sprintf_alloc(&tmp_file_location, "%s/%s", conf->tmp_dir, src_base);
@@ -104,7 +103,7 @@ int opkg_download(opkg_conf_t *conf, const char *src,
 		__FUNCTION__, tmp_file_location, strerror(errno));
 	free(tmp_file_location);
         free(src_basec);
-	return errno;
+	return -1;
     }
 
     if (conf->http_proxy) {
@@ -181,11 +180,7 @@ int opkg_download(opkg_conf_t *conf, const char *src,
     free(tmp_file_location);
     free(src_basec);
 
-    if (err) {
-	return err;
-    }
-
-    return 0;
+    return err;
 }
 
 static int opkg_download_cache(opkg_conf_t *conf, const char *src,

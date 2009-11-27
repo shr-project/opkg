@@ -16,7 +16,6 @@
 */
 
 #include "includes.h"
-#include <errno.h>
 
 #include "void_list.h"
 #include "libbb/libbb.h"

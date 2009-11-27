@@ -236,7 +236,7 @@ unpack_pkg_control_files(opkg_conf_t *conf, pkg_t *pkg)
 	  opkg_message(conf, OPKG_ERROR,
 		       "%s: Failed to create temporary directory '%s': %s\n",
 		       __FUNCTION__, pkg->tmp_unpack_dir, strerror(errno));
-	  return errno;
+	  return -1;
      }
 
      err = pkg_extract_control_files_to_dir(pkg, pkg->tmp_unpack_dir);
@@ -265,7 +265,7 @@ unpack_pkg_control_files(opkg_conf_t *conf, pkg_t *pkg)
 	  fprintf(stderr, "%s: failed to open %s: %s\n",
 		  __FUNCTION__, conffiles_file_name, strerror(errno));
 	  free(conffiles_file_name);
-	  return errno;
+	  return -1;
      }
      free(conffiles_file_name);
 
