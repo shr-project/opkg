@@ -478,8 +478,8 @@ set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg){
 
      fp = fopen(file_name, "r");
      if (fp == NULL) {
-	     opkg_message(conf, OPKG_ERROR, "fopen(%s): %s\n",
-			     file_name, strerror(errno));
+	     opkg_message(conf, OPKG_ERROR, "%s: fopen(%s): %s\n",
+			     __FUNCTION__, file_name, strerror(errno));
 	     free(file_name);
 	     return;
      }
