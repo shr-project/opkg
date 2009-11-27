@@ -46,6 +46,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include "libbb.h"
 
 static FILE *in_file, *out_file;
@@ -149,6 +150,14 @@ static void flush_window(void)
 	}
 
 	if (fwrite(window, 1, outcnt, out_file) != outcnt) {
+		/*
+		 * The Parent process may not be interested in all the data we have,
+		 * in which case it will rudely close its end of the pipe and
+		 * wait for us to exit.
+		 */
+		if (errno == EPIPE)
+			_exit(EXIT_SUCCESS);
+
 		error_msg("Couldnt write");
 		_exit(EXIT_FAILURE);
 	}
@@ -916,6 +925,8 @@ extern int unzip(FILE *l_in_file, FILE *l_out_file)
 		(void) signal(SIGHUP, (sig_type) abort_gzip);
 	}
 #endif
+
+	signal(SIGPIPE, SIG_IGN);
 
 	/* Allocate all global buffers (for DYN_ALLOC option) */
 	window = xmalloc((size_t)(((2L*WSIZE)+1L)*sizeof(unsigned char)));

@@ -29,7 +29,8 @@
 #include <unistd.h>
 #include "libbb.h"
 
-extern FILE *gz_open(FILE *compressed_file, int *pid)
+FILE *
+gz_open(FILE *compressed_file, int *pid)
 {
 	int unzip_pipe[2];
 
@@ -54,9 +55,35 @@ extern FILE *gz_open(FILE *compressed_file, int *pid)
 	return(fdopen(unzip_pipe[0], "r"));
 }
 
-extern void gz_close(int gunzip_pid)
+int
+gz_close(int gunzip_pid)
 {
-	if (waitpid(gunzip_pid, NULL, 0) == -1) {
-		perror_msg("%s wait", __FUNCTION__);
+	int status;
+	int ret;
+
+	if (waitpid(gunzip_pid, &status, 0) == -1) {
+		perror_msg("%s: waitpid", __FUNCTION__);
+		return -1;
 	}
+	
+	if (WIFSIGNALED(status)) {
+		error_msg("%s: unzip process killed by signal %d\n",
+			__FUNCTION__, WTERMSIG(status));
+		return -1;
+	}
+
+	if (!WIFEXITED(status)) {
+		/* shouldn't happen */
+		error_msg("%s: Your system is broken: got status %d from waitpid\n",
+				__FUNCTION__, status);
+		return -1;
+	}
+
+	if ((ret = WEXITSTATUS(status))) {
+		error_msg("%s: unzip process failed with return code %d.\n",
+				__FUNCTION__, ret);
+		return -1;
+	}
+
+	return 0;
 }

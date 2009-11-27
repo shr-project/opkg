@@ -624,6 +624,7 @@ deb_extract(const char *package_filename, FILE *out_stream,
 	char *output_buffer = NULL;
 	char *ared_file = NULL;
 	char ar_magic[8];
+	int gz_err;
 
 	*err = 0;
 
@@ -678,7 +679,9 @@ deb_extract(const char *package_filename, FILE *out_stream,
 						extract_function, prefix,
 						file_list, err);
 				fclose(uncompressed_stream);
-				gz_close(gunzip_pid);
+				gz_err = gz_close(gunzip_pid);
+				if (gz_err)
+					*err = -1;
 				free_header_ar(ar_header);
 				break;
 			}
@@ -726,7 +729,9 @@ deb_extract(const char *package_filename, FILE *out_stream,
 
 				free_header_tar(tar_header);
 				fclose(uncompressed_stream);
-				gz_close(gunzip_pid);
+				gz_err = gz_close(gunzip_pid);
+				if (gz_err)
+					*err = -1;
 				free_header_tar(tar_header);
 				break;
 			}
@@ -734,7 +739,9 @@ deb_extract(const char *package_filename, FILE *out_stream,
 			free_header_tar(tar_header);
 		}
 		fclose(unzipped_opkg_stream);
-		gz_close(unzipped_opkg_pid);
+		gz_err = gz_close(unzipped_opkg_pid);
+		if (gz_err)
+			*err = -1;
 
 		goto cleanup;
 	} else {
