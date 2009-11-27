@@ -329,8 +329,14 @@ remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
      pkg_t *owner;
      int rootdirlen = 0;
 
-     str_list_init(&installed_dirs);
      installed_files = pkg_get_installed_files(conf, pkg);
+     if (installed_files == NULL) {
+	     opkg_message(conf, OPKG_ERROR, "Failed to determine installed "
+		     "files for %s. None removed.\n", pkg->name);
+	     return;
+     }
+
+     str_list_init(&installed_dirs);
 
      /* don't include trailing slash */
      if (conf->offline_root)

@@ -309,8 +309,11 @@ pkg_init_from_file(opkg_conf_t *conf, pkg_t *pkg, const char *filename)
 	}
 
 	err = pkg_extract_control_file_to_stream(pkg, control_file);
-	if (err)
+	if (err) {
+		opkg_message(conf, OPKG_ERROR, "Failed to extract control file"
+				" from %s\n", filename);
 		goto err2;
+	}
 
 	rewind(control_file);
 
@@ -1152,12 +1155,14 @@ pkg_get_installed_files(opkg_conf_t *conf, pkg_t *pkg)
 	  err = pkg_extract_data_file_names_to_stream(pkg, list_file);
 	  if (err) {
 	       opkg_message(conf, OPKG_ERROR, "%s: Error extracting file list "
-			       "from %s: %s\n", __FUNCTION__,
-			       pkg->local_filename, strerror(err));
+			       "from %s\n", __FUNCTION__,
+			       pkg->local_filename);
 	       fclose(list_file);
 	       unlink(list_file_name);
 	       free(list_file_name);
-	       return pkg->installed_files;
+	       str_list_deinit(pkg->installed_files);
+	       pkg->installed_files = NULL;
+	       return NULL;
 	  }
 	  rewind(list_file);
      } else {
@@ -1436,7 +1441,8 @@ pkg_info_preinstall_check(opkg_conf_t *conf)
 	  str_list_t *installed_files = pkg_get_installed_files(conf, pkg); /* this causes installed_files to be cached */
 	  str_list_elt_t *iter, *niter;
 	  if (installed_files == NULL) {
-	       opkg_message(conf, OPKG_ERROR, "No installed files for pkg %s\n", pkg->name);
+	       opkg_message(conf, OPKG_ERROR, "Failed to determine installed "
+			       "files for pkg %s.\n", pkg->name);
 	       break;
 	  }
 	  for (iter = str_list_first(installed_files), niter = str_list_next(installed_files, iter); 

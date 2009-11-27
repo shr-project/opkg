@@ -146,8 +146,12 @@ check_conflicts_for(opkg_conf_t *conf, pkg_t *pkg)
 static int
 update_file_ownership(opkg_conf_t *conf, pkg_t *new_pkg, pkg_t *old_pkg)
 {
-     str_list_t *new_list = pkg_get_installed_files(conf, new_pkg);
+     str_list_t *new_list, *old_list;
      str_list_elt_t *iter, *niter;
+
+     new_list = pkg_get_installed_files(conf, new_pkg);
+     if (new_list == NULL)
+	     return -1;
 
      for (iter = str_list_first(new_list), niter = str_list_next(new_list, iter); 
              iter; 
@@ -159,8 +163,14 @@ update_file_ownership(opkg_conf_t *conf, pkg_t *new_pkg, pkg_t *old_pkg)
 	  if (!owner || (owner == old_pkg))
 	       file_hash_set_file_owner(conf, new_file, new_pkg);
      }
+
      if (old_pkg) {
-	  str_list_t *old_list = pkg_get_installed_files(conf, old_pkg);
+	  old_list = pkg_get_installed_files(conf, old_pkg);
+	  if (old_list == NULL) {
+     		  pkg_free_installed_files(new_pkg);
+		  return -1;
+	  }
+
 	  for (iter = str_list_first(old_list), niter = str_list_next(old_list, iter); 
                   iter; 
                   iter = niter, niter = str_list_next(old_list, niter)) {
@@ -756,6 +766,9 @@ check_data_file_clashes(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
      int clashes = 0;
 
      files_list = pkg_get_installed_files(conf, pkg);
+     if (files_list == NULL)
+	     return -1;
+
      for (iter = str_list_first(files_list), niter = str_list_next(files_list, iter); 
              iter; 
              iter = niter, niter = str_list_next(files_list, iter)) {
@@ -829,6 +842,9 @@ check_data_file_clashes(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
      return clashes;
 }
 
+/*
+ * XXX: This function sucks, as does the below comment.
+ */
 static int
 check_data_file_clashes_change(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 {
@@ -845,9 +861,10 @@ check_data_file_clashes_change(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
 
      char *root_filename = NULL;
 
-     int clashes = 0;
-
      files_list = pkg_get_installed_files(conf, pkg);
+     if (files_list == NULL)
+	     return -1;
+
      for (iter = str_list_first(files_list), niter = str_list_next(files_list, iter); 
              iter; 
              iter = niter, niter = str_list_next(files_list, niter)) {
@@ -888,7 +905,7 @@ check_data_file_clashes_change(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
      }
      pkg_free_installed_files(pkg);
 
-     return clashes;
+     return 0;
 }
 
 static int
@@ -931,12 +948,15 @@ remove_obsolesced_files(opkg_conf_t *conf, pkg_t *pkg, pkg_t *old_pkg)
      str_list_elt_t *nf;
      hash_table_t new_files_table;
 
-     if (old_pkg == NULL) {
-	  return 0;
-     }
-
      old_files = pkg_get_installed_files(conf, old_pkg);
+     if (old_files == NULL)
+	  return -1;
+
      new_files = pkg_get_installed_files(conf, pkg);
+     if (new_files == NULL) {
+          pkg_free_installed_files(old_pkg);
+	  return -1;
+     }
 
      new_files_table.entries = NULL;
      hash_table_init("new_files" , &new_files_table, 20);
@@ -1403,7 +1423,11 @@ opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 #endif
 
      if (pkg->tmp_unpack_dir == NULL) {
-	  unpack_pkg_control_files(conf, pkg);
+	  if (unpack_pkg_control_files(conf, pkg) == -1) {
+	       opkg_message(conf, OPKG_ERROR, "Failed to unpack control"
+			      " files from %s.\n", pkg->local_filename);
+	       return -1;
+	  }
      }
 
      /* We should update the filelist here, so that upgrades of packages that split will not fail. -Jamey 27-MAR-03 */
@@ -1473,7 +1497,11 @@ opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 	       } else {
 		    opkg_message(conf, OPKG_INFO,
 				 "  removing obsolesced files\n");
-		    remove_obsolesced_files(conf, pkg, old_pkg);
+		    if (remove_obsolesced_files(conf, pkg, old_pkg)) {
+			opkg_message(conf, OPKG_ERROR, "Failed to determine "
+					"obsolete files from previously "
+					"installed %s\n", old_pkg->name);
+		    }
 	       }
 
                /* removing files from old package, to avoid ghost files */ 
@@ -1484,17 +1512,33 @@ opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 
 	  opkg_message(conf, OPKG_INFO,
 		       "  installing maintainer scripts\n");
-	  install_maintainer_scripts(conf, pkg, old_pkg);
+	  if (install_maintainer_scripts(conf, pkg, old_pkg)) {
+		opkg_message(conf, OPKG_ERROR, "Failed to extract maintainer"
+			       " scripts for %s. Package debris may remain!\n",
+			       pkg->name);
+		goto pkg_is_hosed;
+	  }
 
 	  /* the following just returns 0 */
 	  remove_disappeared(conf, pkg);
 
 	  opkg_message(conf, OPKG_INFO,
 		       "  installing data files\n");
-	  install_data_files(conf, pkg);
 
-/* read comments from function for detail but I will execute this here as all other tests are ok.*/
+	  if (install_data_files(conf, pkg)) {
+		opkg_message(conf, OPKG_ERROR, "Failed to extract data files "
+			       "for %s. Package debris may remain!\n",
+			       pkg->name);
+		goto pkg_is_hosed;
+	  }
+
 	  err = check_data_file_clashes_change(conf, pkg, old_pkg);
+	  if (err) {
+		opkg_message(conf, OPKG_ERROR,
+				"check_data_file_clashes_change() failed for "
+			       "for files belonging to %s.\n",
+			       pkg->name);
+	  }
 
 	  opkg_message(conf, OPKG_INFO,
 		       "  resolving conf files\n");
@@ -1537,6 +1581,7 @@ opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      UNWIND_REMOVE_INSTALLED_REPLACEES:
 	  pkg_remove_installed_replacees_unwind(conf, replacees);
 
+pkg_is_hosed:
 	  opkg_message(conf, OPKG_INFO,
 		       "Failed.\n");
 

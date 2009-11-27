@@ -306,7 +306,7 @@ int opkg_prepare_url_for_install(opkg_conf_t *conf, const char *url, char **name
 
      if (!pkg->architecture) {
 	  opkg_message(conf, OPKG_ERROR, "Package %s has no Architecture defined.\n", pkg->name);
-	  return -EINVAL;
+	  return -1;
      }
 
      pkg->dest = conf->default_dest;

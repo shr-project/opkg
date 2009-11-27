@@ -538,7 +538,7 @@ static int opkg_install_cmd(opkg_conf_t *conf, int argc, char **argv)
 
           opkg_message(conf, OPKG_DEBUG2, "Debug install_cmd: %s  \n",arg );
           err = opkg_prepare_url_for_install(conf, arg, &argv[i]);
-          if (err != EINVAL && err != 0)
+          if (err)
               return err;
      }
      pkg_info_preinstall_check(conf);
@@ -574,7 +574,7 @@ static int opkg_upgrade_cmd(opkg_conf_t *conf, int argc, char **argv)
 	       char *arg = argv[i];
 
                err = opkg_prepare_url_for_install(conf, arg, &arg);
-               if (err != EINVAL && err != 0)
+               if (err)
                    return err;
 	  }
 	  pkg_info_preinstall_check(conf);
