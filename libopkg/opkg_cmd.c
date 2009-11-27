@@ -758,7 +758,7 @@ static int opkg_info_status_cmd(opkg_conf_t *conf, int argc, char **argv, int in
 		    conffile_t *cf = (conffile_t *)iter->data;
 		    int modified = conffile_has_been_modified(conf, cf);
 		    if (cf->value)
-		        opkg_message(conf, OPKG_NOTICE,
+		        opkg_message(conf, OPKG_INFO,
 				"conffile=%s md5sum=%s modified=%d\n",
 				 cf->name, cf->value, modified);
 	       }
