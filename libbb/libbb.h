@@ -81,7 +81,7 @@ enum extract_functions_e {
 	extract_verbose_list = 1,
 	extract_list = 2,
 	extract_one_to_buffer = 4,
-	extract_to_stdout = 8,
+	extract_to_stream = 8,
 	extract_all_to_fs = 16,
 	extract_preserve_date = 32,
 	extract_data_tar_gz = 64,

@@ -31,7 +31,7 @@ int pkg_extract_control_file_to_stream(pkg_t *pkg, FILE *stream)
 {
     deb_extract(pkg->local_filename, stream,
 			       extract_control_tar_gz
-			       | extract_to_stdout, /* to stream actually */
+			       | extract_to_stream,
 			       NULL, "./control");
 
     return 0;

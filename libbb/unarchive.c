@@ -121,7 +121,7 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 	}
 
 
-	if (function & extract_to_stdout) {
+	if (function & extract_to_stream) {
 		if (S_ISREG(file_entry->mode)) {
 			copy_file_chunk(src_stream, out_stream, file_entry->size);			
 			archive_offset += file_entry->size;
