@@ -149,7 +149,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 	       if (opkg_conf_parse_file(conf, args->conf_file,
 				    &conf->pkg_src_list, &tmp_dest_nv_pair_list)<0) {
                    /* Memory leakage from opkg_conf_parse-file */
-                   return OPKG_CONF_ERR_PARSE;
+                   return -1;
                }
      }
 
@@ -177,14 +177,14 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 		    if ( opkg_conf_parse_file(conf, globbuf.gl_pathv[i], 
 				         &conf->pkg_src_list, &tmp_dest_nv_pair_list)<0) {
                         /* Memory leakage from opkg_conf_parse-file */
-                        return OPKG_CONF_ERR_PARSE;
+                        return -1;
 	            }
                     if (offline_root != conf->offline_root) {
                         opkg_message(conf, OPKG_ERROR,
 					"Config file %s, within an offline "
 					"root contains option offline_root.\n",
 				       globbuf.gl_pathv[i]);
-                        return OPKG_CONF_ERR_PARSE;
+                        return -1;
                     }
 	  }
      }
@@ -215,7 +215,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
        opkg_message (conf, OPKG_ERROR, "Could not lock %s: %s\n",
                  lock_file, strerror(errno_copy));
        free(lock_file);
-       return OPKG_CONF_ERR_LOCK;
+       return -1;
      }
      free(lock_file);
 
@@ -233,7 +233,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 	  opkg_message(conf, OPKG_ERROR,
 			  "%s: Creating temp dir %s failed: %s\n",
 			  __FUNCTION__, tmp2, strerror(errno));
-	  return OPKG_CONF_ERR_TMP_DIR;
+	  return -1;
      }
 
      pkg_hash_init("pkg-hash", &conf->pkg_hash, OPKG_CONF_DEFAULT_HASH_LEN);
@@ -338,7 +338,7 @@ int opkg_conf_init(opkg_conf_t *conf, const args_t *args)
 	     err = opkg_conf_set_default_dest(conf, args->dest);
 	     if (err) {
                   nv_pair_list_deinit(&tmp_dest_nv_pair_list);
-	          return OPKG_CONF_ERR_DEFAULT_DEST;
+	          return -1;
 	     }
         }
      }

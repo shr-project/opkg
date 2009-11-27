@@ -513,18 +513,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   if (err)
   {
     opkg_package_free (pdata.package);
-    switch (err)
-    {
-      case OPKG_INSTALL_ERR_NOT_TRUSTED: return OPKG_GPG_ERROR;
-      case OPKG_INSTALL_ERR_DOWNLOAD: return OPKG_DOWNLOAD_FAILED;
-      case OPKG_INSTALL_ERR_DEPENDENCIES:
-      case OPKG_INSTALL_ERR_CONFLICTS: return OPKG_DEPENDENCIES_FAILED;
-      case OPKG_INSTALL_ERR_ALREADY_INSTALLED: return OPKG_PACKAGE_ALREADY_INSTALLED;
-      case OPKG_INSTALL_ERR_SIGNATURE: return OPKG_GPG_ERROR;
-      case OPKG_INSTALL_ERR_MD5: return OPKG_MD5_ERROR;
-      case OPKG_INSTALL_ERR_SHA256: return OPKG_SHA256_ERROR;
-      default: return OPKG_UNKNOWN_ERROR;
-    }
+    return OPKG_UNKNOWN_ERROR;
   }
 
   progress (pdata, 75);
@@ -651,20 +640,8 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   /* opkg_upgrade_pkg returns the error codes of opkg_install_pkg */
   if (err)
   {
-
     opkg_package_free (pdata.package);
-    switch (err)
-    {
-      case OPKG_INSTALL_ERR_NOT_TRUSTED: return OPKG_GPG_ERROR;
-      case OPKG_INSTALL_ERR_DOWNLOAD: return OPKG_DOWNLOAD_FAILED;
-      case OPKG_INSTALL_ERR_DEPENDENCIES:
-      case OPKG_INSTALL_ERR_CONFLICTS: return OPKG_DEPENDENCIES_FAILED;
-      case OPKG_INSTALL_ERR_ALREADY_INSTALLED: return OPKG_PACKAGE_ALREADY_INSTALLED;
-      case OPKG_INSTALL_ERR_SIGNATURE: return OPKG_GPG_ERROR;
-      case OPKG_INSTALL_ERR_MD5: return OPKG_MD5_ERROR;
-      case OPKG_INSTALL_ERR_SHA256: return OPKG_SHA256_ERROR;
-      default: return OPKG_UNKNOWN_ERROR;
-    }
+    return OPKG_UNKNOWN_ERROR;
   }
   progress (pdata, 75);
 

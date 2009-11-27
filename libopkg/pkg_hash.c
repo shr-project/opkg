@@ -256,7 +256,7 @@ pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf,
 		{
 		  opkg_message (conf, OPKG_ERROR, "Packages were found, but none compatible with the architectures configured\n");
 		  if (err)
-		    *err = OPKG_PKG_HAS_NO_AVAILABLE_ARCH;
+		    *err = -1;
 		}
 	  }
      }

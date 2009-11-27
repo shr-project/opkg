@@ -244,7 +244,7 @@ opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 		       "\tyou enjoy that kind of pain, you can force opkg to proceed against\n"
 		       "\tits will with the option: --force-removal-of-essential-packages\n",
 		       pkg->name);
-	       return OPKG_PKG_IS_ESSENTIAL;
+	       return -1;
 	  }
      }
 
@@ -270,7 +270,7 @@ opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 	       if (!conf->force_removal_of_dependent_packages) {
 		    print_dependents_warning(conf, parent_pkg, pkg, dependents);
 		    free(dependents);
-		    return OPKG_PKG_HAS_DEPENDENTS;
+		    return -1;
 	       }
 
 	       /* remove packages depending on this package - Karthik */

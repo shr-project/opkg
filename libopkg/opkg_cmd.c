@@ -546,10 +546,8 @@ static int opkg_install_cmd(opkg_conf_t *conf, int argc, char **argv)
      for (i=0; i < argc; i++) {
 	  arg = argv[i];
           err = opkg_install_by_name(conf, arg);
-	  if (err == OPKG_PKG_HAS_NO_CANDIDATE) {
-	       opkg_message(conf, OPKG_ERROR,
-			    "Cannot find package %s.\n",
-			    arg);
+	  if (err) {
+	       opkg_message(conf, OPKG_ERROR, "Cannot find package %s.\n", arg);
 	  }
      }
 
