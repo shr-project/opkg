@@ -166,6 +166,7 @@ pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf,
      int i;
      int nprovides = 0;
      int nmatching = 0;
+     int wrong_arch_found = 0;
      pkg_vec_t *matching_pkgs;
      abstract_pkg_vec_t *matching_apkgs;
      abstract_pkg_vec_t *provided_apkg_vec;
@@ -253,13 +254,21 @@ pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf,
 	       }
 
 		if (vec->len > 0 && matching_pkgs->len < 1)
-		{
-		  opkg_message (conf, OPKG_ERROR, "Packages were found, but none compatible with the architectures configured\n");
-		  if (err)
-		    *err = -1;
-		}
+			wrong_arch_found = 1;
 	  }
      }
+
+     if (matching_pkgs->len < 1) {
+	  if (wrong_arch_found)
+	        opkg_message (conf, OPKG_ERROR, "Packages for %s found, but"
+			" incompatible with the architectures configured\n",
+			apkg->name);
+          pkg_vec_free(matching_pkgs);
+          abstract_pkg_vec_free(matching_apkgs);
+          abstract_pkg_vec_free(providers);
+	  return NULL;
+     }
+
 
      if (matching_pkgs->len > 1)
 	  pkg_vec_sort(matching_pkgs, pkg_name_version_and_architecture_compare);
