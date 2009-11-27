@@ -85,7 +85,8 @@ seek_sub_file(FILE *src_stream, const int count)
 static char *
 extract_archive(FILE *src_stream, FILE *out_stream,
 		const file_header_t *file_entry, const int function,
-		const char *prefix)
+		const char *prefix,
+		int *err)
 {
 	FILE *dst_stream = NULL;
 	char *full_name = NULL;
@@ -93,6 +94,7 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 	char *buffer = NULL;
 	struct utimbuf t;
 
+	*err = 0;
 
 	/* prefix doesnt have to be a proper path it may prepend 
 	 * the filename as well */
@@ -102,9 +104,9 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 		char *path = file_entry->name;
 		if (strncmp("./", path, 2) == 0) {
 			path += 2;
-			if (strlen(path) == 0) {
-				return(NULL);
-			}
+			if (strlen(path) == 0)
+				/* Do nothing, current dir already exists. */
+				return NULL;
 		}
 		full_name = xmalloc(strlen(prefix) + strlen(path) + 1);
 		strcpy(full_name, prefix);
@@ -123,7 +125,7 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 
 	if (function & extract_to_stream) {
 		if (S_ISREG(file_entry->mode)) {
-			copy_file_chunk(src_stream, out_stream, file_entry->size);			
+			*err = copy_file_chunk(src_stream, out_stream, file_entry->size);			
 			archive_offset += file_entry->size;
 		}
 	}
@@ -147,6 +149,7 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 				}
 			} else {
 				if ((function & extract_quiet) != extract_quiet) {
+					*err = -1;
 					error_msg("%s not created: newer or same age file exists", file_entry->name);
 				}
 				seek_sub_file(src_stream, file_entry->size);
@@ -159,6 +162,7 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 			parent = dirname(buf);
 			if (make_directory (parent, -1, FILEUTILS_RECUR) != 0) {
 				if ((function & extract_quiet) != extract_quiet) {
+					*err = -1;
 					error_msg("couldn't create leading directories");
 				}
 			}
@@ -169,12 +173,14 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 				if (file_entry->link_name) { /* Found a cpio hard link */
 					if (link(full_link_name, full_name) != 0) {
 						if ((function & extract_quiet) != extract_quiet) {
+							*err = -1;
 							perror_msg("Cannot link from %s to '%s'",
 								file_entry->name, file_entry->link_name);
 						}
 					}
 				} else {
 					if ((dst_stream = wfopen(full_name, "w")) == NULL) {
+						*err = -1;
 						seek_sub_file(src_stream, file_entry->size);
 						goto cleanup;
 					}
@@ -187,7 +193,8 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 				if (stat_res != 0) {
 					if (mkdir(full_name, file_entry->mode) < 0) {
 						if ((function & extract_quiet) != extract_quiet) {
-							perror_msg("extract_archive: %s", full_name);
+							*err = -1;
+							perror_msg("%s: %s", __FUNCTION__, full_name);
 						}
 					}
 				}
@@ -195,6 +202,7 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 			case S_IFLNK:
 				if (symlink(file_entry->link_name, full_name) < 0) {
 					if ((function & extract_quiet) != extract_quiet) {
+						*err = -1;
 						perror_msg("Cannot create symlink from %s to '%s'", file_entry->name, file_entry->link_name);
 					}
 					goto cleanup;
@@ -206,13 +214,15 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 			case S_IFIFO:
 				if (mknod(full_name, file_entry->mode, file_entry->device) == -1) {
 					if ((function & extract_quiet) != extract_quiet) {
+						*err = -1;
 						perror_msg("Cannot create node %s", file_entry->name);
 					}
 					goto cleanup;
 				}
 				break;
                          default:
-                            perror_msg("Don't know how to handle %s", full_name);
+				*err = -1;
+				perror_msg("Don't know how to handle %s", full_name);
 
 		}
 
@@ -256,7 +266,7 @@ cleanup:
         if ( full_link_name )
 	    free(full_link_name);
 
-	return(buffer); /* Maybe we should say if failed */
+	return buffer;
 }
 
 static char *
@@ -265,17 +275,20 @@ unarchive(FILE *src_stream, FILE *out_stream,
 		void (*free_headers)(file_header_t *),
 		const int extract_function,
 		const char *prefix,
-		const char **extract_names)
+		const char **extract_names,
+		int *err)
 {
 	file_header_t *file_entry;
 	int extract_flag;
 	int i;
 	char *buffer = NULL;
 
+	*err = 0;
+
 	archive_offset = 0;
 	while ((file_entry = get_headers(src_stream)) != NULL) {
 		extract_flag = TRUE;
-		/* fprintf(stderr, __FUNCTION__ " getting headers\n"); */
+
 		if (extract_names != NULL) {
 			int found_flag = FALSE;
 			for(i = 0; extract_names[i] != 0; i++) {
@@ -294,22 +307,24 @@ unarchive(FILE *src_stream, FILE *out_stream,
 					extract_flag = FALSE;
 				}
 			}
-
 		}
 
 		if (extract_flag == TRUE) {
-			/* fprintf(stderr, __FUNCTION__ " extract?\n"); */
-			buffer = extract_archive(src_stream, out_stream, file_entry, extract_function, prefix);
-			/* fprintf(stderr, __FUNCTION__ " extracted\n"); */
+			buffer = extract_archive(src_stream, out_stream,
+					file_entry, extract_function,
+					prefix, err);
+			if (*err) {
+				free_headers(file_entry);
+				break;
+			}
 		} else {
 			/* seek past the data entry */
 			seek_sub_file(src_stream, file_entry->size);
 		}
 		free_headers(file_entry);
 	}
-	/*fprintf(stderr, __FUNCTION__ " goin home\n");*/
-	
-	return(buffer);
+
+	return buffer;
 }
 
 static file_header_t *
@@ -600,7 +615,8 @@ free_header_tar(file_header_t *tar_entry)
 
 char *
 deb_extract(const char *package_filename, FILE *out_stream, 
-		  const int extract_function, const char *prefix, const char *filename)
+	const int extract_function, const char *prefix,
+	const char *filename, int *err)
 {
 	FILE *deb_stream = NULL;
 	file_header_t *ar_header = NULL;
@@ -608,6 +624,8 @@ deb_extract(const char *package_filename, FILE *out_stream,
 	char *output_buffer = NULL;
 	char *ared_file = NULL;
 	char ar_magic[8];
+
+	*err = 0;
 
 	if (filename != NULL) {
 		file_list = xmalloc(sizeof(char *) * 2);
@@ -622,12 +640,14 @@ deb_extract(const char *package_filename, FILE *out_stream,
 		ared_file = "data.tar.gz";
 	} else {
                 fprintf(stderr, "no file specified to extract -- extract_function=%x\n", extract_function);
+		*err = -1;
 		goto cleanup;
         }
 
 	/* open the debian package to be worked on */
 	deb_stream = wfopen(package_filename, "r");
 	if (deb_stream == NULL) {
+		*err = -1;
 		goto cleanup;
 	}
 	/* set the buffer size */
@@ -635,7 +655,7 @@ deb_extract(const char *package_filename, FILE *out_stream,
 
 	/* check ar magic */
 	fread(ar_magic, 1, 8, deb_stream);
-	/*fprintf(stderr, "deb_extract ar_magic=%08x\n", *(long *)ar_magic);*/
+
 	if (strncmp(ar_magic,"!<arch>",7) == 0) {
 		archive_offset = 8;
 
@@ -646,11 +666,17 @@ deb_extract(const char *package_filename, FILE *out_stream,
 				/* open a stream of decompressed data */
 				uncompressed_stream = gz_open(deb_stream, &gunzip_pid);
 				if (uncompressed_stream == NULL) {
+					printf("%s: %d\n", __FUNCTION__, __LINE__);
+					*err = -1;
 					goto cleanup;
 				}
 
 				archive_offset = 0;
-				output_buffer = unarchive(uncompressed_stream, out_stream, get_header_tar, free_header_tar, extract_function, prefix, file_list);
+				output_buffer = unarchive(uncompressed_stream,
+						out_stream, get_header_tar,
+						free_header_tar,
+						extract_function, prefix,
+						file_list, err);
 				fclose(uncompressed_stream);
 				gz_close(gunzip_pid);
 				free_header_ar(ar_header);
@@ -669,10 +695,10 @@ deb_extract(const char *package_filename, FILE *out_stream,
 		fseek(deb_stream, 0, SEEK_SET);
 		unzipped_opkg_stream = gz_open(deb_stream, &unzipped_opkg_pid);
 		if (unzipped_opkg_stream == NULL) {
+			*err = -1;
 			goto cleanup;
 		}
 		
-                /*fprintf(stderr, __FUNCTION__ ": processing opkg %s -- ared_file=%s\n", package_filename, ared_file);*/
 		/* walk through outer tar file to find ared_file */
 		while ((tar_header = get_header_tar(unzipped_opkg_stream)) != NULL) {
                         int name_offset = 0;
@@ -684,18 +710,20 @@ deb_extract(const char *package_filename, FILE *out_stream,
 				/* open a stream of decompressed data */
 				uncompressed_stream = gz_open(unzipped_opkg_stream, &gunzip_pid);
 				if (uncompressed_stream == NULL) {
+					*err = -1;
 					goto cleanup;
 				}
 				archive_offset = 0;
-                                /*fprintf(stderr, __FUNCTION__ ":%d: here -- found file\n", __LINE__);*/
+
 				output_buffer = unarchive(uncompressed_stream, 
 							  out_stream, 
 							  get_header_tar,
 							  free_header_tar,
 							  extract_function, 
 							  prefix, 
-							  file_list);
-                                /*fprintf(stderr, __FUNCTION__ ":%d: unarchive complete\n", __LINE__);*/
+							  file_list,
+							  err);
+
 				free_header_tar(tar_header);
 				fclose(uncompressed_stream);
 				gz_close(gunzip_pid);
@@ -707,10 +735,11 @@ deb_extract(const char *package_filename, FILE *out_stream,
 		}
 		fclose(unzipped_opkg_stream);
 		gz_close(unzipped_opkg_pid);
-                /*fprintf(stderr, __FUNCTION__ ":%d: done\n", __LINE__);*/
+
 		goto cleanup;
 	} else {
-		error_msg_and_die("invalid magic");
+		*err = -1;
+		error_msg("%s: invalid magic", package_filename);
 	}
 
 cleanup:

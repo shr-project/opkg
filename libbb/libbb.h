@@ -94,7 +94,8 @@ enum extract_functions_e {
 };
 
 char *deb_extract(const char *package_filename, FILE *out_stream,
-		const int extract_function, const char *prefix, const char *filename);
+		const int extract_function, const char *prefix,
+		const char *filename, int *err);
 
 extern int unzip(FILE *l_in_file, FILE *l_out_file);
 extern void gz_close(int gunzip_pid);
