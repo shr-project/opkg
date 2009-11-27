@@ -1189,7 +1189,7 @@ resolve_conffiles(opkg_conf_t *conf, pkg_t *pkg)
 int
 opkg_install_by_name(opkg_conf_t *conf, const char *pkg_name)
 {
-     int cmp, err = 0;
+     int cmp;
      pkg_t *old, *new;
      char *old_version, *new_version;
 
@@ -1197,8 +1197,8 @@ opkg_install_by_name(opkg_conf_t *conf, const char *pkg_name)
      if (old)
         opkg_message(conf, OPKG_DEBUG2, "Old versions from pkg_hash_fetch %s \n",  old->version);
     
-     new = pkg_hash_fetch_best_installation_candidate_by_name(conf, pkg_name, &err);
-     if (new == NULL || err)
+     new = pkg_hash_fetch_best_installation_candidate_by_name(conf, pkg_name);
+     if (new == NULL)
 	return -1;
 
      opkg_message(conf, OPKG_DEBUG2, "Versions from pkg_hash_fetch in %s ", __FUNCTION__);

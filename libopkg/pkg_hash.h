@@ -41,8 +41,8 @@ pkg_t * pkg_hash_fetch_by_name_version(hash_table_t *hash,
 				       const char *pkg_name,
 				       const char * version);
 pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pkg_t *apkg, 
-						  int (*constraint_fcn)(pkg_t *pkg, void *data), void *cdata, int quiet, int *error);
-pkg_t *pkg_hash_fetch_best_installation_candidate_by_name(opkg_conf_t *conf, const char *name, int *err);
+						  int (*constraint_fcn)(pkg_t *pkg, void *data), void *cdata, int quiet);
+pkg_t *pkg_hash_fetch_best_installation_candidate_by_name(opkg_conf_t *conf, const char *name);
 pkg_t *pkg_hash_fetch_installed_by_name(hash_table_t *hash,
 					const char *pkg_name);
 pkg_t *pkg_hash_fetch_installed_by_name_dest(hash_table_t *hash,

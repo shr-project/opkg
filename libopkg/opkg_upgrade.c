@@ -34,7 +34,7 @@ opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old)
           return 0;
      }
 
-     new = pkg_hash_fetch_best_installation_candidate_by_name(conf, old->name, NULL);
+     new = pkg_hash_fetch_best_installation_candidate_by_name(conf, old->name);
      if (new == NULL) {
           old_version = pkg_version_str_alloc(old);
           opkg_message(conf, OPKG_NOTICE,
@@ -116,7 +116,7 @@ prepare_upgrade_list(opkg_conf_t *conf)
         int cmp;
 
         old = list_entry(node, pkg_t, list);
-        new = pkg_hash_fetch_best_installation_candidate_by_name(conf, old->name, NULL);
+        new = pkg_hash_fetch_best_installation_candidate_by_name(conf, old->name);
 
         if (new == NULL)
             continue;

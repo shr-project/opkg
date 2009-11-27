@@ -161,7 +161,7 @@ int pkg_hash_fetch_unsatisfied_dependencies(opkg_conf_t *conf, pkg_t * pkg,
 	       pkg_t *satisfying_pkg = 
 		    pkg_hash_fetch_best_installation_candidate(conf, satisfying_apkg, 
 							       pkg_installed_and_constraint_satisfied, 
-							       dependence_to_satisfy, 1, NULL);
+							       dependence_to_satisfy, 1);
                /* Being that I can't test constraing in pkg_hash, I will test it here */
 	       if (satisfying_pkg != NULL) {
                   if (!pkg_installed_and_constraint_satisfied ( satisfying_pkg,dependence_to_satisfy)) {
@@ -185,7 +185,7 @@ int pkg_hash_fetch_unsatisfied_dependencies(opkg_conf_t *conf, pkg_t * pkg,
 		    pkg_t *satisfying_pkg = 
 			 pkg_hash_fetch_best_installation_candidate(conf, satisfying_apkg, 
 								    pkg_constraint_satisfied, 
-								    dependence_to_satisfy, 1, NULL);
+								    dependence_to_satisfy, 1);
                     /* Being that I can't test constraing in pkg_hash, I will test it here too */
 	            if (satisfying_pkg != NULL) {
                          if (!pkg_constraint_satisfied ( satisfying_pkg,dependence_to_satisfy)) {

@@ -161,7 +161,7 @@ pkg_t *
 pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf,
 		abstract_pkg_t *apkg,
 		int (*constraint_fcn)(pkg_t *pkg, void *cdata),
-		void *cdata, int quiet, int *err)
+		void *cdata, int quiet)
 {
      int i;
      int nprovides = 0;
@@ -177,9 +177,6 @@ pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf,
      pkg_t *priorized_matching = NULL;
      pkg_t *held_pkg = NULL;
      pkg_t *good_pkg_by_name = NULL;
-
-     if (err)
-       *err = 0;
 
      if (apkg == NULL || apkg->provided_by == NULL || (apkg->provided_by->len == 0))
 	  return NULL;
@@ -402,7 +399,7 @@ pkg_vec_fetch_by_name(hash_table_t *hash, const char *pkg_name)
 
 pkg_t *
 pkg_hash_fetch_best_installation_candidate_by_name(opkg_conf_t *conf,
-		const char *name, int *err)
+		const char *name)
 {
 	hash_table_t *hash = &conf->pkg_hash;
 	abstract_pkg_t *apkg = NULL;
@@ -411,7 +408,7 @@ pkg_hash_fetch_best_installation_candidate_by_name(opkg_conf_t *conf,
 		return NULL;
 
 	return pkg_hash_fetch_best_installation_candidate(conf, apkg,
-				pkg_name_constraint_fcn, apkg->name, 0, err);
+				pkg_name_constraint_fcn, apkg->name, 0);
 }
 
 

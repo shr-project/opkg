@@ -411,7 +411,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
     return OPKG_PACKAGE_ALREADY_INSTALLED;
   }
 
-  new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, package_name, NULL);
+  new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, package_name);
   if (!new)
   {
     /* XXX: Error: Could not find package to install */
@@ -924,7 +924,9 @@ opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, v
     head  =  prepare_upgrade_list(opkg->conf);
     for (node=active_list_next(head, head); node; active_list_next(head,node)) {
         old = list_entry(node, pkg_t, list);
-        new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, old->name, NULL);
+        new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, old->name);
+	if (new == NULL)
+		continue;
         package = pkg_t_to_opkg_package_t (new);
         callback (opkg, package, user_data);
         opkg_package_free (package);
