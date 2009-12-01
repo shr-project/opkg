@@ -29,8 +29,13 @@
 
 #include <features.h>
 
+#ifndef FALSE
 #define FALSE   ((int) 0)
+#endif
+
+#ifndef TRUE
 #define TRUE    ((int) 1)
+#endif
 
 extern void error_msg(const char *s, ...) __attribute__ ((format (printf, 1, 2)));
 extern void error_msg_and_die(const char *s, ...) __attribute__ ((noreturn, format (printf, 1, 2)));

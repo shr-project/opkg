@@ -18,6 +18,16 @@
 */
 #include "config.h"
 
+#include "includes.h"
+#include "opkg_download.h"
+#include "opkg_message.h"
+
+#include "sprintf_alloc.h"
+#include "xsystem.h"
+#include "file_util.h"
+#include "opkg_defines.h"
+#include "libbb/libbb.h"
+
 #ifdef HAVE_CURL
 #include <curl/curl.h>
 #endif
@@ -38,16 +48,6 @@
 #include <openssl/pem.h>
 #include <openssl/hmac.h>
 #endif
-
-#include "includes.h"
-#include "opkg_download.h"
-#include "opkg_message.h"
-
-#include "sprintf_alloc.h"
-#include "xsystem.h"
-#include "file_util.h"
-#include "opkg_defines.h"
-#include "libbb/libbb.h"
 
 #ifdef HAVE_PATHFINDER
 #include "opkg_pathfinder.h"
