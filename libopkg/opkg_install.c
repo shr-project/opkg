@@ -48,7 +48,7 @@ satisfy_dependencies_for(opkg_conf_t *conf, pkg_t *pkg)
      int i, err;
      pkg_vec_t *depends = pkg_vec_alloc();
      pkg_t *dep;
-     char **unresolved = NULL;
+     char **tmp, **unresolved = NULL;
      int ndepends;
 
      ndepends = pkg_hash_fetch_unsatisfied_dependencies(conf, 
@@ -59,10 +59,13 @@ satisfy_dependencies_for(opkg_conf_t *conf, pkg_t *pkg)
 	  opkg_message(conf, OPKG_ERROR,
 		       "%s: Cannot satisfy the following dependencies for %s:\n\t",
 		       conf->force_depends ? "Warning" : "ERROR", pkg->name);
+	  tmp = unresolved;
 	  while (*unresolved) {
 	       opkg_message(conf, OPKG_ERROR, " %s", *unresolved);
+	       free(*unresolved);
 	       unresolved++;
 	  }
+	  free(tmp);
 	  opkg_message(conf, OPKG_ERROR, "\n");
 	  if (! conf->force_depends) {
 	       opkg_message(conf, OPKG_INFO,
