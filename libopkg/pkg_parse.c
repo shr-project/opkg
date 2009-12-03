@@ -351,16 +351,17 @@ pkg_parse_from_stream_nomalloc(pkg_t *pkg, FILE *fp, uint mask,
 			}
 
 			/*
-			 * Realloc and move buf past the data already read.
+			 * Realloc and point buf past the data already read,
+			 * at the NULL terminator inserted by fgets.
 			 * |<--------------- buf0len ----------------->|
 			 * |                     |<------- buflen ---->|
 			 * |---------------------|---------------------|
 			 * buf0                   buf
 			 */
-			buflen = buf0len;
+			buflen = buf0len +1;
 			buf0len *= 2;
 			*buf0 = xrealloc(*buf0, buf0len);
-			buf = *buf0 + buflen -1;
+			buf = *buf0 + buflen -2;
 
 			continue;
 		}
