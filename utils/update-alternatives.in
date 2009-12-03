@@ -95,10 +95,8 @@ find_best_alt() {
 
 	link=$OPKG_OFFLINE_ROOT/`head -n 1 $ad/$name`
 
-##	path=`sed -ne "1!p" $ad/$name | sort -nr -k2 | head -1 | sed 's/ .*//'`
-## busybox safe:
-	path=`sed -ne "1!p" $ad/$name | sed -e "s/\(.*\) \(.*\)/\2 \1/g" | sort -nr | head -n 1 | sed 's/[^ ]* //'`
-	if [ -z "$path" ]; then
+	prio=`sed -ne "1!p" $ad/$name | sed -e "s/\(.*\) \(.*\)/\2 \1/g" | sort -nr | head -n 1 | sed 's/ [^ ]*$//'`
+	if [ -z "$prio" ]; then
 		echo "update-alternatives: removing $link as no more alternatives exist for it"
 		rm $ad/$name
 		if [ -L $link ]; then
@@ -107,10 +105,20 @@ find_best_alt() {
 		return 0
 	fi
 
+	## Find last line with highest priority.
+	path=`grep "${prio}$" $ad/$name | tail -n 1 | sed 's/ [^ ]*$//'`
+
 	if [ ! -e $link -o -L $link ]; then
 		local link_dir=`dirname $link`
 		if [ ! -d $link_dir ]; then
 			mkdir -p $link_dir
+		fi
+		if [ -h $link -a -d $link ]; then
+			# If $link exists and the target is a directory,
+			# 'ln -sf $path $link' doesn't replace the link to
+			# that directory, it creates new link inside.
+			echo "update-alternatives: Removing $link".
+			rm -f $link
 		fi
 		ln -sf $path $link
 		echo "update-alternatives: Linking $link to $path"
