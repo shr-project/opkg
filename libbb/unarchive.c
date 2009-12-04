@@ -313,6 +313,7 @@ unarchive(FILE *src_stream, FILE *out_stream,
 			buffer = extract_archive(src_stream, out_stream,
 					file_entry, extract_function,
 					prefix, err);
+			*err = 0; /* XXX: ignore extraction errors */
 			if (*err) {
 				free_headers(file_entry);
 				break;
