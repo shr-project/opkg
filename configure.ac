@@ -5,7 +5,7 @@ AC_CONFIG_AUX_DIR([conf])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_MACRO_DIR([shave])
 
-AM_INIT_AUTOMAKE([opkg], [0.1.6])
+AM_INIT_AUTOMAKE([opkg], [0.1.7])
 AM_CONFIG_HEADER(libopkg/config.h)
 
 AC_CANONICAL_HOST
