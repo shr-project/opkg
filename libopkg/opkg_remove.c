@@ -21,7 +21,6 @@
 #include <glob.h>
 
 #include "opkg_remove.h"
-#include "opkg_error.h"
 #include "opkg_cmd.h"
 
 #include "file_util.h"
@@ -33,11 +32,11 @@
  * Every package implicitly provides itself.
  */
 int
-pkg_has_installed_dependents(opkg_conf_t *conf, abstract_pkg_t *parent_apkg, pkg_t *pkg, abstract_pkg_t *** pdependents)
+pkg_has_installed_dependents(pkg_t *pkg, abstract_pkg_t *** pdependents)
 {
      int nprovides = pkg->provides_count;
      abstract_pkg_t **provides = pkg->provides;
-     int n_installed_dependents = 0;
+     unsigned int n_installed_dependents = 0;
      int i;
      for (i = 0; i < nprovides; i++) {
 	  abstract_pkg_t *providee = provides[i];
@@ -82,7 +81,7 @@ pkg_has_installed_dependents(opkg_conf_t *conf, abstract_pkg_t *parent_apkg, pkg
 }
 
 static int
-opkg_remove_dependent_pkgs (opkg_conf_t *conf, pkg_t *pkg, abstract_pkg_t **dependents)
+opkg_remove_dependent_pkgs(pkg_t *pkg, abstract_pkg_t **dependents)
 {
     int i;
     int a;
@@ -91,8 +90,8 @@ opkg_remove_dependent_pkgs (opkg_conf_t *conf, pkg_t *pkg, abstract_pkg_t **depe
     abstract_pkg_t * ab_pkg;
 
     if((ab_pkg = pkg->parent) == NULL){
-	fprintf(stderr, "%s: unable to get dependent pkgs. pkg %s isn't in hash table\n",
-		__FUNCTION__, pkg->name);
+	opkg_msg(ERROR, "Internal error: pkg %s isn't in hash table\n",
+		pkg->name);
 	return 0;
     }
     
@@ -138,7 +137,7 @@ opkg_remove_dependent_pkgs (opkg_conf_t *conf, pkg_t *pkg, abstract_pkg_t **depe
     
     int err=0;
     for (i = 0; i < dependent_pkgs->len; i++) {
-        err = opkg_remove_pkg(conf, dependent_pkgs->pkgs[i],0);
+        err = opkg_remove_pkg(dependent_pkgs->pkgs[i],0);
         if (err) {
             pkg_vec_free(dependent_pkgs);
             break;
@@ -149,19 +148,19 @@ opkg_remove_dependent_pkgs (opkg_conf_t *conf, pkg_t *pkg, abstract_pkg_t **depe
 }
 
 static void
-print_dependents_warning(opkg_conf_t *conf, abstract_pkg_t *abpkg, pkg_t *pkg, abstract_pkg_t **dependents)
+print_dependents_warning(pkg_t *pkg, abstract_pkg_t **dependents)
 {
     abstract_pkg_t *dep_ab_pkg;
-    opkg_message(conf, OPKG_ERROR, "Package %s is depended upon by packages:\n", pkg->name);
+    opkg_msg(ERROR, "Package %s is depended upon by packages:\n", pkg->name);
     while ((dep_ab_pkg = *dependents++) != NULL) {
 	 if (dep_ab_pkg->state_status == SS_INSTALLED)
-	      opkg_message(conf, OPKG_ERROR, "\t%s\n", dep_ab_pkg->name);
+	      opkg_msg(ERROR, "\t%s\n", dep_ab_pkg->name);
     }
-    opkg_message(conf, OPKG_ERROR, "These might cease to work if package %s is removed.\n\n", pkg->name);
-    opkg_message(conf, OPKG_ERROR, "");
-    opkg_message(conf, OPKG_ERROR, "You can force removal of this package with --force-depends.\n");
-    opkg_message(conf, OPKG_ERROR, "You can force removal of this package and its dependents\n");
-    opkg_message(conf, OPKG_ERROR, "with --force-removal-of-dependent-packages\n");
+    opkg_msg(ERROR, "These might cease to work if package %s is removed.\n\n",
+		    pkg->name);
+    opkg_msg(ERROR, "Force removal of this package with --force-depends.\n");
+    opkg_msg(ERROR, "Force removal of this package and its dependents\n");
+    opkg_msg(ERROR, "with --force-removal-of-dependent-packages.\n");
 }
 
 /*
@@ -169,7 +168,7 @@ print_dependents_warning(opkg_conf_t *conf, abstract_pkg_t *abpkg, pkg_t *pkg, a
  * by the removal of pkg.
  */
 static int
-remove_autoinstalled(opkg_conf_t *conf, pkg_t *pkg)
+remove_autoinstalled(pkg_t *pkg)
 {
 	int i, j;
 	int n_deps;
@@ -187,7 +186,7 @@ remove_autoinstalled(opkg_conf_t *conf, pkg_t *pkg)
 		if (cdep->type != DEPEND)
 			continue;
 		for (j=0; j<cdep->possibility_count; j++) {
-			p = pkg_hash_fetch_installed_by_name (&conf->pkg_hash,
+			p = pkg_hash_fetch_installed_by_name(
 					cdep->possibilities[j]->pkg->name);
 
 			/* If the package is not installed, this could have
@@ -200,17 +199,14 @@ remove_autoinstalled(opkg_conf_t *conf, pkg_t *pkg)
 			if (!p->auto_installed)
 				continue;
 
-			n_deps = pkg_has_installed_dependents(conf, NULL, p,
-					&dependents);
+			n_deps = pkg_has_installed_dependents(p, &dependents);
 			if (n_deps == 0) {
-				 opkg_message(conf, OPKG_NOTICE,
-				               "%s was autoinstalled and is "
-					       "now orphaned, removing\n",
+				 opkg_msg(NOTICE, "%s was autoinstalled and is "
+					       "now orphaned, removing.\n",
 					       p->name);
-			         opkg_remove_pkg(conf, p, 0);
+			         opkg_remove_pkg(p, 0);
 			} else
-				opkg_message(conf, OPKG_INFO,
-						"%s was autoinstalled and is "
+				opkg_msg(INFO, "%s was autoinstalled and is "
 						"still required by %d "
 						"installed packages.\n",
 						p->name, n_deps);
@@ -224,7 +220,7 @@ remove_autoinstalled(opkg_conf_t *conf, pkg_t *pkg)
 }
 
 int
-opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
+opkg_remove_pkg(pkg_t *pkg, int from_upgrade)
 {
      int err;
      abstract_pkg_t *parent_pkg = NULL;
@@ -235,11 +231,12 @@ opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
  */
      if (pkg->essential && !from_upgrade) {
 	  if (conf->force_removal_of_essential_packages) {
-	       fprintf(stderr, "WARNING: Removing essential package %s under your coercion.\n"
+	       opkg_msg(NOTICE,
+		       "Removing essential package %s under your coercion.\n"
 		       "\tIf your system breaks, you get to keep both pieces\n",
 		       pkg->name);
 	  } else {
-	       fprintf(stderr, "ERROR: Refusing to remove essential package %s.\n"
+	       opkg_msg(NOTICE, "Refusing to remove essential package %s.\n"
 		       "\tRemoving an essential package may lead to an unusable system, but if\n"
 		       "\tyou enjoy that kind of pain, you can force opkg to proceed against\n"
 		       "\tits will with the option: --force-removal-of-essential-packages\n",
@@ -259,7 +256,7 @@ opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 	 && !(pkg->state_flag & SF_REPLACE)) {
 	  abstract_pkg_t **dependents;
 	  int has_installed_dependents = 
-	       pkg_has_installed_dependents(conf, parent_pkg, pkg, &dependents);
+	       pkg_has_installed_dependents(pkg, &dependents);
 
 	  if (has_installed_dependents) {
 	       /*
@@ -268,13 +265,13 @@ opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 		*/
 
 	       if (!conf->force_removal_of_dependent_packages) {
-		    print_dependents_warning(conf, parent_pkg, pkg, dependents);
+		    print_dependents_warning(pkg, dependents);
 		    free(dependents);
 		    return -1;
 	       }
 
 	       /* remove packages depending on this package - Karthik */
-	       err = opkg_remove_dependent_pkgs (conf, pkg, dependents);
+	       err = opkg_remove_dependent_pkgs(pkg, dependents);
 	       if (err) {
 	         free(dependents);
                  return err;
@@ -285,26 +282,26 @@ opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
      }
 
      if (from_upgrade == 0) {
-         opkg_message (conf, OPKG_NOTICE,
-	               "Removing package %s from %s...\n", pkg->name, pkg->dest->name);
+         opkg_msg(NOTICE, "Removing package %s from %s...\n",
+			 pkg->name, pkg->dest->name);
      }
      pkg->state_flag |= SF_FILELIST_CHANGED;
 
      pkg->state_want = SW_DEINSTALL;
      opkg_state_changed++;
 
-     pkg_run_script(conf, pkg, "prerm", "remove");
+     pkg_run_script(pkg, "prerm", "remove");
 
      /* DPKG_INCOMPATIBILITY: dpkg is slightly different here. It
 	maintains an empty filelist rather than deleting it. That seems
 	like a big pain, and I don't see that that should make a big
 	difference, but for anyone who wants tighter compatibility,
 	feel free to fix this. */
-     remove_data_files_and_list(conf, pkg);
+     remove_data_files_and_list(pkg);
 
-     pkg_run_script(conf, pkg, "postrm", "remove");
+     pkg_run_script(pkg, "postrm", "remove");
 
-     remove_maintainer_scripts(conf, pkg);
+     remove_maintainer_scripts(pkg);
      pkg->state_status = SS_NOT_INSTALLED;
 
      if (parent_pkg) 
@@ -312,13 +309,13 @@ opkg_remove_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 
      /* remove autoinstalled packages that are orphaned by the removal of this one */
      if (conf->autoremove)
-       remove_autoinstalled (conf, pkg);
+       remove_autoinstalled(pkg);
 
      return 0;
 }
 
 void
-remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
+remove_data_files_and_list(pkg_t *pkg)
 {
      str_list_t installed_dirs;
      str_list_t *installed_files;
@@ -329,9 +326,9 @@ remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
      pkg_t *owner;
      int rootdirlen = 0;
 
-     installed_files = pkg_get_installed_files(conf, pkg);
+     installed_files = pkg_get_installed_files(pkg);
      if (installed_files == NULL) {
-	     opkg_message(conf, OPKG_ERROR, "Failed to determine installed "
+	     opkg_msg(ERROR, "Failed to determine installed "
 		     "files for %s. None removed.\n", pkg->name);
 	     return;
      }
@@ -352,16 +349,20 @@ remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
 
 	  conffile = pkg_get_conffile(pkg, file_name+rootdirlen);
 	  if (conffile) {
-	       if (conffile_has_been_modified(conf, conffile)) {
-		    opkg_message (conf, OPKG_NOTICE,
-		                  "  not deleting modified conffile %s\n", file_name);
+	       if (conffile_has_been_modified(conffile)) {
+		    opkg_msg(NOTICE, "Not deleting modified conffile %s.\n",
+				    file_name);
 		    continue;
 	       }
 	  }
 
-	  opkg_message(conf, OPKG_INFO, "  deleting %s (noaction=%d)\n", file_name, conf->noaction);
-	  if (!conf->noaction)
+	  if (!conf->noaction) {
+	  	opkg_msg(INFO, "Deleting %s.\n", file_name, conf->noaction);
 	       unlink(file_name);
+	  } else
+	  	opkg_msg(INFO, "Not deleting %s. (noaction)\n",
+				file_name);
+
      }
 
      /* Remove empty directories */
@@ -372,7 +373,7 @@ remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
 		    file_name = (char *)iter->data;
 	    
 		    if (rmdir(file_name) == 0) {
-			 opkg_message(conf, OPKG_INFO, "  deleting %s\n", file_name);
+			 opkg_msg(INFO, "Deleting %s.\n", file_name);
 			 removed_a_dir = 1;
 			 str_list_remove(&installed_dirs, &iter);
 		    }
@@ -381,13 +382,13 @@ remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
      }
 
      pkg_free_installed_files(pkg);
-     pkg_remove_installed_files_list(conf, pkg);
+     pkg_remove_installed_files_list(pkg);
 
      /* Don't print warning for dirs that are provided by other packages */
      for (iter = str_list_first(&installed_dirs); iter; iter = str_list_next(&installed_dirs, iter)) {
 	  file_name = (char *)iter->data;
 
-	  owner = file_hash_get_file_owner(conf, file_name);
+	  owner = file_hash_get_file_owner(file_name);
 	  if (owner) {
 	       free(iter->data);
 	       iter->data = NULL;
@@ -405,7 +406,7 @@ remove_data_files_and_list(opkg_conf_t *conf, pkg_t *pkg)
 }
 
 void
-remove_maintainer_scripts(opkg_conf_t *conf, pkg_t *pkg)
+remove_maintainer_scripts(pkg_t *pkg)
 {
 	int i, err;
 	char *globpattern;
@@ -423,8 +424,7 @@ remove_maintainer_scripts(opkg_conf_t *conf, pkg_t *pkg)
 		return;
 
 	for (i = 0; i < globbuf.gl_pathc; i++) {
-		opkg_message(conf, OPKG_INFO, "deleting %s\n",
-				globbuf.gl_pathv[i]);
+		opkg_msg(INFO, "Deleting %s.\n", globbuf.gl_pathv[i]);
 		unlink(globbuf.gl_pathv[i]);
 	}
 	globfree(&globbuf);

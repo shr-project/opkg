@@ -24,10 +24,10 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
+#include <stdlib.h>
 #include <netdb.h>
 
-#include <features.h>
+#include "../libopkg/opkg_message.h"
 
 #ifndef FALSE
 #define FALSE   ((int) 0)
@@ -37,15 +37,20 @@
 #define TRUE    ((int) 1)
 #endif
 
-extern void error_msg(const char *s, ...) __attribute__ ((format (printf, 1, 2)));
-extern void error_msg_and_die(const char *s, ...) __attribute__ ((noreturn, format (printf, 1, 2)));
-extern void perror_msg(const char *s, ...);
-extern void perror_msg_and_die(const char *s, ...) __attribute__ ((noreturn));
-extern void archive_xread_all(int fd, char *buf, size_t count);
+#define error_msg(fmt, args...) opkg_msg(ERROR, fmt"\n", ##args)
+#define perror_msg(fmt, args...) opkg_perror(ERROR, fmt, ##args)
+#define error_msg_and_die(fmt, args...) \
+	do { \
+		error_msg(fmt, ##args); \
+		exit(EXIT_FAILURE); \
+	} while (0)
+#define perror_msg_and_die(fmt, args...) \
+	do { \
+		perror_msg(fmt, ##args); \
+		exit(EXIT_FAILURE); \
+	} while (0)
 
-/* These two are used internally -- you shouldn't need to use them */
-extern void verror_msg(const char *s, va_list p);
-extern void vperror_msg(const char *s, va_list p);
+extern void archive_xread_all(int fd, char *buf, size_t count);
 
 const char *mode_string(int mode);
 const char *time_string(time_t timeVal);
@@ -114,8 +119,5 @@ enum {
 	FILEUTILS_RECUR = 4,
 	FILEUTILS_FORCE = 8,
 };
-
-extern const char *applet_name;
-extern const char * const memory_exhausted;
 
 #endif /* __LIBBB_H__ */

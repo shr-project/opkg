@@ -46,8 +46,7 @@ void
 hash_table_init(const char *name, hash_table_t *hash, int len)
 {
 	if (hash->entries != NULL) {
-		fprintf(stderr, "ERROR: %s called on a non empty hash table\n",
-				__FUNCTION__);
+		opkg_msg(ERROR, "Internal error: non empty hash table.\n");
 		return;
 	}
 
@@ -114,7 +113,6 @@ void *hash_table_get(hash_table_t *hash, const char *key)
     if (hash_entry->key) 
     {
       if (strcmp(key, hash_entry->key) == 0) {
-         // opkg_message(NULL, OPKG_DEBUG, "Function: %s. Key found for '%s' \n", __FUNCTION__, key);
 	 hash->n_hits++;
 	 return hash_entry->data;
       }

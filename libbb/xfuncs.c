@@ -30,7 +30,7 @@ extern void *xmalloc(size_t size)
 {
 	void *ptr = malloc(size);
 	if (ptr == NULL && size != 0)
-		error_msg_and_die(memory_exhausted);
+		perror_msg_and_die("malloc");
 	return ptr;
 }
 
@@ -38,7 +38,7 @@ extern void *xrealloc(void *ptr, size_t size)
 {
 	ptr = realloc(ptr, size);
 	if (ptr == NULL && size != 0)
-		error_msg_and_die(memory_exhausted);
+		perror_msg_and_die("realloc");
 	return ptr;
 }
 
@@ -46,7 +46,7 @@ extern void *xcalloc(size_t nmemb, size_t size)
 {
 	void *ptr = calloc(nmemb, size);
 	if (ptr == NULL && nmemb != 0 && size != 0)
-		error_msg_and_die(memory_exhausted);
+		perror_msg_and_die("calloc");
 	return ptr;
 }
 
@@ -59,7 +59,7 @@ extern char * xstrdup (const char *s) {
 	t = strdup (s);
 
 	if (t == NULL)
-		error_msg_and_die(memory_exhausted);
+		perror_msg_and_die("strdup");
 
 	return t;
 }

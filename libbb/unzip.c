@@ -57,9 +57,6 @@ static unsigned long *crc_table = NULL;
 
 static unsigned long crc; /* shift register contents */
 
-/* Return codes from gzip */
-static const int ERROR = 1;
-
 /*
  * window size--must be a power of two, and
  *  at least 32K for zip's deflate method 
@@ -100,7 +97,7 @@ static const unsigned short mask_bits[] = {
 static void abort_gzip()
 {
 	error_msg("gzip aborted\n");
-	_exit(ERROR);
+	_exit(-1);
 }
 
 static void make_crc_table()
@@ -975,8 +972,7 @@ extern int unzip(FILE *l_in_file, FILE *l_out_file)
 	}
 
 	if (method < 0) {
-		printf("it failed\n");
-		return(exit_code);		/* error message already emitted */
+		return(exit_code);
 	}
 
 	make_crc_table();
@@ -987,7 +983,7 @@ extern int unzip(FILE *l_in_file, FILE *l_out_file)
 		int res = inflate();
 
 		if (res == 3) {
-			error_msg(memory_exhausted);
+			perror_msg("inflate");
 			exit_code = 1;
 		} else if (res != 0) {
 			error_msg("invalid compressed data--format violated");

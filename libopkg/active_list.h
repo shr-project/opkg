@@ -27,7 +27,7 @@ struct active_list {
 };
 
 
-struct active_list * active_list_head_new();
+struct active_list * active_list_head_new(void);
 void active_list_head_delete(struct active_list *);
 void active_list_init(struct active_list *ptr);
 void active_list_clear(struct active_list *head);

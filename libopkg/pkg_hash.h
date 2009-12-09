@@ -25,32 +25,28 @@
 #include "hash_table.h"
 
 
-void pkg_hash_init(const char *name, hash_table_t *hash, int len);
-void pkg_hash_deinit(hash_table_t *hash);
-void pkg_hash_map(hash_table_t *hash, void (*f)(void *data, void *entry), void *data);
+void pkg_hash_init(void);
+void pkg_hash_deinit(void);
 
-void pkg_hash_fetch_available(hash_table_t *hash, pkg_vec_t *available);
+void pkg_hash_fetch_available(pkg_vec_t *available);
 
-int pkg_hash_add_from_file(opkg_conf_t *conf, const char *file_name,
-			   pkg_src_t *src, pkg_dest_t *dest, int is_status_file);
-pkg_t *hash_insert_pkg(hash_table_t *hash, pkg_t *pkg, int set_status,opkg_conf_t *conf);
+int pkg_hash_add_from_file(const char *file_name, pkg_src_t *src,
+		pkg_dest_t *dest, int is_status_file);
+void hash_insert_pkg(pkg_t *pkg, int set_status);
 
-abstract_pkg_t * ensure_abstract_pkg_by_name(hash_table_t * hash, const char * pkg_name);
-void pkg_hash_fetch_all_installed(hash_table_t *hash, pkg_vec_t *installed);
-pkg_t * pkg_hash_fetch_by_name_version(hash_table_t *hash, 
-				       const char *pkg_name,
+abstract_pkg_t * ensure_abstract_pkg_by_name(const char * pkg_name);
+void pkg_hash_fetch_all_installed(pkg_vec_t *installed);
+pkg_t * pkg_hash_fetch_by_name_version(const char *pkg_name,
 				       const char * version);
-pkg_t *pkg_hash_fetch_best_installation_candidate(opkg_conf_t *conf, abstract_pkg_t *apkg, 
+pkg_t *pkg_hash_fetch_best_installation_candidate(abstract_pkg_t *apkg, 
 						  int (*constraint_fcn)(pkg_t *pkg, void *data), void *cdata, int quiet);
-pkg_t *pkg_hash_fetch_best_installation_candidate_by_name(opkg_conf_t *conf, const char *name);
-pkg_t *pkg_hash_fetch_installed_by_name(hash_table_t *hash,
-					const char *pkg_name);
-pkg_t *pkg_hash_fetch_installed_by_name_dest(hash_table_t *hash,
-					     const char *pkg_name,
+pkg_t *pkg_hash_fetch_best_installation_candidate_by_name(const char *name);
+pkg_t *pkg_hash_fetch_installed_by_name(const char *pkg_name);
+pkg_t *pkg_hash_fetch_installed_by_name_dest(const char *pkg_name,
 					     pkg_dest_t *dest);
 
-pkg_t *file_hash_get_file_owner(opkg_conf_t *conf, const char *file_name);
-void file_hash_set_file_owner(opkg_conf_t *conf, const char *file_name, pkg_t *pkg);
+pkg_t *file_hash_get_file_owner(const char *file_name);
+void file_hash_set_file_owner(const char *file_name, pkg_t *pkg);
 
 #endif
 

@@ -28,7 +28,6 @@
 
 #include "args.h"
 #include "pkg.h"
-#include "user.h"
 
 extern int opkg_op(int argc, char *argv[]); /* opkglib.c */
 

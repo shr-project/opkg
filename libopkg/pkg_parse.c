@@ -25,7 +25,7 @@
 #include "libbb/libbb.h"
 
 static int
-is_field(char *type, const char *line)
+is_field(const char *type, const char *line)
 {
 	if (!strncmp(line, type, strlen(type)))
 		return 1;
@@ -33,7 +33,7 @@ is_field(char *type, const char *line)
 }
 
 static char *
-parse_simple(char *type, const char *line)
+parse_simple(const char *type, const char *line)
 {
 	return trim_xstrdup(line + strlen(type) + 1);
 }
@@ -42,7 +42,7 @@ parse_simple(char *type, const char *line)
  * Parse a comma separated string into an array.
  */
 static char **
-parse_comma_separated(const char *raw, int *count)
+parse_comma_separated(const char *raw, unsigned int *count)
 {
 	char **depends = NULL;
 	const char *start, *end;
@@ -90,8 +90,8 @@ parse_status(pkg_t *pkg, const char *sstr)
 
 	if (sscanf(sstr, "Status: %63s %63s %63s",
 				sw_str, sf_str, ss_str) != 3) {
-		fprintf(stderr, "%s: failed to parse Status line for %s\n",
-				__FUNCTION__, pkg->name);
+		opkg_msg(ERROR, "Failed to parse Status line for %s\n",
+				pkg->name);
 		return;
 	}
 
@@ -106,8 +106,8 @@ parse_conffiles(pkg_t *pkg, const char *cstr)
 	char file_name[1024], md5sum[35];
 
 	if (sscanf(cstr, "%1023s %34s", file_name, md5sum) != 2) {
-		fprintf(stderr, "%s: failed to parse Conffiles line for %s\n",
-				__FUNCTION__, pkg->name);
+		opkg_msg(ERROR, "Failed to parse Conffiles line for %s\n",
+				pkg->name);
 		return;
 	}
 
@@ -130,8 +130,7 @@ parse_version(pkg_t *pkg, const char *vstr)
 		errno = 0;
 		pkg->epoch = strtoul(vstr, NULL, 10);
 		if (errno) {
-			fprintf(stderr, "%s: %s: invalid epoch: %s\n",
-				__FUNCTION__, pkg->name, strerror(errno));
+			opkg_perror(ERROR, "%s: invalid epoch", pkg->name);
 		}
 		vstr = ++colon;
 	} else {
@@ -153,6 +152,12 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 	/* these flags are a bit hackish... */
 	static int reading_conffiles = 0, reading_description = 0;
 	int ret = 0;
+
+	/* Exclude globally masked fields. */
+	mask |= conf->pfm;
+
+	/* Flip the semantics of the mask. */
+	mask ^= PFM_ALL;
 
 	switch (*line) {
 	case 'A':
@@ -201,9 +206,11 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 		break;
 
 	case 'I':
-		if ((mask && PFM_INSTALLED_SIZE) && is_field("Installed-Size", line))
-			pkg->installed_size = parse_simple("Installed-Size", line);
-		else if ((mask && PFM_INSTALLED_TIME) && is_field("Installed-Time", line)) {
+		if ((mask && PFM_INSTALLED_SIZE) && is_field("Installed-Size", line)) {
+			char *tmp = parse_simple("Installed-Size", line);
+			pkg->installed_size = strtoul(tmp, NULL, 0);
+			free (tmp);
+		} else if ((mask && PFM_INSTALLED_TIME) && is_field("Installed-Time", line)) {
 			char *tmp = parse_simple("Installed-Time", line);
 			pkg->installed_time = strtoul(tmp, NULL, 0);
 			free (tmp);
@@ -248,9 +255,11 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 		else if ((mask & PFM_SHA256SUM) && is_field("SHA256sum", line))
 			pkg->sha256sum = parse_simple("SHA256sum", line);
 #endif
-		else if ((mask & PFM_SIZE) && is_field("Size", line))
-			pkg->size = parse_simple("Size", line);
-		else if ((mask & PFM_SOURCE) && is_field("Source", line))
+		else if ((mask & PFM_SIZE) && is_field("Size", line)) {
+			char *tmp = parse_simple("Size", line);
+			pkg->size = strtoul(tmp, NULL, 0);
+			free (tmp);
+		} else if ((mask & PFM_SOURCE) && is_field("Source", line))
 			pkg->source = parse_simple("Source", line);
 		else if ((mask & PFM_STATUS) && is_field("Status", line))
 			parse_status(pkg, line);
@@ -314,15 +323,13 @@ pkg_parse_from_stream_nomalloc(pkg_t *pkg, FILE *fp, uint mask,
 	buf[0] = '\0';
 
 	while (1) {
-		if (fgets(buf, buflen, fp) == NULL) {
+		if (fgets(buf, (int)buflen, fp) == NULL) {
 			if (ferror(fp)) {
-				fprintf(stderr, "%s: fgets: %s\n",
-					__FUNCTION__, strerror(errno));
+				opkg_perror(ERROR, "fgets");
 				ret = -1;
 			} else if (strlen(*buf0) == buf0len-1) {
-				fprintf(stderr, "%s: missing new line character"
-						" at end of file!\n",
-					__FUNCTION__);
+				opkg_msg(ERROR, "Missing new line character"
+						" at end of file!\n");
 				pkg_parse_line(pkg, *buf0, mask);
 			}
 			break;
@@ -336,16 +343,15 @@ pkg_parse_from_stream_nomalloc(pkg_t *pkg, FILE *fp, uint mask,
 				 * missing a newline, but we won't know until
 				 * fgets fails to read more data.
 				 */
-				fprintf(stderr, "%s: missing new line character"
-						" at end of file!\n",
-					__FUNCTION__);
+				opkg_msg(ERROR, "Missing new line character"
+						" at end of file!\n");
 				pkg_parse_line(pkg, *buf0, mask);
 				break;
 			}
 			if (buf0len >= EXCESSIVE_LINE_LEN) {
-				fprintf(stderr, "%s: excessively long line at "
+				opkg_msg(ERROR, "Excessively long line at "
 					"%d. Corrupt file?\n",
-					__FUNCTION__, lineno);
+					lineno);
 				ret = -1;
 				break;
 			}
@@ -380,7 +386,7 @@ pkg_parse_from_stream_nomalloc(pkg_t *pkg, FILE *fp, uint mask,
 
 	if (pkg->name == NULL) {
 		/* probably just a blank line */
-		ret = EINVAL;
+		ret = 1;
 	}
 
 	return ret;

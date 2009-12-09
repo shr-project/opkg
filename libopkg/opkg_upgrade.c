@@ -18,27 +18,26 @@
 
 #include "includes.h"
 #include "opkg_install.h"
+#include "opkg_upgrade.h"
 #include "opkg_message.h"
 
 int
-opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old)
+opkg_upgrade_pkg(pkg_t *old)
 {
      pkg_t *new;
      int cmp;
      char *old_version, *new_version;
 
      if (old->state_flag & SF_HOLD) {
-          opkg_message(conf, OPKG_NOTICE,
-                       "Not upgrading package %s which is marked "
-                       "hold (flags=%#x)\n", old->name, old->state_flag);
+          opkg_msg(NOTICE, "Not upgrading package %s which is marked "
+                       "hold (flags=%#x).\n", old->name, old->state_flag);
           return 0;
      }
 
-     new = pkg_hash_fetch_best_installation_candidate_by_name(conf, old->name);
+     new = pkg_hash_fetch_best_installation_candidate_by_name(old->name);
      if (new == NULL) {
           old_version = pkg_version_str_alloc(old);
-          opkg_message(conf, OPKG_NOTICE,
-                       "Assuming locally installed package %s (%s) "
+          opkg_msg(NOTICE, "Assuming locally installed package %s (%s) "
                        "is up to date.\n", old->name, old_version);
           free(old_version);
           return 0;
@@ -48,22 +47,19 @@ opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old)
      new_version = pkg_version_str_alloc(new);
                
      cmp = pkg_compare_versions(old, new);
-     opkg_message(conf, OPKG_DEBUG,
-                  "comparing visible versions of pkg %s:"
+     opkg_msg(DEBUG, "Comparing visible versions of pkg %s:"
                   "\n\t%s is installed "
                   "\n\t%s is available "
                   "\n\t%d was comparison result\n",
                   old->name, old_version, new_version, cmp);
      if (cmp == 0) {
-          opkg_message(conf, OPKG_INFO,
-                       "Package %s (%s) installed in %s is up to date.\n",
+          opkg_msg(INFO, "Package %s (%s) installed in %s is up to date.\n",
                        old->name, old_version, old->dest->name);
           free(old_version);
           free(new_version);
           return 0;
      } else if (cmp > 0) {
-          opkg_message(conf, OPKG_NOTICE,
-                       "Not downgrading package %s on %s from %s to %s.\n",
+          opkg_msg(NOTICE, "Not downgrading package %s on %s from %s to %s.\n",
                        old->name, old->dest->name, old_version, new_version);
           free(old_version);
           free(new_version);
@@ -76,7 +72,7 @@ opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old)
     free(old_version);
     free(new_version);
     new->state_flag |= SF_USER;
-    return opkg_install_pkg(conf, new,1);
+    return opkg_install_pkg(new,1);
 }
 
 
@@ -101,14 +97,14 @@ pkg_hash_check_installed_pkg_helper(const char *pkg_name, void *entry,
 }
 
 struct active_list *
-prepare_upgrade_list(opkg_conf_t *conf)
+prepare_upgrade_list(void)
 {
     struct active_list *head = active_list_head_new();
     struct active_list *all = active_list_head_new();
     struct active_list *node=NULL;
 
     /* ensure all data is valid */
-    pkg_info_preinstall_check (conf);
+    pkg_info_preinstall_check();
 
     hash_table_foreach(&conf->pkg_hash, pkg_hash_check_installed_pkg_helper, all);
     for (node=active_list_next(all,all); node; node = active_list_next(all, node)) {
@@ -116,7 +112,7 @@ prepare_upgrade_list(opkg_conf_t *conf)
         int cmp;
 
         old = list_entry(node, pkg_t, list);
-        new = pkg_hash_fetch_best_installation_candidate_by_name(conf, old->name);
+        new = pkg_hash_fetch_best_installation_candidate_by_name(old->name);
 
         if (new == NULL)
             continue;

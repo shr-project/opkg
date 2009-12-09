@@ -24,39 +24,32 @@
 #include "file_util.h"
 
 #include "opkg_message.h"
-#include "opkg_error.h"
 
 /* This is used for backward compatibility */
 int
 opkg_op (int argc, char *argv[])
 {
-	int err, optind;
+	int err, opts;
 	args_t args;
 	char *cmd_name;
 	opkg_cmd_t *cmd;
-	opkg_conf_t opkg_conf;
 
 	args_init (&args);
 
-	optind = args_parse (&args, argc, argv);
-	if (optind == argc || optind < 0)
+	opts = args_parse (&args, argc, argv);
+	if (opts == argc || opts < 0)
 	{
 		args_usage ("opkg must have one sub-command argument");
 	}
 
-	cmd_name = argv[optind++];
-/* Pigi: added a flag to disable the checking of structures if the command does not need to 
-         read anything from there.
-*/
+	cmd_name = argv[opts++];
+
         if ( !strcmp(cmd_name,"print-architecture") ||
              !strcmp(cmd_name,"print_architecture") ||
              !strcmp(cmd_name,"print-installation-architecture") ||
              !strcmp(cmd_name,"print_installation_architecture") )
            args.nocheckfordirorfile = 1;
 
-/* Pigi: added a flag to disable the reading of feed files  if the command does not need to 
-         read anything from there.
-*/
         if ( !strcmp(cmd_name,"flag") ||
              !strcmp(cmd_name,"configure") ||
              !strcmp(cmd_name,"remove") ||
@@ -69,16 +62,6 @@ opkg_op (int argc, char *argv[])
              !strcmp(cmd_name,"status") )
            args.noreadfeedsfile = 1;
 
-
-	err = opkg_conf_init (&opkg_conf, &args);
-	args_deinit (&args);
-	if (err)
-	{
-		print_error_list();
-		free_error_list();
-		return err;
-	}
-
 	cmd = opkg_cmd_find (cmd_name);
 	if (cmd == NULL)
 	{
@@ -87,20 +70,31 @@ opkg_op (int argc, char *argv[])
 		args_usage (NULL);
 	}
 
-	if (cmd->requires_args && optind == argc)
+	conf->pfm = cmd->pfm;
+
+	err = opkg_conf_init (&args);
+	args_deinit (&args);
+	if (err)
+	{
+		print_error_list();
+		free_error_list();
+		return err;
+	}
+
+	if (cmd->requires_args && opts == argc)
 	{
 		fprintf (stderr,
 			 "%s: the ``%s'' command requires at least one argument\n",
-			 __FUNCTION__, cmd_name);
+			 argv[0], cmd_name);
 		args_usage (NULL);
 	}
 
-	err = opkg_cmd_exec (cmd, &opkg_conf, argc - optind, (const char **) (argv + optind), NULL);
+	err = opkg_cmd_exec (cmd, argc - opts, (const char **) (argv + opts));
 
 #ifdef HAVE_CURL
 	opkg_curl_cleanup();
 #endif
-	opkg_conf_deinit (&opkg_conf);
+	opkg_conf_deinit ();
 
 	return err;
 }

@@ -39,7 +39,7 @@ xsystem(const char *argv[])
 
 	switch (pid) {
 	case -1:
-		perror_msg("%s: %s: vfork", __FUNCTION__, argv[0]);
+		opkg_perror(ERROR, "%s: vfork", argv[0]);
 		return -1;
 	case 0:
 		/* child */
@@ -51,20 +51,20 @@ xsystem(const char *argv[])
 	}
 
 	if (waitpid(pid, &status, 0) == -1) {
-		perror_msg("%s: %s: waitpid", __FUNCTION__, argv[0]);
+		opkg_perror(ERROR, "%s: waitpid", argv[0]);
 		return -1;
 	}
 
 	if (WIFSIGNALED(status)) {
-		error_msg("%s: %s: Child killed by signal %d\n",
-			__FUNCTION__, argv[0], WTERMSIG(status));
+		opkg_msg(ERROR, "%s: Child killed by signal %d.\n",
+			argv[0], WTERMSIG(status));
 		return -1;
 	}
 
 	if (!WIFEXITED(status)) {
 		/* shouldn't happen */
-		error_msg("%s: %s: Your system is broken: got status %d "
-			"from waitpid\n", __FUNCTION__, argv[0], status);
+		opkg_msg(ERROR, "%s: Your system is broken: got status %d "
+			"from waitpid.\n", argv[0], status);
 		return -1;
 	}
 

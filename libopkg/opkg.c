@@ -27,26 +27,19 @@
 #include "opkg_download.h"
 #include "opkg_remove.h"
 #include "opkg_upgrade.h"
-#include "opkg_error.h"
 
 #include "sprintf_alloc.h"
 #include "file_util.h"
 
 #include <libbb/libbb.h>
 
-struct _opkg_t
-{
-  args_t *args;
-  opkg_conf_t *conf;
-  opkg_option_t *options;
-};
+args_t *args;
 
 #define opkg_assert(expr) if (!(expr)) { \
     printf ("opkg: file %s: line %d (%s): Assertation '%s' failed",\
             __FILE__, __LINE__, __PRETTY_FUNCTION__, # expr); abort (); }
 
-#define progress(d, p) d.percentage = p; if (progress_callback) progress_callback (opkg, &d, user_data);
-#define SSTRCMP(x,y) (x && y) ? strcmp (x, y) : 0
+#define progress(d, p) d.percentage = p; if (progress_callback) progress_callback (&d, user_data);
 
 /** Private Functions ***/
 
@@ -67,16 +60,15 @@ pkg_t_to_opkg_package_t (pkg_t *old)
     new->repository = xstrdup(old->src->name);
   new->description = xstrdup(old->description);
   new->tags = xstrdup(old->tags);
-  new->url = xstrdup(old->url);
 
-  new->size = (old->size) ? atoi (old->size) : 0;
+  new->size = old->size;
   new->installed = (old->state_status == SS_INSTALLED);
 
   return new;
 }
 
 static int
-opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
+opkg_configure_packages(char *pkg_name)
 {
   pkg_vec_t *all;
   int i;
@@ -84,7 +76,7 @@ opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
   int r, err = 0;
 
   all = pkg_vec_alloc ();
-  pkg_hash_fetch_available (&conf->pkg_hash, all);
+  pkg_hash_fetch_available (all);
 
   for (i = 0; i < all->len; i++)
   {
@@ -95,7 +87,7 @@ opkg_configure_packages(opkg_conf_t *conf, char *pkg_name)
 
     if (pkg->state_status == SS_UNPACKED)
     {
-      r = opkg_configure (conf, pkg);
+      r = opkg_configure (pkg);
       if (r == 0)
       {
         pkg->state_status = SS_INSTALLED;
@@ -118,7 +110,6 @@ struct _curl_cb_data
 {
   opkg_progress_callback_t cb;
   opkg_progress_data_t *progress_data;
-  opkg_t *opkg;
   void *user_data;
   int start_range;
   int finish_range;
@@ -146,8 +137,7 @@ curl_progress_cb (struct _curl_cb_data *cb_data,
   progress = cb_data->start_range + (d / t * ((cb_data->finish_range - cb_data->start_range)));
   cb_data->progress_data->percentage = progress;
 
-  (cb_data->cb)(cb_data->opkg,
-                cb_data->progress_data,
+  (cb_data->cb)(cb_data->progress_data,
                 cb_data->user_data);
 
   return 0;
@@ -175,127 +165,56 @@ opkg_package_free (opkg_package_t *p)
   free (p->architecture);
   free (p->description);
   free (p->tags);
-  free (p->url);
   free (p->repository);
 
   free (p);
 }
 
-opkg_t *
+int
 opkg_new ()
 {
-  opkg_t *opkg;
   int err;
 
-  opkg = xcalloc(1, sizeof (opkg_t));
+  args = xcalloc(1, sizeof (args_t));
+  args_init (args);
 
-  opkg->args = xcalloc(1, sizeof (args_t));
-  args_init (opkg->args);
-
-  opkg->conf = xcalloc(1, sizeof (opkg_conf_t));
-  err = opkg_conf_init (opkg->conf, opkg->args);
+  err = opkg_conf_init (args);
   if (err)
   {
-    free (opkg->conf);
-    free (opkg->args);
-    free (opkg);
-    return NULL;
+    args_deinit (args);
+    free (args);
+    return -1;
   }
-
-  opkg_init_options_array (opkg->conf, &opkg->options);
-  return opkg;
-}
-
-void
-opkg_free (opkg_t *opkg)
-{
-  opkg_assert (opkg != NULL);
-
-#ifdef HAVE_CURL
-  opkg_curl_cleanup();
-#endif
-  opkg_conf_deinit (opkg->conf);
-  args_deinit (opkg->args);
-  free (opkg->options);
-  free (opkg->args);
-  free (opkg->conf);
-  free (opkg);
-}
-
-int
-opkg_re_read_config_files (opkg_t *opkg)
-{
-  args_t *a;
-  opkg_conf_t *c;
-
-  opkg_assert (opkg != NULL);
-
-  a = opkg->args;
-  c = opkg->conf;
-
-  /* Unfortunatly, the easiest way to re-read the config files right now is to
-   * throw away opkg->conf and start again */
-
-  /* copy the settings we need to keep */
-  a->autoremove = c->autoremove;
-  a->force_depends = c->force_depends;
-  a->force_defaults = c->force_defaults;
-  a->force_maintainer = c->force_maintainer;
-  a->force_overwrite = c->force_overwrite;
-  a->force_downgrade = c->force_downgrade;
-  a->force_reinstall = c->force_reinstall;
-  a->force_removal_of_dependent_packages = c->force_removal_of_dependent_packages;
-  a->force_removal_of_essential_packages = c->force_removal_of_essential_packages;
-  a->nodeps = c->nodeps;
-  a->noaction = c->noaction;
-  a->query_all = c->query_all;
-  a->verbosity = c->verbosity;
-
-  if (c->offline_root)
-  {
-    if (a->offline_root) free (a->offline_root);
-    a->offline_root = xstrdup(c->offline_root);
-  }
-
-  if (c->offline_root_pre_script_cmd)
-  {
-    if (a->offline_root_pre_script_cmd) free (a->offline_root_pre_script_cmd);
-    a->offline_root_pre_script_cmd = xstrdup(c->offline_root_pre_script_cmd);
-  }
-
-  if (c->offline_root_post_script_cmd)
-  {
-    if (a->offline_root_post_script_cmd) free (a->offline_root_post_script_cmd);
-    a->offline_root_post_script_cmd = xstrdup(c->offline_root_post_script_cmd);
-  }
-
-  if (c->cache) {
-    if (a->cache)
-	free (a->cache);
-    a->cache = xstrdup(c->cache);
-  }
-
-  /* throw away old opkg_conf and start again */
-  opkg_conf_deinit (opkg->conf);
-  opkg_conf_init (opkg->conf, opkg->args);
-
-  free (opkg->options);
-  opkg_init_options_array (opkg->conf, &opkg->options);
 
   return 0;
 }
 
 void
-opkg_get_option (opkg_t *opkg, char *option, void **value)
+opkg_free (void)
+{
+#ifdef HAVE_CURL
+  opkg_curl_cleanup();
+#endif
+  opkg_conf_deinit ();
+  args_deinit (args);
+  free (args);
+}
+
+int
+opkg_re_read_config_files (void)
+{
+  /* Unfortunately, the easiest way to re-read the config files right now is to
+   * throw away conf and start again */
+  opkg_free();
+  memset(conf, '\0', sizeof(opkg_conf_t));
+  return opkg_new();
+}
+
+void
+opkg_get_option (char *option, void **value)
 {
   int i = 0;
-  opkg_option_t *options;
-
-  opkg_assert (opkg != NULL);
-  opkg_assert (option != NULL);
-  opkg_assert (value != NULL);
-
-  options = opkg->options;
+  extern opkg_option_t options[];
 
   /* look up the option
    * TODO: this would be much better as a hash table
@@ -328,16 +247,13 @@ opkg_get_option (opkg_t *opkg, char *option, void **value)
 }
 
 void
-opkg_set_option (opkg_t *opkg, char *option, void *value)
+opkg_set_option (char *option, void *value)
 {
   int i = 0, found = 0;
-  opkg_option_t *options;
+  extern opkg_option_t options[];
 
-  opkg_assert (opkg != NULL);
   opkg_assert (option != NULL);
   opkg_assert (value != NULL);
-
-  options = opkg->options;
 
   /* look up the option
    * TODO: this would be much better as a hash table
@@ -381,12 +297,11 @@ opkg_set_option (opkg_t *opkg, char *option, void *value)
 
 /**
  * @brief libopkg API: Install package
- * @param opkg Then opkg handler
  * @param package_name The name of package in which is going to install
  * @param progress_callback The callback function that report the status to caller. 
  */ 
 int
-opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
+opkg_install_package (const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
 {
   int err;
   char *stripped_filename;
@@ -396,22 +311,21 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   int i, ndepends;
   char **unresolved = NULL;
 
-  opkg_assert (opkg != NULL);
   opkg_assert (package_name != NULL);
 
   /* ... */
-  pkg_info_preinstall_check (opkg->conf);
+  pkg_info_preinstall_check ();
 
 
   /* check to ensure package is not already installed */
-  old = pkg_hash_fetch_installed_by_name(&opkg->conf->pkg_hash, package_name);
+  old = pkg_hash_fetch_installed_by_name(package_name);
   if (old)
   {
     /* XXX: Error: Package is already installed. */
     return OPKG_PACKAGE_ALREADY_INSTALLED;
   }
 
-  new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, package_name);
+  new = pkg_hash_fetch_best_installation_candidate_by_name(package_name);
   if (!new)
   {
     /* XXX: Error: Could not find package to install */
@@ -428,7 +342,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   /* find dependancies and download them */
   deps = pkg_vec_alloc ();
   /* this function does not return the original package, so we insert it later */
-  ndepends = pkg_hash_fetch_unsatisfied_dependencies (opkg->conf, new, deps, &unresolved);
+  ndepends = pkg_hash_fetch_unsatisfied_dependencies (new, deps, &unresolved);
   if (unresolved)
   {
     /* XXX: Error: Could not satisfy dependencies */
@@ -467,17 +381,16 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
     if ( ! stripped_filename )
         stripped_filename = pkg->filename;
 
-    sprintf_alloc(&pkg->local_filename, "%s/%s", opkg->conf->tmp_dir, stripped_filename);
+    sprintf_alloc(&pkg->local_filename, "%s/%s", conf->tmp_dir, stripped_filename);
 
     cb_data.cb = progress_callback;
     cb_data.progress_data = &pdata;
-    cb_data.opkg = opkg;
     cb_data.user_data = user_data;
     /* 75% of "install" progress is for downloading */
     cb_data.start_range = 75 * i / deps->len;
     cb_data.finish_range = 75 * (i + 1) / deps->len;
 
-    err = opkg_download(opkg->conf, url, pkg->local_filename,
+    err = opkg_download(url, pkg->local_filename,
               (curl_progress_func) curl_progress_cb, &cb_data);
     free(url);
 
@@ -493,7 +406,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
 
   /* clear depenacy checked marks, left by pkg_hash_fetch_unsatisfied_dependencies */
   all = pkg_vec_alloc ();
-  pkg_hash_fetch_available (&opkg->conf->pkg_hash, all);
+  pkg_hash_fetch_available (all);
   for (i = 0; i < all->len; i++)
   {
     all->pkgs[i]->parent->dependencies_checked = 0;
@@ -508,7 +421,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   progress (pdata, 75);
 
   /* unpack the package */
-  err = opkg_install_pkg(opkg->conf, new, 0);
+  err = opkg_install_pkg(new, 0);
 
   if (err)
   {
@@ -519,7 +432,7 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   progress (pdata, 75);
 
   /* run configure scripts, etc. */
-  err = opkg_configure_packages (opkg->conf, NULL);
+  err = opkg_configure_packages (NULL);
   if (err)
   {
     opkg_package_free (pdata.package);
@@ -527,8 +440,8 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   }
 
   /* write out status files and file lists */
-  opkg_conf_write_status_files (opkg->conf);
-  pkg_write_changed_filelists (opkg->conf);
+  opkg_conf_write_status_files ();
+  pkg_write_changed_filelists ();
 
   progress (pdata, 100);
   opkg_package_free (pdata.package);
@@ -536,19 +449,18 @@ opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_call
 }
 
 int
-opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
+opkg_remove_package (const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
 {
   int err;
   pkg_t *pkg = NULL;
   pkg_t *pkg_to_remove;
   opkg_progress_data_t pdata;
 
-  opkg_assert (opkg != NULL);
   opkg_assert (package_name != NULL);
 
-  pkg_info_preinstall_check (opkg->conf);
+  pkg_info_preinstall_check ();
 
-  pkg = pkg_hash_fetch_installed_by_name (&opkg->conf->pkg_hash, package_name);
+  pkg = pkg_hash_fetch_installed_by_name (package_name);
 
   if (pkg == NULL)
   {
@@ -569,25 +481,24 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
   }
   progress (pdata, 25);
 
-  if (opkg->conf->restrict_to_default_dest)
+  if (conf->restrict_to_default_dest)
   {
-    pkg_to_remove = pkg_hash_fetch_installed_by_name_dest (&opkg->conf->pkg_hash,
-                                                           pkg->name,
-                                                           opkg->conf->default_dest);
+    pkg_to_remove = pkg_hash_fetch_installed_by_name_dest (pkg->name,
+                                                           conf->default_dest);
   }
   else
   {
-    pkg_to_remove = pkg_hash_fetch_installed_by_name (&opkg->conf->pkg_hash, pkg->name );
+    pkg_to_remove = pkg_hash_fetch_installed_by_name (pkg->name);
   }
 
 
   progress (pdata, 75);
 
-  err = opkg_remove_pkg (opkg->conf, pkg_to_remove, 0);
+  err = opkg_remove_pkg (pkg_to_remove, 0);
 
   /* write out status files and file lists */
-  opkg_conf_write_status_files (opkg->conf);
-  pkg_write_changed_filelists (opkg->conf);
+  opkg_conf_write_status_files ();
+  pkg_write_changed_filelists ();
 
 
   progress (pdata, 100);
@@ -596,24 +507,20 @@ opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callb
 }
 
 int
-opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
+opkg_upgrade_package (const char *package_name, opkg_progress_callback_t progress_callback, void *user_data)
 {
   int err;
   pkg_t *pkg;
   opkg_progress_data_t pdata;
 
-
-
-  opkg_assert (opkg != NULL);
   opkg_assert (package_name != NULL);
 
-  pkg_info_preinstall_check (opkg->conf);
+  pkg_info_preinstall_check ();
 
-  if (opkg->conf->restrict_to_default_dest)
+  if (conf->restrict_to_default_dest)
   {
-    pkg = pkg_hash_fetch_installed_by_name_dest (&opkg->conf->pkg_hash,
-                                                 package_name,
-                                                 opkg->conf->default_dest);
+    pkg = pkg_hash_fetch_installed_by_name_dest (package_name,
+                                                 conf->default_dest);
     if (pkg == NULL)
     {
       /* XXX: Error: Package not installed in default_dest */
@@ -622,8 +529,7 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   }
   else
   {
-    pkg = pkg_hash_fetch_installed_by_name (&opkg->conf->pkg_hash,
-                                            package_name);
+    pkg = pkg_hash_fetch_installed_by_name (package_name);
   }
 
   if (!pkg)
@@ -636,7 +542,7 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   pdata.package = pkg_t_to_opkg_package_t (pkg);
   progress (pdata, 0);
 
-  err = opkg_upgrade_pkg (opkg->conf, pkg);
+  err = opkg_upgrade_pkg (pkg);
   /* opkg_upgrade_pkg returns the error codes of opkg_install_pkg */
   if (err)
   {
@@ -645,15 +551,15 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
   }
   progress (pdata, 75);
 
-  err = opkg_configure_packages (opkg->conf, NULL);
+  err = opkg_configure_packages (NULL);
   if (err) {
     opkg_package_free (pdata.package);  
     return OPKG_UNKNOWN_ERROR;
   }
 
   /* write out status files and file lists */
-  opkg_conf_write_status_files (opkg->conf);
-  pkg_write_changed_filelists (opkg->conf);
+  opkg_conf_write_status_files ();
+  pkg_write_changed_filelists ();
 
   progress (pdata, 100);
   opkg_package_free (pdata.package);
@@ -661,7 +567,7 @@ opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_call
 }
 
 int
-opkg_upgrade_all (opkg_t *opkg, opkg_progress_callback_t progress_callback, void *user_data)
+opkg_upgrade_all (opkg_progress_callback_t progress_callback, void *user_data)
 {
   pkg_vec_t *installed;
   int err = 0;
@@ -672,13 +578,12 @@ opkg_upgrade_all (opkg_t *opkg, opkg_progress_callback_t progress_callback, void
   pdata.action = OPKG_INSTALL;
   pdata.package = NULL;
 
-  opkg_assert (opkg != NULL);
   progress (pdata, 0);
 
   installed = pkg_vec_alloc ();
-  pkg_info_preinstall_check (opkg->conf);
+  pkg_info_preinstall_check ();
 
-  pkg_hash_fetch_all_installed (&opkg->conf->pkg_hash, installed);
+  pkg_hash_fetch_all_installed (installed);
   for (i = 0; i < installed->len; i++)
   {
     pkg = installed->pkgs[i];
@@ -687,14 +592,14 @@ opkg_upgrade_all (opkg_t *opkg, opkg_progress_callback_t progress_callback, void
     progress (pdata, 99 * i / installed->len);
     opkg_package_free (pdata.package);
 
-    err += opkg_upgrade_pkg (opkg->conf, pkg);
+    err += opkg_upgrade_pkg (pkg);
   }
   pkg_vec_free (installed);
 
   if (err)
     return 1;
 
-  err = opkg_configure_packages (opkg->conf, NULL);
+  err = opkg_configure_packages (NULL);
   if (err)
     return 1;
 
@@ -704,7 +609,7 @@ opkg_upgrade_all (opkg_t *opkg, opkg_progress_callback_t progress_callback, void
 }
 
 int
-opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callback, void *user_data)
+opkg_update_package_lists (opkg_progress_callback_t progress_callback, void *user_data)
 {
   char *tmp;
   int err, result = 0;
@@ -714,16 +619,14 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
   int sources_list_count, sources_done;
   opkg_progress_data_t pdata;
 
-  opkg_assert (opkg != NULL);
-
   pdata.action = OPKG_DOWNLOAD;
   pdata.package = NULL;
   progress (pdata, 0);
 
   sprintf_alloc (&lists_dir, "%s",
-                 (opkg->conf->restrict_to_default_dest)
-                 ? opkg->conf->default_dest->lists_dir
-                 : opkg->conf->lists_dir);
+                 (conf->restrict_to_default_dest)
+                 ? conf->default_dest->lists_dir
+                 : conf->lists_dir);
 
   if (!file_is_dir (lists_dir))
   {
@@ -743,7 +646,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     }
   }
 
-  sprintf_alloc(&tmp, "%s/update-XXXXXX", opkg->conf->tmp_dir);
+  sprintf_alloc(&tmp, "%s/update-XXXXXX", conf->tmp_dir);
   if (mkdtemp (tmp) == NULL) {
     /* XXX: Error: could not create temporary file name */
     free (lists_dir);
@@ -754,12 +657,12 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
   /* count the number of sources so we can give some progress updates */
   sources_list_count = 0;
   sources_done = 0;
-  list_for_each_entry(iter, &opkg->conf->pkg_src_list.head, node)
+  list_for_each_entry(iter, &conf->pkg_src_list.head, node)
   {
     sources_list_count++;
   }
 
-  list_for_each_entry(iter, &opkg->conf->pkg_src_list.head, node)
+  list_for_each_entry(iter, &conf->pkg_src_list.head, node)
   {
     char *url, *list_file_name = NULL;
 
@@ -784,12 +687,11 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
 
       cb_data.cb = progress_callback;
       cb_data.progress_data = &pdata;
-      cb_data.opkg = opkg;
       cb_data.user_data = user_data;
       cb_data.start_range = 100 * sources_done / sources_list_count;
       cb_data.finish_range = 100 * (sources_done + 1) / sources_list_count;
 
-      err = opkg_download (opkg->conf, url, tmp_file_name, (curl_progress_func) curl_progress_cb, &cb_data);
+      err = opkg_download (url, tmp_file_name, (curl_progress_func) curl_progress_cb, &cb_data);
 
       if (err == 0)
       {
@@ -809,7 +711,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
       free (tmp_file_name);
     }
     else
-      err = opkg_download (opkg->conf, url, list_file_name, NULL, NULL);
+      err = opkg_download (url, list_file_name, NULL, NULL);
 
     if (err)
     {
@@ -819,7 +721,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
     free (url);
 
 #if defined(HAVE_GPGME) || defined(HAVE_OPENSSL)
-    if ( opkg->conf->check_signature ) {
+    if ( conf->check_signature ) {
         char *sig_file_name;
         /* download detached signitures to verify the package lists */
         /* get the url for the sig file */
@@ -835,7 +737,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
         /* make sure there is no existing signature file */
         unlink (sig_file_name);
 
-        err = opkg_download (opkg->conf, url, sig_file_name, NULL, NULL);
+        err = opkg_download (url, sig_file_name, NULL, NULL);
         if (err)
         {
             /* XXX: Warning: Download failed */
@@ -843,7 +745,7 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
         else
         {
             int err;
-            err = opkg_verify_file (opkg->conf, list_file_name, sig_file_name);
+            err = opkg_verify_file (list_file_name, sig_file_name);
             if (err == 0)
             {
                 /* XXX: Notice: Signature check passed */
@@ -872,23 +774,22 @@ opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t progress_callb
   free (lists_dir);
 
   /* Now re-read the package lists to update package hash tables. */
-  opkg_re_read_config_files (opkg);
+  opkg_re_read_config_files ();
 
   return result;
 }
 
 
 int
-opkg_list_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_data)
+opkg_list_packages (opkg_package_callback_t callback, void *user_data)
 {
   pkg_vec_t *all;
   int i;
 
-  opkg_assert (opkg);
   opkg_assert (callback);
 
   all = pkg_vec_alloc ();
-  pkg_hash_fetch_available (&opkg->conf->pkg_hash, all);
+  pkg_hash_fetch_available (all);
   for (i = 0; i < all->len; i++)
   {
     pkg_t *pkg;
@@ -897,7 +798,7 @@ opkg_list_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_d
     pkg = all->pkgs[i];
 
     package = pkg_t_to_opkg_package_t (pkg);
-    callback (opkg, package, user_data);
+    callback (package, user_data);
     opkg_package_free (package);
   }
 
@@ -907,28 +808,26 @@ opkg_list_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_d
 }
 
 int
-opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_data)
+opkg_list_upgradable_packages (opkg_package_callback_t callback, void *user_data)
 {
     struct active_list *head;
     struct active_list *node;
     pkg_t *old=NULL, *new = NULL;
     static opkg_package_t* package=NULL;
 
-
-    opkg_assert (opkg);
     opkg_assert (callback);
 
     /* ensure all data is valid */
-    pkg_info_preinstall_check (opkg->conf);
+    pkg_info_preinstall_check ();
 
-    head  =  prepare_upgrade_list(opkg->conf);
+    head  =  prepare_upgrade_list();
     for (node=active_list_next(head, head); node; active_list_next(head,node)) {
         old = list_entry(node, pkg_t, list);
-        new = pkg_hash_fetch_best_installation_candidate_by_name(opkg->conf, old->name);
+        new = pkg_hash_fetch_best_installation_candidate_by_name(old->name);
 	if (new == NULL)
 		continue;
         package = pkg_t_to_opkg_package_t (new);
-        callback (opkg, package, user_data);
+        callback (package, user_data);
         opkg_package_free (package);
     }
     active_list_head_delete(head);
@@ -936,17 +835,15 @@ opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, v
 }
 
 opkg_package_t*
-opkg_find_package (opkg_t *opkg, const char *name, const char *ver, const char *arch, const char *repo)
+opkg_find_package (const char *name, const char *ver, const char *arch, const char *repo)
 {
   pkg_vec_t *all;
   opkg_package_t *package = NULL;
   int i;
 #define sstrcmp(x,y) (x && y) ? strcmp (x, y) : 0
 
-  opkg_assert (opkg);
-
   all = pkg_vec_alloc ();
-  pkg_hash_fetch_available (&opkg->conf->pkg_hash, all);
+  pkg_hash_fetch_available (all);
   for (i = 0; i < all->len; i++)
   {
     pkg_t *pkg;
@@ -996,10 +893,9 @@ opkg_find_package (opkg_t *opkg, const char *name, const char *ver, const char *
 #endif
 /**
  * @brief Check the accessibility of repositories. It will try to access the repository to check if the respository is accessible throught current network status. 
- * @param opkg The opkg_t
  * @return return how many repositories cannot access. 0 means all okay. 
  */ 
-int opkg_repository_accessibility_check(opkg_t *opkg) 
+int opkg_repository_accessibility_check(void) 
 {
   pkg_src_list_elt_t *iter;
   str_list_elt_t *iter1;
@@ -1009,11 +905,10 @@ int opkg_repository_accessibility_check(opkg_t *opkg)
   int err;
   char *repo_ptr;
   char *stmp;
-  opkg_assert(opkg != NULL);
 
   src = str_list_alloc();
 
-  list_for_each_entry(iter, &opkg->conf->pkg_src_list.head, node)
+  list_for_each_entry(iter, &conf->pkg_src_list.head, node)
   {
     if (strstr(((pkg_src_t *)iter->data)->value, "://") && 
 		    index(strstr(((pkg_src_t *)iter->data)->value, "://") + 3, '/')) 
@@ -1043,7 +938,7 @@ int opkg_repository_accessibility_check(opkg_t *opkg)
     iter1 = str_list_pop(src);
     repositories--;
 
-    err = opkg_download(opkg->conf, iter1->data, "/dev/null", NULL, NULL);
+    err = opkg_download(iter1->data, "/dev/null", NULL, NULL);
 #ifdef HAVE_CURL
     if (!(err == CURLE_OK || 
 		err == CURLE_HTTP_RETURNED_ERROR || 

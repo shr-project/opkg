@@ -24,9 +24,6 @@
 #include "file_util.h"
 #include "sprintf_alloc.h"
 
-/* assuage libb functions */
-const char *applet_name = "opkg";
-
 int
 pkg_extract_control_file_to_stream(pkg_t *pkg, FILE *stream)
 {

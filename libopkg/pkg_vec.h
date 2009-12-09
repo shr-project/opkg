@@ -28,24 +28,20 @@ typedef struct abstract_pkg_vec abstract_pkg_vec_t;
 struct pkg_vec
 {
     pkg_t **pkgs;
-    int len;
+    unsigned int len;
 };
 
 struct abstract_pkg_vec
 {
     abstract_pkg_t **pkgs;
-    int len;
+    unsigned int len;
 };
 
 
 pkg_vec_t * pkg_vec_alloc(void);
 void pkg_vec_free(pkg_vec_t *vec);
-void marry_two_packages(pkg_t * newpkg, pkg_t * oldpkg);
 
-/* pkg_vec_insert_merge: might munge pkg.
-*  returns the pkg that is in the pkg graph */
-pkg_t *pkg_vec_insert_merge(pkg_vec_t *vec, pkg_t *pkg, int set_status, opkg_conf_t *conf);
-/* this one never munges pkg */
+void pkg_vec_insert_merge(pkg_vec_t *vec, pkg_t *pkg, int set_status);
 void pkg_vec_insert(pkg_vec_t *vec, const pkg_t *pkg);
 int pkg_vec_contains(pkg_vec_t *vec, pkg_t *apkg);
 

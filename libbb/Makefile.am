@@ -11,12 +11,9 @@ libbb_la_SOURCES = gz_open.c \
 	unarchive.c \
 	copy_file.c \
 	copy_file_chunk.c \
-	error_msg.c error_msg_and_die.c \
-	perror_msg.c perror_msg_and_die.c \
 	xreadlink.c \
 	concat_path_file.c \
-	verror_msg.c vperror_msg.c \
-	xfuncs.c messages.c \
+	xfuncs.c \
 	last_char_is.c \
 	make_directory.c \
 	safe_strncpy.c \

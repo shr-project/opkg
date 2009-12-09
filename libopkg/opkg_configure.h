@@ -20,6 +20,6 @@
 
 #include "opkg_conf.h"
 
-int opkg_configure(opkg_conf_t *opkg_conf, pkg_t *pkg);
+int opkg_configure(pkg_t *pkg);
 
 #endif

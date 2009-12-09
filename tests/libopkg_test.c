@@ -22,14 +22,14 @@ char *errors[10] = {
 #define TEST_PACKAGE "aspell"
 
 void
-progress_callback (opkg_t *opkg, const opkg_progress_data_t *progress, void *data)
+progress_callback (const opkg_progress_data_t *progress, void *data)
 {
   printf ("\r%s %3d%%", (char*) data, progress->percentage);
   fflush (stdout);
 }
 
 void
-package_list_callback (opkg_t *opkg, opkg_package_t *pkg, void *data)
+package_list_callback (opkg_package_t *pkg, void *data)
 {
   static install_count = 0;
   static total_count = 0;
@@ -52,7 +52,7 @@ package_list_callback (opkg_t *opkg, opkg_package_t *pkg, void *data)
 }
 
 void
-package_list_upgradable_callback (opkg_t *opkg, opkg_package_t *pkg, void *data)
+package_list_upgradable_callback (opkg_package_t *pkg, void *data)
 {
   printf ("%s - %s\n", pkg->name, pkg->version);
   opkg_package_free (pkg);
@@ -68,7 +68,6 @@ print_package (opkg_package_t *pkg)
       "Architecture: %s\n"
       "Description:  %s\n"
       "Tags:         %s\n"
-      "URL:          %s\n"
       "Size:         %d\n"
       "Installed:    %s\n",
       pkg->name,
@@ -77,7 +76,6 @@ print_package (opkg_package_t *pkg)
       pkg->architecture,
       pkg->description,
       pkg->tags,
-      pkg->url,
       pkg->size,
       (pkg->installed ? "True" : "False")
       );
@@ -85,21 +83,21 @@ print_package (opkg_package_t *pkg)
 
 
 void
-opkg_test (opkg_t *opkg)
+opkg_test (void)
 {
   int err;
   opkg_package_t *pkg;
 
-  err = opkg_update_package_lists (opkg, progress_callback, "Updating...");
+  err = opkg_update_package_lists (progress_callback, "Updating...");
   printf ("\nopkg_update_package_lists returned %d (%s)\n", err, errors[err]);
 
-  opkg_list_packages (opkg, package_list_callback, NULL);
+  opkg_list_packages (package_list_callback, NULL);
   printf ("\n");
 
   if (find_pkg)
   {
     printf ("Finding package \"%s\"\n", find_pkg->name);
-    pkg = opkg_find_package (opkg, find_pkg->name, find_pkg->version, find_pkg->architecture, find_pkg->repository);
+    pkg = opkg_find_package (find_pkg->name, find_pkg->version, find_pkg->architecture, find_pkg->repository);
     if (pkg)
     {
       print_package (pkg);
@@ -112,19 +110,19 @@ opkg_test (opkg_t *opkg)
   else
     printf ("No package available to test find_package.\n");
 
-  err = opkg_install_package (opkg, TEST_PACKAGE, progress_callback, "Installing...");
+  err = opkg_install_package (TEST_PACKAGE, progress_callback, "Installing...");
   printf ("\nopkg_install_package returned %d (%s)\n", err, errors[err]);
 
-  err = opkg_upgrade_package (opkg, TEST_PACKAGE, progress_callback, "Upgrading...");
+  err = opkg_upgrade_package (TEST_PACKAGE, progress_callback, "Upgrading...");
   printf ("\nopkg_upgrade_package returned %d (%s)\n", err, errors[err]);
 
-  err = opkg_remove_package (opkg, TEST_PACKAGE, progress_callback, "Removing...");
+  err = opkg_remove_package (TEST_PACKAGE, progress_callback, "Removing...");
   printf ("\nopkg_remove_package returned %d (%s)\n", err, errors[err]);
 
   printf ("Listing upgradable packages...\n");
-  opkg_list_upgradable_packages (opkg, package_list_upgradable_callback, NULL);
+  opkg_list_upgradable_packages (package_list_upgradable_callback, NULL);
 
-  err = opkg_upgrade_all (opkg, progress_callback, "Upgrading all...");
+  err = opkg_upgrade_all (progress_callback, "Upgrading all...");
   printf ("\nopkg_upgrade_all returned %d (%s)\n", err, errors[err]);
 
 }
@@ -132,7 +130,6 @@ opkg_test (opkg_t *opkg)
 int
 main (int argc, char **argv)
 {
-  opkg_t *opkg;
   opkg_package_t *pkg;
   int err;
 
@@ -154,16 +151,16 @@ main (int argc, char **argv)
     exit (0);
   }
   
-  opkg = opkg_new ();
+  opkg_new ();
 
-  opkg_set_option (opkg, "offline_root", "/tmp/");
+  opkg_set_option ("offline_root", "/tmp/");
 
-  opkg_re_read_config_files (opkg);
+  opkg_re_read_config_files ();
 
   switch (argv[1][0])
   {
     case 'f':
-      pkg = opkg_find_package (opkg, argv[2], NULL, NULL, NULL);
+      pkg = opkg_find_package (argv[2], NULL, NULL, NULL);
       if (pkg)
       {
 	print_package (pkg);
@@ -174,7 +171,7 @@ main (int argc, char **argv)
       opkg_package_free (pkg);
       break;
     case 'i':
-      err = opkg_install_package (opkg, argv[1], progress_callback, "Installing...");
+      err = opkg_install_package (argv[1], progress_callback, "Installing...");
       printf ("\nopkg_install_package returned %d (%s)\n", err, errors[err]);
       break;
 
@@ -183,7 +180,7 @@ main (int argc, char **argv)
         printf ("");
       if (argv[1][3] == 'd')
       {
-        err = opkg_update_package_lists (opkg, progress_callback, "Updating...");
+        err = opkg_update_package_lists (progress_callback, "Updating...");
         printf ("\nopkg_update_package_lists returned %d (%s)\n", err, errors[err]);
         break;
       }
@@ -191,12 +188,12 @@ main (int argc, char **argv)
       {
         if (argc < 3)
         {
-          err = opkg_upgrade_all (opkg, progress_callback, "Upgrading all...");
+          err = opkg_upgrade_all (progress_callback, "Upgrading all...");
           printf ("\nopkg_upgrade_all returned %d (%s)\n", err, errors[err]);
         }
         else
         {
-          err = opkg_upgrade_package (opkg, argv[2], progress_callback, "Upgrading...");
+          err = opkg_upgrade_package (argv[2], progress_callback, "Upgrading...");
           printf ("\nopkg_upgrade_package returned %d (%s)\n", err, errors[err]);
         }
       }
@@ -213,11 +210,11 @@ main (int argc, char **argv)
         {
           case 'u':
             printf ("Listing upgradable packages...\n");
-            opkg_list_upgradable_packages (opkg, package_list_upgradable_callback, NULL);
+            opkg_list_upgradable_packages (package_list_upgradable_callback, NULL);
             break;
           case 'a':
             printf ("Listing all packages...\n");
-            opkg_list_packages (opkg, package_list_callback, NULL);
+            opkg_list_packages (package_list_callback, NULL);
             printf ("\n");
             break;
           case 'i':
@@ -232,12 +229,12 @@ main (int argc, char **argv)
     case 'r':
       if (argv[1][1] == 'e')
       {
-      	err = opkg_remove_package (opkg, argv[2], progress_callback, "Removing...");
+      	err = opkg_remove_package (argv[2], progress_callback, "Removing...");
       	printf ("\nopkg_remove_package returned %d (%s)\n", err, errors[err]);
 	break;
       }else if (argv[1][1] == 'p')
       {
-        err = opkg_repository_accessibility_check(opkg);
+        err = opkg_repository_accessibility_check();
 	printf("\nopkg_repository_accessibility_check returned (%d)\n", err);
         break;
       }
@@ -247,7 +244,7 @@ main (int argc, char **argv)
   }
 
 
-  opkg_free (opkg);
+  opkg_free ();
 
   return 0;
 }

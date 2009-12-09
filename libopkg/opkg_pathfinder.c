@@ -56,7 +56,7 @@ static int pathfinder_verify_callback(X509_STORE_CTX *ctx, void *arg)
     int validated = pathfinder_dbus_verify(certdata_str, policy, 0, 0, &errmsg);
 
     if (!validated)
-        fprintf(stderr, "curlcb_pathfinder: Path verification failed: %s\n", errmsg);
+        opkg_msg(ERROR, "Path verification failed: %s.\n", errmsg);
 
     free(certdata_str);
     free(errmsg);

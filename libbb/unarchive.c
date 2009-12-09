@@ -185,7 +185,7 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 						goto cleanup;
 					}
 					archive_offset += file_entry->size;
-					copy_file_chunk(src_stream, dst_stream, file_entry->size);			
+					*err = copy_file_chunk(src_stream, dst_stream, file_entry->size);			
 					fclose(dst_stream);
 				}
 				break;
@@ -194,7 +194,7 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 					if (mkdir(full_name, file_entry->mode) < 0) {
 						if ((function & extract_quiet) != extract_quiet) {
 							*err = -1;
-							perror_msg("%s: %s", __FUNCTION__, full_name);
+							perror_msg("Cannot make dir %s", full_name);
 						}
 					}
 				}
@@ -641,7 +641,8 @@ deb_extract(const char *package_filename, FILE *out_stream,
 	else if (extract_function & extract_data_tar_gz) {		
 		ared_file = "data.tar.gz";
 	} else {
-                fprintf(stderr, "no file specified to extract -- extract_function=%x\n", extract_function);
+                opkg_msg(ERROR, "Internal error: extract_function=%x\n",
+				extract_function);
 		*err = -1;
 		goto cleanup;
         }
@@ -668,7 +669,6 @@ deb_extract(const char *package_filename, FILE *out_stream,
 				/* open a stream of decompressed data */
 				uncompressed_stream = gz_open(deb_stream, &gunzip_pid);
 				if (uncompressed_stream == NULL) {
-					printf("%s: %d\n", __FUNCTION__, __LINE__);
 					*err = -1;
 					goto cleanup;
 				}

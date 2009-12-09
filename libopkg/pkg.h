@@ -85,7 +85,10 @@ struct abstract_pkg{
     pkg_vec_t * pkgs;
     pkg_state_status_t state_status;
     pkg_state_flag_t state_flag;
-    struct abstract_pkg ** depended_upon_by; /* @@@@ this should be abstract_pkg_vec_t -Jamey */
+
+    /* XXX: This should be abstract_pkg_vec_t for consistency. */
+    struct abstract_pkg ** depended_upon_by;
+
     abstract_pkg_vec_t * provided_by;
     abstract_pkg_vec_t * replaced_by;
 };
@@ -129,43 +132,39 @@ struct pkg
      pkg_state_flag_t state_flag;
      pkg_state_status_t state_status;
      char **depends_str;
-     int depends_count;
+     unsigned int depends_count;
      char **pre_depends_str;
-     int pre_depends_count;
+     unsigned int pre_depends_count;
      char **recommends_str;
-     int recommends_count;
+     unsigned int recommends_count;
      char **suggests_str;
-     int suggests_count;
+     unsigned int suggests_count;
      struct active_list list; /* Used for installing|upgrading */
      compound_depend_t * depends;
 
-     /* Abhaya: new conflicts */
      char **conflicts_str;
      compound_depend_t * conflicts;
-     int conflicts_count;
+     unsigned int conflicts_count;
 	
      char **replaces_str;
-     int replaces_count;
+     unsigned int replaces_count;
      abstract_pkg_t ** replaces;
 
      char **provides_str;
-     int provides_count;
+     unsigned int provides_count;
      abstract_pkg_t ** provides;
 
      abstract_pkg_t *parent;
 
-     pkg_t *old_pkg; /* during upgrade, points from installee to previously installed */
-
      char *filename;
      char *local_filename;
-     char *url;
      char *tmp_unpack_dir;
      char *md5sum;
 #if defined HAVE_SHA256
      char *sha256sum;
 #endif
-     char *size;
-     char *installed_size;
+     unsigned long size;		/* in bytes */
+     unsigned long installed_size;	/* in bytes */
      char *priority;
      char *source;
      conffile_list_t conffiles;
@@ -189,14 +188,14 @@ struct pkg
 
 pkg_t *pkg_new(void);
 void pkg_deinit(pkg_t *pkg);
-int pkg_init_from_file(opkg_conf_t *conf, pkg_t *pkg, const char *filename);
+int pkg_init_from_file(pkg_t *pkg, const char *filename);
 abstract_pkg_t *abstract_pkg_new(void);
 
 /* 
  * merges fields from newpkg into oldpkg.
- * Forcibly sets oldpkg state_status, state_want and state_flags if set_status is nonzero 
+ * Forcibly sets oldpkg state_status, state_want and state_flags
  */
-int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status);
+int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg);
 
 char *pkg_version_str_alloc(pkg_t *pkg);
 
@@ -207,15 +206,14 @@ int abstract_pkg_name_compare(const void *a, const void *b);
 void pkg_formatted_info(FILE *fp, pkg_t *pkg);
 void pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field);
 
-void set_flags_from_control(opkg_conf_t *conf, pkg_t *pkg);
+void set_flags_from_control(pkg_t *pkg);
 
 void pkg_print_status(pkg_t * pkg, FILE * file);
-str_list_t *pkg_get_installed_files(opkg_conf_t *conf, pkg_t *pkg);
+str_list_t *pkg_get_installed_files(pkg_t *pkg);
 void pkg_free_installed_files(pkg_t *pkg);
-void pkg_remove_installed_files_list(opkg_conf_t *conf, pkg_t *pkg);
+void pkg_remove_installed_files_list(pkg_t *pkg);
 conffile_t *pkg_get_conffile(pkg_t *pkg, const char *file_name);
-int pkg_run_script(struct opkg_conf *conf, pkg_t *pkg,
-		   const char *script, const char *args);
+int pkg_run_script(pkg_t *pkg, const char *script, const char *args);
 
 /* enum mappings */
 pkg_state_want_t pkg_state_want_from_str(char *str);
@@ -224,10 +222,10 @@ pkg_state_status_t pkg_state_status_from_str(const char *str);
 
 int pkg_version_satisfied(pkg_t *it, pkg_t *ref, const char *op);
 
-int pkg_arch_supported(opkg_conf_t *conf, pkg_t *pkg);
-void pkg_info_preinstall_check(opkg_conf_t *conf);
+int pkg_arch_supported(pkg_t *pkg);
+void pkg_info_preinstall_check(void);
 
-int pkg_write_filelist(opkg_conf_t *conf, pkg_t *pkg);
-int pkg_write_changed_filelists(opkg_conf_t *conf);
+int pkg_write_filelist(pkg_t *pkg);
+int pkg_write_changed_filelists(void);
 
 #endif

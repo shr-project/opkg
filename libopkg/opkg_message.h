@@ -1,5 +1,6 @@
 /* opkg_message.h - the opkg package management system
 
+   Copyright (C) 2009 Ubiq Technologies <graham.gower@gmail.com>
    Copyright (C) 2003 Daniele Nicolodi <daniele@grinta.net>
 
    This program is free software; you can redistribute it and/or
@@ -16,16 +17,30 @@
 #ifndef _OPKG_MESSAGE_H_
 #define _OPKG_MESSAGE_H_
 
-#include "opkg_conf.h"
+#include <string.h>
+#include <errno.h>
 
 typedef enum {
-     OPKG_ERROR,	/* error conditions */
-     OPKG_NOTICE,	/* normal but significant condition */
-     OPKG_INFO,		/* informational message */
-     OPKG_DEBUG,	/* debug level message */
-     OPKG_DEBUG2,	/* more debug level message */
+	ERROR,	/* error conditions */
+	NOTICE,	/* normal but significant condition */
+	INFO,	/* informational message */
+	DEBUG,	/* debug level message */
+	DEBUG2,	/* more debug level message */
 } message_level_t;
 
-extern void opkg_message(opkg_conf_t *conf, message_level_t level, char *fmt, ...);
+void free_error_list(void);
+void print_error_list(void);
+void opkg_message(message_level_t level, const char *fmt, ...);
+
+#define opkg_msg(l, fmt, args...) \
+	do { \
+		if (l == NOTICE) \
+			opkg_message(l, fmt, ##args); \
+		else \
+			opkg_message(l, "%s: "fmt, __FUNCTION__, ##args); \
+	} while (0)
+
+#define opkg_perror(l, fmt, args...) \
+	opkg_msg(l, fmt": %s.\n", ##args, strerror(errno))
 
 #endif /* _OPKG_MESSAGE_H_ */

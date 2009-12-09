@@ -19,6 +19,7 @@
 #define OPKG_CONF_H
 
 typedef struct opkg_conf opkg_conf_t;
+extern opkg_conf_t *conf;
 
 #include "hash_table.h"
 #include "args.h"
@@ -40,7 +41,6 @@ typedef struct opkg_conf opkg_conf_t;
 
 struct opkg_conf
 {
-     int lock_fd; /* file descriptor for the lock file */
      pkg_src_list_t pkg_src_list;
      pkg_dest_list_t pkg_dest_list;
      nv_pair_list_t arch_list;
@@ -50,6 +50,8 @@ struct opkg_conf
 
      char *tmp_dir;
      char *lists_dir;
+
+     uint pfm; /* package field mask */
 
      /* options */
      int autoremove;
@@ -65,9 +67,6 @@ struct opkg_conf
      int check_signature;
      int nodeps; /* do not follow dependences */
      char *offline_root;
-     char *offline_root_path;
-     char *offline_root_pre_script_cmd;
-     char *offline_root_post_script_cmd;
      int query_all;
      int verbosity;
      int noaction;
@@ -118,16 +117,13 @@ typedef struct opkg_option opkg_option_t;
 struct opkg_option {
      const char *name;
      const opkg_option_type_t type;
-     const void *value;
+     void * const value;
 };
 
-int opkg_conf_init(opkg_conf_t *conf, const args_t *args);
-void opkg_conf_deinit(opkg_conf_t *conf);
+int opkg_conf_init(const args_t *args);
+void opkg_conf_deinit(void);
 
-int opkg_conf_write_status_files(opkg_conf_t *conf);
-char *root_filename_alloc(opkg_conf_t *conf, char *filename);
-
-
-void opkg_init_options_array(const opkg_conf_t *conf, opkg_option_t **options);
+int opkg_conf_write_status_files(void);
+char *root_filename_alloc(char *filename);
 
 #endif

@@ -20,9 +20,8 @@
 
 #include "pkg.h"
 #include "opkg_conf.h"
-#include "opkg_error.h"
 
-int opkg_install_by_name(opkg_conf_t *conf, const char *pkg_name);
-int opkg_install_pkg(opkg_conf_t *conf, pkg_t *pkg, int from_upgrading);
+int opkg_install_by_name(const char *pkg_name);
+int opkg_install_pkg(pkg_t *pkg, int from_upgrading);
 
 #endif

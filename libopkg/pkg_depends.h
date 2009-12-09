@@ -56,12 +56,10 @@ struct compound_depend{
 };
 typedef struct compound_depend compound_depend_t;
 
-#include "hash_table.h"
-
-void buildProvides(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg);
-void buildConflicts(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg);
-void buildReplaces(hash_table_t * hash, abstract_pkg_t * ab_pkg, pkg_t * pkg);
-void buildDepends(hash_table_t * hash, pkg_t * pkg);
+void buildProvides(abstract_pkg_t * ab_pkg, pkg_t * pkg);
+void buildConflicts(pkg_t * pkg);
+void buildReplaces(abstract_pkg_t * ab_pkg, pkg_t * pkg);
+void buildDepends(pkg_t * pkg);
 
 /**
  * pkg_replaces returns 1 if pkg->replaces contains one of replacee's provides and 0
@@ -84,10 +82,10 @@ int pkg_conflicts(pkg_t *pkg, pkg_t *conflicts);
 char *pkg_depend_str(pkg_t *pkg, int index);
 void buildDependedUponBy(pkg_t * pkg, abstract_pkg_t * ab_pkg);
 int version_constraints_satisfied(depend_t * depends, pkg_t * pkg);
-int pkg_hash_fetch_unsatisfied_dependencies(opkg_conf_t *conf, pkg_t * pkg, pkg_vec_t *depends, char *** unresolved);
-pkg_vec_t * pkg_hash_fetch_conflicts(hash_table_t * hash, pkg_t * pkg);
-int pkg_dependence_satisfiable(opkg_conf_t *conf, depend_t *depend);
-int pkg_dependence_satisfied(opkg_conf_t *conf, depend_t *depend);
+int pkg_hash_fetch_unsatisfied_dependencies(pkg_t * pkg, pkg_vec_t *depends, char *** unresolved);
+pkg_vec_t * pkg_hash_fetch_conflicts(pkg_t * pkg);
+int pkg_dependence_satisfiable(depend_t *depend);
+int pkg_dependence_satisfied(depend_t *depend);
 const char* constraint_to_str(enum version_constraint c);
 
 #endif

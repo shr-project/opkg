@@ -35,13 +35,14 @@ int xregcomp(regex_t *preg, const char *regex, int cflags)
 
 static void print_regcomp_err(const regex_t *preg, int err)
 {
-    int size;
+    unsigned int size;
     char *error;
     
-    fprintf(stderr, "%s: Error compiling regex:", __FUNCTION__);
     size = regerror(err, preg, 0, 0);
     error = xcalloc(1, size);
     regerror(err, preg, error, size);
-    fprintf(stderr, "%s\n", error);
+
+    opkg_msg(ERROR, "Internal error compiling regex: %s.", error);
+
     free(error);
 }

@@ -18,7 +18,7 @@
 #include "includes.h"
 #include <errno.h>
 #include <ctype.h>
-#include <sys/vfs.h>
+#include <sys/statvfs.h>
 
 #include "opkg_utils.h"
 #include "pkg.h"
@@ -27,23 +27,25 @@
 
 void print_pkg_status(pkg_t * pkg, FILE * file);
 
-long unsigned int get_available_blocks(char * filesystem)
+unsigned long
+get_available_kbytes(char * filesystem)
 {
-    struct statfs sfs;
+    struct statvfs f;
 
-    if(statfs(filesystem, &sfs)){
-        fprintf(stderr, "bad statfs\n");
+    if (statvfs(filesystem, &f) == -1) {
+        opkg_perror(ERROR, "Failed to statvfs for %s", filesystem);
         return 0;
     }
-    /*    fprintf(stderr, "reported fs type %x\n", sfs.f_type); */
 
-    // Actually ((sfs.f_bavail * sfs.f_bsize) / 1024) 
+    // Actually ((sfs.f_bavail * sfs.f_frsize) / 1024) 
     // and here we try to avoid overflow. 
-    if (sfs.f_bsize >= 1024) 
-        return (sfs.f_bavail * (sfs.f_bsize / 1024));
-    else if (sfs.f_bsize > 0)
-        return sfs.f_bavail / (1024 / sfs.f_bsize);
-    fprintf(stderr, "bad statfs f_bsize == 0\n");
+    if (f.f_frsize >= 1024) 
+        return (f.f_bavail * (f.f_frsize / 1024));
+    else if (f.f_frsize > 0)
+        return f.f_bavail / (1024 / f.f_frsize);
+
+    opkg_msg(ERROR, "Unknown block size for target filesystem.\n");
+
     return 0;
 }
 
@@ -80,53 +82,4 @@ int line_is_blank(const char *line)
 	       return 0;
      }
      return 1;
-}
-
-static struct errlist *error_list_head, *error_list_tail;
-
-/*
- * XXX: this function should not allocate memory as it may be called to
- *      print an error because we are out of memory.
- */
-void push_error_list(char * msg)
-{
-	struct errlist *e;
-
-	e = xcalloc(1,  sizeof(struct errlist));
-	e->errmsg = xstrdup(msg);
-	e->next = NULL;
-
-	if (error_list_head) {
-		error_list_tail->next = e;
-		error_list_tail = e;
-	} else {
-		error_list_head = error_list_tail = e;
-	}
-}
-
-void free_error_list(void)
-{
-	struct errlist *err, *err_tmp;
-
-	err = error_list_head;
-	while (err != NULL) {
-		free(err->errmsg);
-		err_tmp = err;
-		err = err->next;
-		free(err_tmp);
-	}
-}
-
-void print_error_list (void)
-{
-	struct errlist *err = error_list_head;
-
-	if (err) {
-		printf ("Collected errors:\n");
-		/* Here we print the errors collected and free the list */
-		while (err != NULL) {
-			printf (" * %s", err->errmsg);
-			err = err->next;
-		}
-	}
 }

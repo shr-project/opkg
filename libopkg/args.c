@@ -26,13 +26,13 @@
 #include "args.h"
 #include "sprintf_alloc.h"
 #include "libbb/libbb.h"
+#include "opkg_conf.h"
 
 static void print_version(void);
 
 enum long_args_opt
 {
-     ARGS_OPT_FORCE_DEFAULTS = 129,
-     ARGS_OPT_FORCE_MAINTAINER, 
+     ARGS_OPT_FORCE_MAINTAINER = 129, 
      ARGS_OPT_FORCE_DEPENDS,
      ARGS_OPT_FORCE_OVERWRITE,
      ARGS_OPT_FORCE_DOWNGRADE,
@@ -42,7 +42,6 @@ enum long_args_opt
      ARGS_OPT_FORCE_SPACE,
      ARGS_OPT_NOACTION,
      ARGS_OPT_NODEPS,
-     ARGS_OPT_MULTIPLE_PROVIDERS,
      ARGS_OPT_AUTOREMOVE,
      ARGS_OPT_CACHE,
 };
@@ -55,38 +54,12 @@ void args_init(args_t *args)
 
      sprintf_alloc(&args->conf_file, "%s/%s", OPKGETCDIR,
 		   ARGS_DEFAULT_CONF_FILE_NAME);
-
-     args->force_defaults = ARGS_DEFAULT_FORCE_DEFAULTS;
-     args->force_maintainer = ARGS_DEFAULT_FORCE_MAINTAINER;
-     args->force_depends = ARGS_DEFAULT_FORCE_DEPENDS;
-     args->force_overwrite = ARGS_DEFAULT_FORCE_OVERWRITE;
-     args->force_downgrade = ARGS_DEFAULT_FORCE_DOWNGRADE;
-     args->force_reinstall = ARGS_DEFAULT_FORCE_REINSTALL;
-     args->force_removal_of_dependent_packages = ARGS_DEFAULT_FORCE_REMOVAL_OF_DEPENDENT_PACKAGES;
-     args->force_removal_of_essential_packages = ARGS_DEFAULT_FORCE_REMOVAL_OF_ESSENTIAL_PACKAGES;
-     args->autoremove = ARGS_DEFAULT_AUTOREMOVE;
-     args->noaction = ARGS_DEFAULT_NOACTION;
-     args->nodeps = ARGS_DEFAULT_NODEPS;
-     args->verbosity = ARGS_DEFAULT_VERBOSITY;
-     args->offline_root = ARGS_DEFAULT_OFFLINE_ROOT;
-     args->offline_root_path = ARGS_DEFAULT_OFFLINE_ROOT_PATH;
-     args->offline_root_pre_script_cmd = ARGS_DEFAULT_OFFLINE_ROOT_PRE_SCRIPT_CMD;
-     args->offline_root_post_script_cmd = ARGS_DEFAULT_OFFLINE_ROOT_POST_SCRIPT_CMD;
-     args->multiple_providers = 0;
-     args->nocheckfordirorfile = 0;
-     args->noreadfeedsfile = 0;
+     conf->verbosity = ARGS_DEFAULT_VERBOSITY;
 }
 
 void args_deinit(args_t *args)
 {
-     free (args->offline_root);
-     free (args->offline_root_path);
-     free (args->offline_root_pre_script_cmd);
-     free (args->offline_root_post_script_cmd);
-
      free (args->dest);
-     free (args->tmp_dir);
-     free (args->cache);
      free(args->conf_file);
      args->conf_file = NULL;
 }
@@ -103,10 +76,8 @@ int args_parse(args_t *args, int argc, char *argv[])
 	  {"conf-file", 1, 0, 'f'},
 	  {"conf", 1, 0, 'f'},
 	  {"dest", 1, 0, 'd'},
-	  {"force-defaults", 0, 0, ARGS_OPT_FORCE_DEFAULTS},
-	  {"force_defaults", 0, 0, ARGS_OPT_FORCE_DEFAULTS},
-          {"force-maintainer", 0, 0, ARGS_OPT_FORCE_MAINTAINER}, 
-          {"force_maintainer", 0, 0, ARGS_OPT_FORCE_MAINTAINER}, 
+          {"force-maintainer", 0, 0, ARGS_OPT_FORCE_MAINTAINER},
+          {"force_maintainer", 0, 0, ARGS_OPT_FORCE_MAINTAINER},
 	  {"force-depends", 0, 0, ARGS_OPT_FORCE_DEPENDS},
 	  {"force_depends", 0, 0, ARGS_OPT_FORCE_DEPENDS},
 	  {"force-overwrite", 0, 0, ARGS_OPT_FORCE_OVERWRITE},
@@ -127,14 +98,10 @@ int args_parse(args_t *args, int argc, char *argv[])
 	   ARGS_OPT_FORCE_REMOVAL_OF_ESSENTIAL_PACKAGES},
 	  {"force_removal_of_essential_packages", 0, 0,
 	   ARGS_OPT_FORCE_REMOVAL_OF_ESSENTIAL_PACKAGES},
-	  {"multiple-providers", 0, 0, ARGS_OPT_MULTIPLE_PROVIDERS},
-	  {"multiple_providers", 0, 0, ARGS_OPT_MULTIPLE_PROVIDERS},
 	  {"noaction", 0, 0, ARGS_OPT_NOACTION},
 	  {"nodeps", 0, 0, ARGS_OPT_NODEPS},
 	  {"offline", 1, 0, 'o'},
 	  {"offline-root", 1, 0, 'o'},
-	  {"offline-path", 1, 0, 'p'},
-	  {"offline-root-path", 1, 0, 'p'},
 	  {"test", 0, 0, ARGS_OPT_NOACTION},
 	  {"tmp-dir", 1, 0, 't'},
 	  {"tmp_dir", 1, 0, 't'},
@@ -150,7 +117,7 @@ int args_parse(args_t *args, int argc, char *argv[])
 
 	  switch (c) {
 	  case 'A':
-	       args->query_all = 1;
+	       conf->query_all = 1;
 	       break;
 	  case 'd':
 	       args->dest = xstrdup(optarg);
@@ -160,68 +127,59 @@ int args_parse(args_t *args, int argc, char *argv[])
 	       args->conf_file = xstrdup(optarg);
 	       break;
 	  case 'o':
-	       args->offline_root = xstrdup(optarg);
-	       break;
-	  case 'p':
-	       args->offline_root_path = xstrdup(optarg);
+	       conf->offline_root = xstrdup(optarg);
 	       break;
 	  case 't':
-	       args->tmp_dir = xstrdup(optarg);
+	       conf->tmp_dir = xstrdup(optarg);
 	       break;
 	  case 'v':
 	       print_version();
 	       exit(0);
 	  case 'V':
-	       args->verbosity = atoi(optarg);
+	       conf->verbosity = atoi(optarg);
 	       break;
 	  case ARGS_OPT_AUTOREMOVE:
-	       args->autoremove = 1;
+	       conf->autoremove = 1;
 	       break;
 	  case ARGS_OPT_CACHE:
-	       free(args->cache);
-	       args->cache = xstrdup(optarg);
-	       break;
-	  case ARGS_OPT_FORCE_DEFAULTS:
-	       args->force_defaults = 1;
+	       free(conf->cache);
+	       conf->cache = xstrdup(optarg);
 	       break;
           case ARGS_OPT_FORCE_MAINTAINER:
-               args->force_maintainer = 1;
+               conf->force_maintainer = 1;
                break;
 	  case ARGS_OPT_FORCE_DEPENDS:
-	       args->force_depends = 1;
+	       conf->force_depends = 1;
 	       break;
 	  case ARGS_OPT_FORCE_OVERWRITE:
-	       args->force_overwrite = 1;
+	       conf->force_overwrite = 1;
 	       break;
 	  case ARGS_OPT_FORCE_DOWNGRADE:
-	       args->force_downgrade = 1;
+	       conf->force_downgrade = 1;
 	       break;
 	  case ARGS_OPT_FORCE_REINSTALL:
-	       args->force_reinstall = 1;
+	       conf->force_reinstall = 1;
 	       break;
 	  case ARGS_OPT_FORCE_REMOVAL_OF_ESSENTIAL_PACKAGES:
-	       args->force_removal_of_essential_packages = 1;
+	       conf->force_removal_of_essential_packages = 1;
 	       break;
 	  case ARGS_OPT_FORCE_REMOVAL_OF_DEPENDENT_PACKAGES:
-	       args->force_removal_of_dependent_packages = 1;
+	       conf->force_removal_of_dependent_packages = 1;
 	       break;
 	  case ARGS_OPT_FORCE_SPACE:
-	       args->force_space = 1;
-	       break;
-	  case ARGS_OPT_MULTIPLE_PROVIDERS:
-	       args->multiple_providers = 1;
+	       conf->force_space = 1;
 	       break;
 	  case ARGS_OPT_NODEPS:
-	       args->nodeps = 1;
+	       conf->nodeps = 1;
 	       break;
 	  case ARGS_OPT_NOACTION:
-	       args->noaction = 1;
+	       conf->noaction = 1;
 	       break;
 	  case ':':
-	       parse_err++;
+	       parse_err = -1;
 	       break;
 	  case '?':
-	       parse_err++;
+	       parse_err = -1;
 	       break;
 	  default:
 	       printf("Confusion: getopt_long returned %d\n", c);
@@ -229,13 +187,13 @@ int args_parse(args_t *args, int argc, char *argv[])
      }
     
      if (parse_err) {
-	  return -parse_err;
+	  return parse_err;
      } else {
 	  return optind;
      }
 }
 
-void args_usage(char *complaint)
+void args_usage(const char *complaint)
 {
      if (complaint) {
 	  printf("opkg: %s\n", complaint);
@@ -291,11 +249,10 @@ void args_usage(char *complaint)
      printf("				directory name in a pinch).\n");
      printf("\t-o <dir>		Use <dir> as the root directory for\n");
      printf("\t--offline-root <dir>	offline installation of packages.\n");
-     printf("\t--offline-path <path>	$PATH for postinsts scripts in offline mode\n");
 
      printf("\nForce Options:\n");
      printf("\t--force-depends		Install/remove despite failed dependences\n");
-     printf("\t--force-defaults	Use default options for questions asked by opkg\n");
+     printf("\t--force-maintainer	Overwrite preexisting config files\n");
      printf("\t--force-reinstall	Reinstall package(s)\n");
      printf("\t--force-overwrite	Overwrite files from other package(s)\n");
      printf("\t--force-downgrade	Allow opkg to downgrade packages\n");

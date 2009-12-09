@@ -18,12 +18,11 @@
 #ifndef OPKG_H
 #define OPKG_H
 
-typedef struct _opkg_t opkg_t;
 typedef struct _opkg_package_t opkg_package_t;
 typedef struct _opkg_progress_data_t opkg_progress_data_t;
 
-typedef void (*opkg_progress_callback_t) (opkg_t *opkg, const opkg_progress_data_t *progress, void *user_data);
-typedef void (*opkg_package_callback_t) (opkg_t *opkg, opkg_package_t *package, void *user_data);
+typedef void (*opkg_progress_callback_t) (const opkg_progress_data_t *progress, void *user_data);
+typedef void (*opkg_package_callback_t) (opkg_package_t *package, void *user_data);
 
 enum _opkg_action_t
 {
@@ -55,7 +54,6 @@ struct _opkg_package_t
   char *repository;
   char *description;
   char *tags;
-  char *url;
   int size;
   int installed;
 };
@@ -70,22 +68,22 @@ struct _opkg_progress_data_t
 opkg_package_t* opkg_package_new ();
 void opkg_package_free (opkg_package_t *package);
 
-opkg_t* opkg_new ();
-void opkg_free (opkg_t *opkg);
-void opkg_get_option (opkg_t *opkg, char *option, void **value);
-void opkg_set_option (opkg_t *opkg, char *option, void *value);
-int opkg_re_read_config_files (opkg_t *opkg);
+int opkg_new (void);
+void opkg_free (void);
+int opkg_re_read_config_files (void);
+void opkg_get_option (char *option, void **value);
+void opkg_set_option (char *option, void *value);
 
-int opkg_install_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t callback, void *user_data);
-int opkg_remove_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t callback, void *user_data);
-int opkg_upgrade_package (opkg_t *opkg, const char *package_name, opkg_progress_callback_t callback, void *user_data);
-int opkg_upgrade_all (opkg_t *opkg, opkg_progress_callback_t callback, void *user_data);
-int opkg_update_package_lists (opkg_t *opkg, opkg_progress_callback_t callback, void *user_data);
+int opkg_install_package (const char *package_name, opkg_progress_callback_t callback, void *user_data);
+int opkg_remove_package (const char *package_name, opkg_progress_callback_t callback, void *user_data);
+int opkg_upgrade_package (const char *package_name, opkg_progress_callback_t callback, void *user_data);
+int opkg_upgrade_all (opkg_progress_callback_t callback, void *user_data);
+int opkg_update_package_lists (opkg_progress_callback_t callback, void *user_data);
 
-int opkg_list_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_data);
-int opkg_list_upgradable_packages (opkg_t *opkg, opkg_package_callback_t callback, void *user_data);
-opkg_package_t* opkg_find_package (opkg_t *opkg, const char *name, const char *version, const char *architecture, const char *repository);
+int opkg_list_packages (opkg_package_callback_t callback, void *user_data);
+int opkg_list_upgradable_packages (opkg_package_callback_t callback, void *user_data);
+opkg_package_t* opkg_find_package (const char *name, const char *version, const char *architecture, const char *repository);
 
-int opkg_repository_accessibility_check(opkg_t *opkg);
+int opkg_repository_accessibility_check(void);
 
 #endif /* OPKG_H */
