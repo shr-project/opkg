@@ -18,11 +18,14 @@
 #ifndef OPKG_H
 #define OPKG_H
 
-typedef struct _opkg_package_t opkg_package_t;
+#include "pkg.h"
+#include "opkg_message.h"
+
+//typedef struct _opkg_package_t opkg_package_t;
 typedef struct _opkg_progress_data_t opkg_progress_data_t;
 
 typedef void (*opkg_progress_callback_t) (const opkg_progress_data_t *progress, void *user_data);
-typedef void (*opkg_package_callback_t) (opkg_package_t *package, void *user_data);
+typedef void (*opkg_package_callback_t) (pkg_t *pkg, void *user_data);
 
 enum _opkg_action_t
 {
@@ -62,11 +65,8 @@ struct _opkg_progress_data_t
 {
   int percentage;
   int action;
-  opkg_package_t *package;
+  pkg_t *pkg;
 };
-
-opkg_package_t* opkg_package_new ();
-void opkg_package_free (opkg_package_t *package);
 
 int opkg_new (void);
 void opkg_free (void);
@@ -82,7 +82,7 @@ int opkg_update_package_lists (opkg_progress_callback_t callback, void *user_dat
 
 int opkg_list_packages (opkg_package_callback_t callback, void *user_data);
 int opkg_list_upgradable_packages (opkg_package_callback_t callback, void *user_data);
-opkg_package_t* opkg_find_package (const char *name, const char *version, const char *architecture, const char *repository);
+pkg_t* opkg_find_package (const char *name, const char *version, const char *architecture, const char *repository);
 
 int opkg_repository_accessibility_check(void);
 
