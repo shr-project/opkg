@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <libgen.h>
 
-opkg_package_t *find_pkg = NULL;
+pkg_t *find_pkg = NULL;
 
 char *errors[10] = {
   "No Error",
@@ -29,12 +30,12 @@ progress_callback (const opkg_progress_data_t *progress, void *data)
 }
 
 void
-package_list_callback (opkg_package_t *pkg, void *data)
+package_list_callback (pkg_t *pkg, void *data)
 {
-  static install_count = 0;
-  static total_count = 0;
+  static int install_count = 0;
+  static int total_count = 0;
 
-  if (pkg->installed)
+  if (pkg->state_status == SS_INSTALLED)
     install_count++;
 
   total_count++;
@@ -47,19 +48,16 @@ package_list_callback (opkg_package_t *pkg, void *data)
     /* store the first package to print out later */
     find_pkg = pkg;
   }
-  else
-    opkg_package_free (pkg);
 }
 
 void
-package_list_upgradable_callback (opkg_package_t *pkg, void *data)
+package_list_upgradable_callback (pkg_t *pkg, void *data)
 {
   printf ("%s - %s\n", pkg->name, pkg->version);
-  opkg_package_free (pkg);
 }
 
 void
-print_package (opkg_package_t *pkg)
+print_package (pkg_t *pkg)
 {
   printf (
       "Name:         %s\n"
@@ -68,16 +66,16 @@ print_package (opkg_package_t *pkg)
       "Architecture: %s\n"
       "Description:  %s\n"
       "Tags:         %s\n"
-      "Size:         %d\n"
-      "Installed:    %s\n",
+      "Size:         %ld\n"
+      "Status:       %d\n",
       pkg->name,
       pkg->version,
-      pkg->repository,
+      pkg->src->name,
       pkg->architecture,
       pkg->description,
       pkg->tags,
       pkg->size,
-      (pkg->installed ? "True" : "False")
+      pkg->state_status
       );
 }
 
@@ -86,7 +84,7 @@ void
 opkg_test (void)
 {
   int err;
-  opkg_package_t *pkg;
+  pkg_t *pkg;
 
   err = opkg_update_package_lists (progress_callback, "Updating...");
   printf ("\nopkg_update_package_lists returned %d (%s)\n", err, errors[err]);
@@ -97,15 +95,13 @@ opkg_test (void)
   if (find_pkg)
   {
     printf ("Finding package \"%s\"\n", find_pkg->name);
-    pkg = opkg_find_package (find_pkg->name, find_pkg->version, find_pkg->architecture, find_pkg->repository);
+    pkg = opkg_find_package (find_pkg->name, find_pkg->version, find_pkg->architecture, find_pkg->src->name);
     if (pkg)
     {
       print_package (pkg);
-      opkg_package_free (pkg);
     }
     else
       printf ("Package \"%s\" not found!\n", find_pkg->name);
-    opkg_package_free (find_pkg);
   }
   else
     printf ("No package available to test find_package.\n");
@@ -130,7 +126,7 @@ opkg_test (void)
 int
 main (int argc, char **argv)
 {
-  opkg_package_t *pkg;
+  pkg_t *pkg;
   int err;
 
   if (argc < 2)
@@ -150,12 +146,14 @@ main (int argc, char **argv)
     , basename (argv[0]));
     exit (0);
   }
-  
-  opkg_new ();
 
-  opkg_set_option ("offline_root", "/tmp/");
-
-  opkg_re_read_config_files ();
+  setenv("OFFLINE_ROOT", "/tmp", 0);
+ 
+  if (opkg_new ()) {
+	  printf("opkg_new() failed. This sucks.\n");
+	  print_error_list();
+	  return 1;
+  }
 
   switch (argv[1][0])
   {
@@ -164,11 +162,9 @@ main (int argc, char **argv)
       if (pkg)
       {
 	print_package (pkg);
-	opkg_package_free (pkg);
       }
       else
 	printf ("Package \"%s\" not found!\n", find_pkg->name);
-      opkg_package_free (pkg);
       break;
     case 'i':
       err = opkg_install_package (argv[1], progress_callback, "Installing...");
@@ -176,8 +172,6 @@ main (int argc, char **argv)
       break;
 
     case 'u':
-      if (strlen (argv[1]) < 4)
-        printf ("");
       if (argv[1][3] == 'd')
       {
         err = opkg_update_package_lists (progress_callback, "Updating...");

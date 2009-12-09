@@ -443,6 +443,9 @@ opkg_conf_init(const args_t *args)
 
      nv_pair_list_init(&conf->arch_list);
 
+     if (!conf->offline_root)
+          conf->offline_root = xstrdup(getenv("OFFLINE_ROOT"));
+
      if (args->conf_file) {
 	  struct stat stat_buf;
 	  err = stat(args->conf_file, &stat_buf);
