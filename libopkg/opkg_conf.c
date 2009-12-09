@@ -487,7 +487,8 @@ opkg_conf_init(const args_t *args)
      else
        sprintf_alloc (&lock_file, "%s/lock", OPKG_STATE_DIR_PREFIX);
 
-     if (creat(lock_file, S_IRUSR | S_IWUSR | S_IRGRP) == -1) {
+     lock_fd = creat(lock_file, S_IRUSR | S_IWUSR | S_IRGRP);
+     if (lock_fd == -1) {
 	     opkg_perror(ERROR, "Could not create lock file %s", lock_file);
 	     free(lock_file);
 	     return -1;
@@ -604,12 +605,9 @@ opkg_conf_deinit(void)
 		hash_print_stats(&conf->obs_file_hash);
 	}
 
-	if (&conf->pkg_hash)
-		pkg_hash_deinit();
-	if (&conf->file_hash)
-		hash_table_deinit(&conf->file_hash);
-	if (&conf->obs_file_hash)
-		hash_table_deinit(&conf->obs_file_hash);
+	pkg_hash_deinit();
+	hash_table_deinit(&conf->file_hash);
+	hash_table_deinit(&conf->obs_file_hash);
 
 	/* lockf may be defined with warn_unused_result */
 	if (lockf(lock_fd, F_ULOCK, (off_t)0) != 0) {
