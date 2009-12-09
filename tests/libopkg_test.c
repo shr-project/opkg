@@ -25,8 +25,22 @@ char *errors[10] = {
 void
 progress_callback (const opkg_progress_data_t *progress, void *data)
 {
-  printf ("\r%s %3d%%", (char*) data, progress->percentage);
+  printf ("\r%s %3d%%\n", (char*) data, progress->percentage);
   fflush (stdout);
+}
+
+static void list_pkg(pkg_t *pkg)
+{
+  char *v = pkg_version_str_alloc(pkg);
+  printf ("%s - %s\n", pkg->name, v);
+  free(v);
+}
+
+void
+package_list_installed_callback (pkg_t *pkg, void *data)
+{
+  if (pkg->state_status == SS_INSTALLED)
+    list_pkg(pkg);
 }
 
 void
@@ -53,7 +67,7 @@ package_list_callback (pkg_t *pkg, void *data)
 void
 package_list_upgradable_callback (pkg_t *pkg, void *data)
 {
-  printf ("%s - %s\n", pkg->name, pkg->version);
+  list_pkg(pkg);
 }
 
 void
@@ -213,6 +227,7 @@ main (int argc, char **argv)
             break;
           case 'i':
             printf ("Listing installed packages...\n");
+            opkg_list_packages (package_list_installed_callback, NULL);
             break;
           default:
             printf ("Unknown list option \"%s\"", argv[2]);
