@@ -137,7 +137,7 @@ pkg_hash_fetch_best_installation_candidate(abstract_pkg_t *apkg,
 		int (*constraint_fcn)(pkg_t *pkg, void *cdata),
 		void *cdata, int quiet)
 {
-     int i;
+     int i, j;
      int nprovides = 0;
      int nmatching = 0;
      int wrong_arch_found = 0;
@@ -212,8 +212,8 @@ pkg_hash_fetch_best_installation_candidate(abstract_pkg_t *apkg,
 	       int max_count = 0;
 
 	       /* count packages matching max arch priority and keep track of last one */
-	       for (i = 0; i < vec->len; i++) {
-		    pkg_t *maybe = vec->pkgs[i];
+	       for (j=0; j<vec->len; j++) {
+		    pkg_t *maybe = vec->pkgs[j];
 		    opkg_msg(DEBUG, "%s arch=%s arch_priority=%d version=%s.\n",
 				 maybe->name, maybe->architecture,
 				 maybe->arch_priority, maybe->version);
