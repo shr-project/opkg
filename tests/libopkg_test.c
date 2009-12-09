@@ -167,7 +167,7 @@ main (int argc, char **argv)
 	printf ("Package \"%s\" not found!\n", find_pkg->name);
       break;
     case 'i':
-      err = opkg_install_package (argv[1], progress_callback, "Installing...");
+      err = opkg_install_package (argv[2], progress_callback, "Installing...");
       printf ("\nopkg_install_package returned %d (%s)\n", err, errors[err]);
       break;
 
