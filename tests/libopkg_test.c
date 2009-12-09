@@ -172,7 +172,7 @@ main (int argc, char **argv)
       break;
 
     case 'u':
-      if (argv[1][3] == 'd')
+      if (argv[1][2] == 'd')
       {
         err = opkg_update_package_lists (progress_callback, "Updating...");
         printf ("\nopkg_update_package_lists returned %d (%s)\n", err, errors[err]);
