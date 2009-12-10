@@ -6,19 +6,6 @@
 
 pkg_t *find_pkg = NULL;
 
-char *errors[10] = {
-  "No Error",
-  "Unknown Eror",
-  "Download failed",
-  "Dependancies failed",
-  "Package already installed",
-  "Package not available",
-  "Package not found",
-  "Package not installed",
-  "Signature check failed",
-  "MD5 sum failed"
-};
-
 
 #define TEST_PACKAGE "aspell"
 
@@ -101,7 +88,7 @@ opkg_test (void)
   pkg_t *pkg;
 
   err = opkg_update_package_lists (progress_callback, "Updating...");
-  printf ("\nopkg_update_package_lists returned %d (%s)\n", err, errors[err]);
+  printf ("\nopkg_update_package_lists returned %d\n", err);
 
   opkg_list_packages (package_list_callback, NULL);
   printf ("\n");
@@ -121,19 +108,19 @@ opkg_test (void)
     printf ("No package available to test find_package.\n");
 
   err = opkg_install_package (TEST_PACKAGE, progress_callback, "Installing...");
-  printf ("\nopkg_install_package returned %d (%s)\n", err, errors[err]);
+  printf ("\nopkg_install_package returned %d\n", err);
 
   err = opkg_upgrade_package (TEST_PACKAGE, progress_callback, "Upgrading...");
-  printf ("\nopkg_upgrade_package returned %d (%s)\n", err, errors[err]);
+  printf ("\nopkg_upgrade_package returned %d\n", err);
 
   err = opkg_remove_package (TEST_PACKAGE, progress_callback, "Removing...");
-  printf ("\nopkg_remove_package returned %d (%s)\n", err, errors[err]);
+  printf ("\nopkg_remove_package returned %d\n", err);
 
   printf ("Listing upgradable packages...\n");
   opkg_list_upgradable_packages (package_list_upgradable_callback, NULL);
 
   err = opkg_upgrade_all (progress_callback, "Upgrading all...");
-  printf ("\nopkg_upgrade_all returned %d (%s)\n", err, errors[err]);
+  printf ("\nopkg_upgrade_all returned %d\n", err);
 
 }
 
@@ -182,14 +169,14 @@ main (int argc, char **argv)
       break;
     case 'i':
       err = opkg_install_package (argv[2], progress_callback, "Installing...");
-      printf ("\nopkg_install_package returned %d (%s)\n", err, errors[err]);
+      printf ("\nopkg_install_package returned %d\n", err);
       break;
 
     case 'u':
       if (argv[1][2] == 'd')
       {
         err = opkg_update_package_lists (progress_callback, "Updating...");
-        printf ("\nopkg_update_package_lists returned %d (%s)\n", err, errors[err]);
+        printf ("\nopkg_update_package_lists returned %d\n", err);
         break;
       }
       else
@@ -197,12 +184,12 @@ main (int argc, char **argv)
         if (argc < 3)
         {
           err = opkg_upgrade_all (progress_callback, "Upgrading all...");
-          printf ("\nopkg_upgrade_all returned %d (%s)\n", err, errors[err]);
+          printf ("\nopkg_upgrade_all returned %d\n", err);
         }
         else
         {
           err = opkg_upgrade_package (argv[2], progress_callback, "Upgrading...");
-          printf ("\nopkg_upgrade_package returned %d (%s)\n", err, errors[err]);
+          printf ("\nopkg_upgrade_package returned %d\n", err);
         }
       }
       break;
@@ -230,7 +217,7 @@ main (int argc, char **argv)
             opkg_list_packages (package_list_installed_callback, NULL);
             break;
           default:
-            printf ("Unknown list option \"%s\"", argv[2]);
+            printf ("Unknown list option \"%s\"\n", argv[2]);
         }
       }
       break;
@@ -239,7 +226,7 @@ main (int argc, char **argv)
       if (argv[1][1] == 'e')
       {
       	err = opkg_remove_package (argv[2], progress_callback, "Removing...");
-      	printf ("\nopkg_remove_package returned %d (%s)\n", err, errors[err]);
+      	printf ("\nopkg_remove_package returned %d\n", err);
 	break;
       }else if (argv[1][1] == 'p')
       {

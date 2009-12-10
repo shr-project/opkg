@@ -207,7 +207,7 @@ opkg_set_option(char *option, void *value)
 	}
 
 	if (!found) {
-		/* XXX: Warning: Option not found */
+		opkg_msg(ERROR, "Invalid option: %s\n", option);
 		return;
 	}
 
@@ -258,19 +258,20 @@ opkg_install_package(const char *package_name,
 	/* check to ensure package is not already installed */
 	old = pkg_hash_fetch_installed_by_name(package_name);
 	if (old) {
-		/* XXX: Error: Package is already installed. */
-		return OPKG_PACKAGE_ALREADY_INSTALLED;
+		opkg_msg(ERROR, "Package %s is already installed\n",
+				package_name);
+		return -1;
 	}
 
 	new = pkg_hash_fetch_best_installation_candidate_by_name(package_name);
 	if (!new) {
-		/* XXX: Error: Could not find package to install */
-		return OPKG_PACKAGE_NOT_FOUND;
+		opkg_msg(ERROR, "Couldn't find package %s\n", package_name);
+		return -1;
 	}
 
 	new->state_flag |= SF_USER;
 
-	pdata.action = OPKG_INSTALL;
+	pdata.action = -1;
 	pdata.pkg = new;
 
 	progress(pdata, 0);
@@ -278,18 +279,26 @@ opkg_install_package(const char *package_name,
 	/* find dependancies and download them */
 	deps = pkg_vec_alloc();
 	/* this function does not return the original package, so we insert it later */
-	ndepends =
-	    pkg_hash_fetch_unsatisfied_dependencies(new, deps, &unresolved);
+	ndepends = pkg_hash_fetch_unsatisfied_dependencies(new, deps,
+			&unresolved);
 	if (unresolved) {
-		/* XXX: Error: Could not satisfy dependencies */
+		char **tmp = unresolved;
+		opkg_msg(ERROR, "Couldn't satisfy the following dependencies"
+			       " for %s:\n", package_name);
+		while (*tmp) {
+			opkg_msg(ERROR, "\t%s", *tmp);
+			free(*tmp);
+			tmp++;
+		}
+		free(unresolved);
 		pkg_vec_free(deps);
-		return OPKG_DEPENDENCIES_FAILED;
+		return -1;
 	}
 
 	/* insert the package we are installing so that we download it */
 	pkg_vec_insert(deps, new);
 
-	/* download package and dependancies */
+	/* download package and dependencies */
 	for (i = 0; i < deps->len; i++) {
 		pkg_t *pkg;
 		struct _curl_cb_data cb_data;
@@ -303,8 +312,9 @@ opkg_install_package(const char *package_name,
 		pdata.action = OPKG_DOWNLOAD;
 
 		if (pkg->src == NULL) {
-			/* XXX: Error: Package not available from any configured src */
-			return OPKG_PACKAGE_NOT_AVAILABLE;
+			opkg_msg(ERROR, "Package %s not available from any "
+					"configured src\n", package_name);
+			return -1;
 		}
 
 		sprintf_alloc(&url, "%s/%s", pkg->src->value, pkg->filename);
@@ -331,7 +341,7 @@ opkg_install_package(const char *package_name,
 
 		if (err) {
 			pkg_vec_free(deps);
-			return OPKG_DOWNLOAD_FAILED;
+			return -1;
 		}
 
 	}
@@ -355,7 +365,7 @@ opkg_install_package(const char *package_name,
 	err = opkg_install_pkg(new, 0);
 
 	if (err) {
-		return OPKG_UNKNOWN_ERROR;
+		return -1;
 	}
 
 	progress(pdata, 75);
@@ -363,7 +373,7 @@ opkg_install_package(const char *package_name,
 	/* run configure scripts, etc. */
 	err = opkg_configure_packages(NULL);
 	if (err) {
-		return OPKG_UNKNOWN_ERROR;
+		return -1;
 	}
 
 	/* write out status files and file lists */
@@ -389,21 +399,14 @@ opkg_remove_package(const char *package_name,
 
 	pkg = pkg_hash_fetch_installed_by_name(package_name);
 
-	if (pkg == NULL) {
-		/* XXX: Error: Package not installed. */
-		return OPKG_PACKAGE_NOT_INSTALLED;
+	if (pkg == NULL || pkg->state_status == SS_NOT_INSTALLED) {
+		opkg_msg(ERROR, "Package %s not installed\n", package_name);
+		return -1;
 	}
 
 	pdata.action = OPKG_REMOVE;
 	pdata.pkg = pkg;
 	progress(pdata, 0);
-
-
-	if (pkg->state_status == SS_NOT_INSTALLED) {
-		/* XXX:  Error: Package seems to be not installed (STATUS = NOT_INSTALLED). */
-		return OPKG_PACKAGE_NOT_INSTALLED;
-	}
-	progress(pdata, 25);
 
 	if (conf->restrict_to_default_dest) {
 		pkg_to_remove = pkg_hash_fetch_installed_by_name_dest(pkg->name,
@@ -423,7 +426,7 @@ opkg_remove_package(const char *package_name,
 
 
 	progress(pdata, 100);
-	return (err) ? OPKG_UNKNOWN_ERROR : OPKG_NO_ERROR;
+	return (err) ? -1 : 0;
 }
 
 int
@@ -442,17 +445,13 @@ opkg_upgrade_package(const char *package_name,
 	if (conf->restrict_to_default_dest) {
 		pkg = pkg_hash_fetch_installed_by_name_dest(package_name,
 							    conf->default_dest);
-		if (pkg == NULL) {
-			/* XXX: Error: Package not installed in default_dest */
-			return OPKG_PACKAGE_NOT_INSTALLED;
-		}
 	} else {
 		pkg = pkg_hash_fetch_installed_by_name(package_name);
 	}
 
 	if (!pkg) {
-		/* XXX: Error: Package not installed */
-		return OPKG_PACKAGE_NOT_INSTALLED;
+		opkg_msg(ERROR, "Package %s not installed\n", package_name);
+		return -1;
 	}
 
 	pdata.action = OPKG_INSTALL;
@@ -460,15 +459,14 @@ opkg_upgrade_package(const char *package_name,
 	progress(pdata, 0);
 
 	err = opkg_upgrade_pkg(pkg);
-	/* opkg_upgrade_pkg returns the error codes of opkg_install_pkg */
 	if (err) {
-		return OPKG_UNKNOWN_ERROR;
+		return -1;
 	}
 	progress(pdata, 75);
 
 	err = opkg_configure_packages(NULL);
 	if (err) {
-		return OPKG_UNKNOWN_ERROR;
+		return -1;
 	}
 
 	/* write out status files and file lists */
@@ -540,14 +538,15 @@ opkg_update_package_lists(opkg_progress_callback_t progress_callback,
 
 	if (!file_is_dir(lists_dir)) {
 		if (file_exists(lists_dir)) {
-			/* XXX: Error: file exists but is not a directory */
+			opkg_msg(ERROR, "%s is not a directory\n", lists_dir);
 			free(lists_dir);
 			return 1;
 		}
 
 		err = file_mkdir_hier(lists_dir, 0755);
 		if (err) {
-			/* XXX: Error: failed to create directory */
+			opkg_msg(ERROR, "Couldn't create lists_dir %s\n",
+					lists_dir);
 			free(lists_dir);
 			return 1;
 		}
@@ -555,7 +554,8 @@ opkg_update_package_lists(opkg_progress_callback_t progress_callback,
 
 	sprintf_alloc(&tmp, "%s/update-XXXXXX", conf->tmp_dir);
 	if (mkdtemp(tmp) == NULL) {
-		/* XXX: Error: could not create temporary file name */
+		opkg_perror(ERROR, "Coundn't create temporary directory %s",
+				tmp);
 		free(lists_dir);
 		free(tmp);
 		return 1;
@@ -590,7 +590,8 @@ opkg_update_package_lists(opkg_progress_callback_t progress_callback,
 			sprintf_alloc(&tmp_file_name, "%s/%s.gz", tmp,
 				      src->name);
 
-			/* XXX: Note: downloading url */
+			opkg_msg(INFO, "Downloading %s to %s...\n", url,
+					tmp_file_name);
 
 			cb_data.cb = progress_callback;
 			cb_data.progress_data = &pdata;
@@ -605,7 +606,8 @@ opkg_update_package_lists(opkg_progress_callback_t progress_callback,
 					  &cb_data);
 
 			if (err == 0) {
-				/* XXX: Note: Inflating downloaded file */
+				opkg_msg(INFO, "Inflating %s...\n",
+						tmp_file_name);
 				in = fopen(tmp_file_name, "r");
 				out = fopen(list_file_name, "w");
 				if (in && out)
@@ -623,8 +625,8 @@ opkg_update_package_lists(opkg_progress_callback_t progress_callback,
 			err = opkg_download(url, list_file_name, NULL, NULL);
 
 		if (err) {
-			/* XXX: Error: download error */
-			result = OPKG_DOWNLOAD_FAILED;
+			opkg_msg(ERROR, "Couldn't retrieve %s\n", url);
+			result = -1;
 		}
 		free(url);
 
@@ -649,15 +651,19 @@ opkg_update_package_lists(opkg_progress_callback_t progress_callback,
 
 			err = opkg_download(url, sig_file_name, NULL, NULL);
 			if (err) {
-				/* XXX: Warning: Download failed */
+				opkg_msg(ERROR, "Couldn't retrieve %s\n", url);
 			} else {
 				int err;
 				err = opkg_verify_file(list_file_name,
 						     sig_file_name);
 				if (err == 0) {
-					/* XXX: Notice: Signature check passed */
+					opkg_msg(INFO, "Signature check "
+							"passed for %s",
+							list_file_name);
 				} else {
-					/* XXX: Warning: Signature check failed */
+					opkg_msg(ERROR, "Signature check "
+							"failed for %s",
+							list_file_name);
 				}
 			}
 			free(sig_file_name);
@@ -665,9 +671,9 @@ opkg_update_package_lists(opkg_progress_callback_t progress_callback,
 			free(url);
 		}
 #else
-		/* XXX: Note: Signature check for %s skipped because GPG support was not
-		 * enabled in this build
-		 */
+		opkg_msg(INFO, "Signature check skipped for %s as GPG support"
+				" has not been enabled in this build\n",
+				list_file_name);
 #endif
 
 		sources_done++;
@@ -798,18 +804,18 @@ opkg_repository_accessibility_check(void)
 	int repositories = 0;
 	int ret = 0;
 	int err;
-	int ide
 	char *repo_ptr;
 	char *stmp;
+	char *host, *end;
 
 	src = str_list_alloc();
 
 	list_for_each_entry(iter, &conf->pkg_src_list.head, node) {
-		idx = index (strstr (((pkg_src_t *) iter->data)->value, "://") + 3, '/');
-		if (strstr(((pkg_src_t *) iter->data)->value, "://") && idx)
+		host = strstr(((pkg_src_t *)iter->data)->value, "://") + 3;
+		end = index(host, '/');
+		if (strstr(((pkg_src_t *) iter->data)->value, "://") && end)
 			stmp = xstrndup(((pkg_src_t *) iter->data)->value,
-				     idx -
-				      ((pkg_src_t *) iter->data)->value) * sizeof(char);
+				     end - ((pkg_src_t *) iter->data)->value);
 		else
 			stmp = xstrdup(((pkg_src_t *) iter->data)->value);
 
