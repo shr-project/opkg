@@ -21,7 +21,6 @@
 #include "pkg.h"
 #include "opkg_message.h"
 
-//typedef struct _opkg_package_t opkg_package_t;
 typedef struct _opkg_progress_data_t opkg_progress_data_t;
 
 typedef void (*opkg_progress_callback_t) (const opkg_progress_data_t *progress, void *user_data);
@@ -47,18 +46,6 @@ enum _opkg_error_code_t
   OPKG_GPG_ERROR,
   OPKG_MD5_ERROR,
   OPKG_SHA256_ERROR
-};
-
-struct _opkg_package_t
-{
-  char *name;
-  char *version;
-  char *architecture;
-  char *repository;
-  char *description;
-  char *tags;
-  int size;
-  int installed;
 };
 
 struct _opkg_progress_data_t
