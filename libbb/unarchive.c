@@ -61,11 +61,15 @@ seek_by_read(FILE* fd, size_t len)
 }
 
 static void
-seek_sub_file(FILE *src_stream, const int count)
+seek_sub_file(FILE *fd, const int count)
 {
-	/* Try to fseek as faster */
 	archive_offset += count;
-        seek_by_read(src_stream, count);
+
+	/* Do not use fseek() on a pipe. It may fail with ESPIPE, leaving the
+	 * stream at an undefined location.
+	 */
+        seek_by_read(fd, count);
+
 	return;
 }
 
@@ -686,7 +690,12 @@ deb_extract(const char *package_filename, FILE *out_stream,
 				free_header_ar(ar_header);
 				break;
 			}
-			seek_sub_file(deb_stream, ar_header->size);
+			if (fseek(deb_stream, ar_header->size, SEEK_CUR) == -1) {
+				opkg_perror(ERROR, "Couldn't fseek into %s", package_filename);
+				*err = -1;
+				free_header_ar(ar_header);
+				goto cleanup;
+			}
 			free_header_ar(ar_header);
 		}
 		goto cleanup;
@@ -696,7 +705,11 @@ deb_extract(const char *package_filename, FILE *out_stream,
 		FILE *unzipped_opkg_stream;
 		file_header_t *tar_header;
 		archive_offset = 0;
-		fseek(deb_stream, 0, SEEK_SET);
+		if (fseek(deb_stream, 0, SEEK_SET) == -1) {
+			opkg_perror(ERROR, "Couldn't fseek into %s", package_filename);
+			*err = -1;
+			goto cleanup;
+		}
 		unzipped_opkg_stream = gz_open(deb_stream, &unzipped_opkg_pid);
 		if (unzipped_opkg_stream == NULL) {
 			*err = -1;
