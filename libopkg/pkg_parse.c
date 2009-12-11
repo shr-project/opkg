@@ -1,7 +1,8 @@
 /* pkg_parse.c - the opkg package management system
 
+   Copyright (C) 2009 Ubiq Technologies <graham.gower@gmail.com>
+
    Steven M. Ayer
-   
    Copyright (C) 2002 Compaq Computer Corporation
 
    This program is free software; you can redistribute it and/or

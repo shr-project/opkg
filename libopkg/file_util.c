@@ -1,7 +1,8 @@
 /* file_util.c - convenience routines for common stat operations
 
-   Carl D. Worth
+   Copyright (C) 2009 Ubiq Technologies <graham.gower@gmail.com>
 
+   Carl D. Worth
    Copyright (C) 2001 University of Southern California
 
    This program is free software; you can redistribute it and/or
