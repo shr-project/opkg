@@ -1,7 +1,7 @@
 #ifndef INCLUDES_H
 #define INCLUDES_H
 
-#include <config.h>
+#include "config.h"
 #include <stdio.h>
 
 #if STDC_HEADERS

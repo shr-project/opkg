@@ -2,7 +2,7 @@
 AM_CFLAGS=-Wall -DHOST_CPU_STR=\"@host_cpu@\" -DBUILD_CPU=@build_cpu@ -DLIBDIR=\"@libdir@\" -DOPKGLIBDIR=\"@opkglibdir@\" -DOPKGETCDIR=\"@opkgetcdir@\" -DDATADIR=\"@datadir@\" -I$(top_srcdir) $(BIGENDIAN_CFLAGS) $(CURL_CFLAGS) $(GPGME_CFLAGS) $(PATHFINDER_CFLAGS)
 
 libopkg_includedir=$(includedir)/libopkg
-libopkg_include_HEADERS= opkg.h
+libopkg_include_HEADERS= *.h
 
 
 opkg_libcore_sources = args.c args.h libopkg.c libopkg.h\
@@ -45,7 +45,7 @@ libopkg_la_SOURCES = \
 libopkg_la_LIBADD = $(top_builddir)/libbb/libbb.la $(CURL_LIBS) $(GPGME_LIBS) $(OPENSSL_LIBS) $(PATHFINDER_LIBS)
 
 # make sure we only export symbols that are for public use
-libopkg_la_LDFLAGS = -export-symbols-regex "^opkg_.*"
+#libopkg_la_LDFLAGS = -export-symbols-regex "^opkg_.*"
 
 
 
