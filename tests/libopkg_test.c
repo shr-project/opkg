@@ -60,6 +60,7 @@ package_list_upgradable_callback (pkg_t *pkg, void *data)
 void
 print_package (pkg_t *pkg)
 {
+  char *v = pkg_version_str_alloc(pkg);
   printf (
       "Name:         %s\n"
       "Version:      %s\n"
@@ -70,14 +71,14 @@ print_package (pkg_t *pkg)
       "Size:         %ld\n"
       "Status:       %d\n",
       pkg->name,
-      pkg->version,
+      v,
       pkg->src->name,
       pkg->architecture,
       pkg->description,
-      pkg->tags,
+      pkg->tags? pkg->tags : "",
       pkg->size,
-      pkg->state_status
-      );
+      pkg->state_status);
+  free(v);
 }
 
 
