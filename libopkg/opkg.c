@@ -33,8 +33,6 @@
 
 #include <libbb/libbb.h>
 
-args_t *args;
-
 #define opkg_assert(expr) if (!(expr)) { \
     printf ("opkg: file %s: line %d (%s): Assertation '%s' failed",\
             __FILE__, __LINE__, __PRETTY_FUNCTION__, # expr); abort (); }
@@ -117,18 +115,28 @@ curl_progress_cb(struct _curl_cb_data *cb_data, double t,	/* dltotal */
 int
 opkg_new()
 {
-	int err;
+	args_t args;
 
-	args = xcalloc(1, sizeof(args_t));
-	args_init(args);
+	args_init(&args);
 
-	err = opkg_conf_init(args);
-	if (err) {
-		free(args);
-		return -1;
-	}
+	if (opkg_conf_init(&args))
+		goto err0;
+
+	args_deinit(&args);
+
+	if (pkg_hash_load_feeds())
+		goto err1;
+
+	if (pkg_hash_load_status_files())
+		goto err1;
 
 	return 0;
+
+err1:
+	pkg_hash_deinit();
+err0:
+	opkg_conf_deinit();
+	return -1;
 }
 
 void
@@ -138,19 +146,25 @@ opkg_free(void)
 	opkg_curl_cleanup();
 #endif
 	opkg_conf_deinit();
-	args_deinit(args);
-	free(args);
 }
 
 int
 opkg_re_read_config_files(void)
 {
-	/* Unfortunately, the easiest way to re-read the config files right now is to
-	 * throw away conf and start again */
-	opkg_free();
-	memset(conf, '\0', sizeof(opkg_conf_t));
-	return opkg_new();
+	pkg_hash_deinit();
+	pkg_hash_init();
+
+	if (pkg_hash_load_feeds())
+		goto err;
+
+	if (pkg_hash_load_status_files())
+		goto err;
+
 	return 0;
+
+err:
+	pkg_hash_deinit();
+	return -1;
 }
 
 void

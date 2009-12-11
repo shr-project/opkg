@@ -32,6 +32,9 @@ void pkg_hash_fetch_available(pkg_vec_t *available);
 
 int pkg_hash_add_from_file(const char *file_name, pkg_src_t *src,
 		pkg_dest_t *dest, int is_status_file);
+int pkg_hash_load_feeds(void);
+int pkg_hash_load_status_files(void);
+
 void hash_insert_pkg(pkg_t *pkg, int set_status);
 
 abstract_pkg_t * ensure_abstract_pkg_by_name(const char * pkg_name);

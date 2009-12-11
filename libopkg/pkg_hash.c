@@ -28,6 +28,8 @@
 #include "pkg_hash.h"
 #include "pkg_parse.h"
 #include "opkg_utils.h"
+#include "sprintf_alloc.h"
+#include "file_util.h"
 #include "libbb/libbb.h"
 
 void
@@ -124,6 +126,65 @@ pkg_hash_add_from_file(const char *file_name,
 	fclose(fp);
 
 	return ret;
+}
+
+/*
+ * Load in feed files from the cached "src" and/or "src/gz" locations.
+ */
+int
+pkg_hash_load_feeds(void)
+{
+	pkg_src_list_elt_t *iter;
+	pkg_src_t *src;
+	char *list_file, *lists_dir;
+
+	opkg_msg(INFO, "\n");
+
+	lists_dir = conf->restrict_to_default_dest ?
+		conf->default_dest->lists_dir : conf->lists_dir;
+
+	for (iter = void_list_first(&conf->pkg_src_list); iter;
+			iter = void_list_next(&conf->pkg_src_list, iter)) {
+
+		src = (pkg_src_t *)iter->data;
+
+		sprintf_alloc(&list_file, "%s/%s", lists_dir, src->name);
+
+		if (file_exists(list_file)) {
+			if (pkg_hash_add_from_file(list_file, src, NULL, 0)) {
+				free(list_file);
+				return -1;
+			}
+		}
+		free(list_file);
+	}
+
+	return 0;
+}
+
+/*
+ * Load in status files from the configured "dest"s.
+ */
+int
+pkg_hash_load_status_files(void)
+{
+	pkg_dest_list_elt_t *iter;
+	pkg_dest_t *dest;
+
+	opkg_msg(INFO, "\n");
+
+	for (iter = void_list_first(&conf->pkg_dest_list); iter;
+			iter = void_list_next(&conf->pkg_dest_list, iter)) {
+	
+		dest = (pkg_dest_t *)iter->data;
+
+		if (file_exists(dest->status_file_name)) {
+			if (pkg_hash_add_from_file(dest->status_file_name, NULL, dest, 1))
+				return -1;
+		}
+	}
+
+	return 0;
 }
 
 static abstract_pkg_t *

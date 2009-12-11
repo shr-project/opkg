@@ -84,56 +84,7 @@ opkg_option_t options[] = {
 };
 
 static int
-opkg_conf_set_default_dest(const char *default_dest_name)
-{
-     pkg_dest_list_elt_t *iter;
-     pkg_dest_t *dest;
-
-     for (iter = void_list_first(&conf->pkg_dest_list); iter; iter = void_list_next(&conf->pkg_dest_list, iter)) {
-	  dest = (pkg_dest_t *)iter->data;
-	  if (strcmp(dest->name, default_dest_name) == 0) {
-	       conf->default_dest = dest;
-	       conf->restrict_to_default_dest = 1;
-	       return 0;
-	  }
-     }
-
-     opkg_msg(ERROR, "Unknown dest name: `%s'.\n", default_dest_name);
-
-     return 1;
-}
-
-static int
-set_and_load_pkg_src_list(pkg_src_list_t *pkg_src_list)
-{
-     pkg_src_list_elt_t *iter;
-     pkg_src_t *src;
-     char *list_file;
-
-     for (iter = void_list_first(pkg_src_list); iter; iter = void_list_next(pkg_src_list, iter)) {
-          src = (pkg_src_t *)iter->data;
-	  if (src == NULL) {
-	       continue;
-	  }
-
-	  sprintf_alloc(&list_file, "%s/%s", 
-			  conf->restrict_to_default_dest ? conf->default_dest->lists_dir : conf->lists_dir, 
-			  src->name);
-
-	  if (file_exists(list_file)) {
-	       if (pkg_hash_add_from_file(list_file, src, NULL, 0)) {
-		    free(list_file);
-		    return -1;
-	       }
-	  }
-	  free(list_file);
-     }
-
-     return 0;
-}
-
-static int
-set_and_load_pkg_dest_list(nv_pair_list_t *nv_pair_list)
+resolve_pkg_dest_list(nv_pair_list_t *nv_pair_list, const char *default_dest_name)
 {
      nv_pair_list_elt_t *iter;
      nv_pair_t *nv_pair;
@@ -148,19 +99,22 @@ set_and_load_pkg_dest_list(nv_pair_list_t *nv_pair_list)
 	  } else {
 	       root_dir = xstrdup(nv_pair->value);
 	  }
+
 	  dest = pkg_dest_list_append(&conf->pkg_dest_list, nv_pair->name, root_dir, conf->lists_dir);
 	  free(root_dir);
-	  if (dest == NULL) {
-	       continue;
-	  }
-	  if (conf->default_dest == NULL) {
+
+	  if (conf->default_dest == NULL)
 	       conf->default_dest = dest;
+
+	  if (default_dest_name && !strcmp(dest->name, default_dest_name)) {
+	       conf->default_dest = dest;
+	       conf->restrict_to_default_dest = 1;
 	  }
-	  if (file_exists(dest->status_file_name)) {
-	       if (pkg_hash_add_from_file(dest->status_file_name,
-				      NULL, dest, 1))
-		       return -1;
-	  }
+     }
+
+     if (default_dest_name && !conf->restrict_to_default_dest) {
+	  opkg_msg(ERROR, "Unknown dest name: `%s'.\n", default_dest_name);
+	  return -1;
      }
 
      return 0;
@@ -548,32 +502,11 @@ opkg_conf_init(const args_t *args)
 			      OPKG_CONF_DEFAULT_DEST_ROOT_DIR);
      }
 
-     if (!(args->nocheckfordirorfile)) {
-
-        if (!(args->noreadfeedsfile)) {
-           if (set_and_load_pkg_src_list(&conf->pkg_src_list)) {
-               nv_pair_list_deinit(&tmp_dest_nv_pair_list);
-	       return -1;
-	   }
-	}
-   
-        /* Now that we have resolved conf->offline_root, we can commit to
-	   the directory names for the dests and load in all the package
-	   lists. */
-        if (set_and_load_pkg_dest_list(&tmp_dest_nv_pair_list)) {
-               nv_pair_list_deinit(&tmp_dest_nv_pair_list);
-	       return -1;
-	}
-   
-        if (args->dest) {
-	     err = opkg_conf_set_default_dest(args->dest);
-	     if (err) {
-                  nv_pair_list_deinit(&tmp_dest_nv_pair_list);
-	          return -1;
-	     }
-        }
-     }
+     err = resolve_pkg_dest_list(&tmp_dest_nv_pair_list, args->dest);
      nv_pair_list_deinit(&tmp_dest_nv_pair_list);
+
+     if (err)
+	return -1;
 
      return 0;
 }

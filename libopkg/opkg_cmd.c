@@ -1213,12 +1213,5 @@ opkg_cmd_find(const char *name)
 int
 opkg_cmd_exec(opkg_cmd_t *cmd, int argc, const char **argv)
 {
-	int result;
-
-	result = (cmd->fun)(argc, argv);
-
-	print_error_list();
-	free_error_list();
-
-	return result;
+	return (cmd->fun)(argc, argv);
 }

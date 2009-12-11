@@ -22,9 +22,6 @@ struct args
 {
     char *conf_file;
     char *dest;
-
-    int nocheckfordirorfile;
-    int noreadfeedsfile;
 };
 typedef struct args args_t;
 

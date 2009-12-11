@@ -33,6 +33,8 @@ opkg_op (int argc, char *argv[])
 	args_t args;
 	char *cmd_name;
 	opkg_cmd_t *cmd;
+	int nocheckfordirorfile = 0;
+        int noreadfeedsfile = 0;
 
 	args_init (&args);
 
@@ -48,7 +50,7 @@ opkg_op (int argc, char *argv[])
              !strcmp(cmd_name,"print_architecture") ||
              !strcmp(cmd_name,"print-installation-architecture") ||
              !strcmp(cmd_name,"print_installation_architecture") )
-           args.nocheckfordirorfile = 1;
+           nocheckfordirorfile = 1;
 
         if ( !strcmp(cmd_name,"flag") ||
              !strcmp(cmd_name,"configure") ||
@@ -60,7 +62,7 @@ opkg_op (int argc, char *argv[])
              !strcmp(cmd_name,"list_installed") ||
              !strcmp(cmd_name,"list-installed") ||
              !strcmp(cmd_name,"status") )
-           args.noreadfeedsfile = 1;
+           noreadfeedsfile = 1;
 
 	cmd = opkg_cmd_find (cmd_name);
 	if (cmd == NULL)
@@ -75,10 +77,16 @@ opkg_op (int argc, char *argv[])
 	err = opkg_conf_init (&args);
 	args_deinit (&args);
 	if (err)
-	{
-		print_error_list();
-		free_error_list();
-		return err;
+		goto err0;
+
+	if (!nocheckfordirorfile) {
+		if (!noreadfeedsfile) {
+			if ((err = pkg_hash_load_feeds()))
+				goto err1;
+		}
+   
+		if ((err = pkg_hash_load_status_files()))
+			goto err1;
 	}
 
 	if (cmd->requires_args && opts == argc)
@@ -91,10 +99,16 @@ opkg_op (int argc, char *argv[])
 
 	err = opkg_cmd_exec (cmd, argc - opts, (const char **) (argv + opts));
 
+
 #ifdef HAVE_CURL
 	opkg_curl_cleanup();
 #endif
+err1:
 	opkg_conf_deinit ();
+
+err0:
+	print_error_list();
+	free_error_list();
 
 	return err;
 }
