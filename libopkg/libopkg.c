@@ -97,6 +97,9 @@ opkg_op (int argc, char *argv[])
 	if (opkg_cmd_exec (cmd, argc - opts, (const char **) (argv + opts)))
 		goto err2;
 
+	print_error_list();
+	free_error_list();
+
 	return 0;
 
 err2:
