@@ -16,29 +16,28 @@
 */
 
 #include "includes.h"
-#include "libopkg.h"
 
-#include "args.h"
 #include "opkg_conf.h"
 #include "opkg_cmd.h"
 #include "file_util.h"
+#include "args.h"
+#include "opkg_download.h"
 
 #include "opkg_message.h"
 
-/* This is used for backward compatibility */
+/* This is used for backwards compatibility */
 int
 opkg_op (int argc, char *argv[])
 {
-	int err, opts;
-	args_t args;
+	int opts;
 	char *cmd_name;
 	opkg_cmd_t *cmd;
 	int nocheckfordirorfile = 0;
         int noreadfeedsfile = 0;
 
-	args_init (&args);
+	conf->verbosity = NOTICE;	
 
-	opts = args_parse (&args, argc, argv);
+	opts = args_parse (argc, argv);
 	if (opts == argc || opts < 0)
 	{
 		args_usage ("opkg must have one sub-command argument");
@@ -74,18 +73,16 @@ opkg_op (int argc, char *argv[])
 
 	conf->pfm = cmd->pfm;
 
-	err = opkg_conf_init (&args);
-	args_deinit (&args);
-	if (err)
+	if(opkg_conf_init())
 		goto err0;
 
 	if (!nocheckfordirorfile) {
 		if (!noreadfeedsfile) {
-			if ((err = pkg_hash_load_feeds()))
+			if (pkg_hash_load_feeds())
 				goto err1;
 		}
    
-		if ((err = pkg_hash_load_status_files()))
+		if (pkg_hash_load_status_files())
 			goto err1;
 	}
 
@@ -97,9 +94,12 @@ opkg_op (int argc, char *argv[])
 		args_usage (NULL);
 	}
 
-	err = opkg_cmd_exec (cmd, argc - opts, (const char **) (argv + opts));
+	if (opkg_cmd_exec (cmd, argc - opts, (const char **) (argv + opts)))
+		goto err2;
 
+	return 0;
 
+err2:
 #ifdef HAVE_CURL
 	opkg_curl_cleanup();
 #endif
@@ -110,5 +110,5 @@ err0:
 	print_error_list();
 	free_error_list();
 
-	return err;
+	return -1;
 }

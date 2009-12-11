@@ -20,7 +20,6 @@
 
 #include "opkg.h"
 #include "opkg_conf.h"
-#include "args.h"
 
 #include "opkg_install.h"
 #include "opkg_configure.h"
@@ -115,14 +114,8 @@ curl_progress_cb(struct _curl_cb_data *cb_data, double t,	/* dltotal */
 int
 opkg_new()
 {
-	args_t args;
-
-	args_init(&args);
-
-	if (opkg_conf_init(&args))
+	if (opkg_conf_init())
 		goto err0;
-
-	args_deinit(&args);
 
 	if (pkg_hash_load_feeds())
 		goto err1;

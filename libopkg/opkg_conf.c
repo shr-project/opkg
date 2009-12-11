@@ -84,14 +84,15 @@ opkg_option_t options[] = {
 };
 
 static int
-resolve_pkg_dest_list(nv_pair_list_t *nv_pair_list, const char *default_dest_name)
+resolve_pkg_dest_list(nv_pair_list_t *nv_pair_list)
 {
      nv_pair_list_elt_t *iter;
      nv_pair_t *nv_pair;
      pkg_dest_t *dest;
      char *root_dir;
 
-     for (iter = nv_pair_list_first(nv_pair_list); iter; iter = nv_pair_list_next(nv_pair_list, iter)) {
+     for (iter = nv_pair_list_first(nv_pair_list); iter;
+		     iter = nv_pair_list_next(nv_pair_list, iter)) {
 	  nv_pair = (nv_pair_t *)iter->data;
 
 	  if (conf->offline_root) {
@@ -106,14 +107,14 @@ resolve_pkg_dest_list(nv_pair_list_t *nv_pair_list, const char *default_dest_nam
 	  if (conf->default_dest == NULL)
 	       conf->default_dest = dest;
 
-	  if (default_dest_name && !strcmp(dest->name, default_dest_name)) {
+	  if (conf->dest_str && !strcmp(dest->name, conf->dest_str)) {
 	       conf->default_dest = dest;
 	       conf->restrict_to_default_dest = 1;
 	  }
      }
 
-     if (default_dest_name && !conf->restrict_to_default_dest) {
-	  opkg_msg(ERROR, "Unknown dest name: `%s'.\n", default_dest_name);
+     if (conf->dest_str && !conf->restrict_to_default_dest) {
+	  opkg_msg(ERROR, "Unknown dest name: `%s'.\n", conf->dest_str);
 	  return -1;
      }
 
@@ -375,7 +376,7 @@ root_filename_alloc(char *filename)
 }
 
 int
-opkg_conf_init(const args_t *args)
+opkg_conf_init(void)
 {
      int err;
      char *tmp_dir_base, *tmp2;
@@ -400,11 +401,11 @@ opkg_conf_init(const args_t *args)
      if (!conf->offline_root)
           conf->offline_root = xstrdup(getenv("OFFLINE_ROOT"));
 
-     if (args->conf_file) {
+     if (conf->conf_file) {
 	  struct stat stat_buf;
-	  err = stat(args->conf_file, &stat_buf);
+	  err = stat(conf->conf_file, &stat_buf);
 	  if (err == 0)
-	       if (opkg_conf_parse_file(args->conf_file,
+	       if (opkg_conf_parse_file(conf->conf_file,
 				    &conf->pkg_src_list, &tmp_dest_nv_pair_list)<0) {
                    /* Memory leakage from opkg_conf_parse-file */
                    return -1;
@@ -416,7 +417,7 @@ opkg_conf_init(const args_t *args)
      else {
 	  const char *conf_file_dir = getenv("OPKG_CONF_DIR");
 	  if (conf_file_dir == NULL)
-		  conf_file_dir = ARGS_DEFAULT_CONF_FILE_DIR;
+		  conf_file_dir = OPKG_CONF_DEFAULT_CONF_FILE_DIR;
 	  sprintf_alloc(&etc_opkg_conf_pattern, "%s/*.conf", conf_file_dir);
      }
      memset(&globbuf, 0, sizeof(globbuf));
@@ -426,8 +427,8 @@ opkg_conf_init(const args_t *args)
 	  int i;
 	  for (i = 0; i < globbuf.gl_pathc; i++) {
 	       if (globbuf.gl_pathv[i]) 
-		    if (args->conf_file &&
-				!strcmp(args->conf_file, globbuf.gl_pathv[i]))
+		    if (conf->conf_file &&
+				!strcmp(conf->conf_file, globbuf.gl_pathv[i]))
 			    continue;
 		    if ( opkg_conf_parse_file(globbuf.gl_pathv[i], 
 				         &conf->pkg_src_list, &tmp_dest_nv_pair_list)<0) {
@@ -502,7 +503,7 @@ opkg_conf_init(const args_t *args)
 			      OPKG_CONF_DEFAULT_DEST_ROOT_DIR);
      }
 
-     err = resolve_pkg_dest_list(&tmp_dest_nv_pair_list, args->dest);
+     err = resolve_pkg_dest_list(&tmp_dest_nv_pair_list);
      nv_pair_list_deinit(&tmp_dest_nv_pair_list);
 
      if (err)
@@ -520,6 +521,12 @@ opkg_conf_deinit(void)
 	rm_r(conf->tmp_dir);
 
 	free(conf->lists_dir);
+
+	if (conf->dest_str)
+		free(conf->dest_str);
+
+	if (conf->conf_file)
+		free(conf->conf_file);
 
 	pkg_src_list_deinit(&conf->pkg_src_list);
 	pkg_dest_list_deinit(&conf->pkg_dest_list);

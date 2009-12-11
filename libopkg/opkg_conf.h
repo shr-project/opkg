@@ -22,7 +22,6 @@ typedef struct opkg_conf opkg_conf_t;
 extern opkg_conf_t *conf;
 
 #include "hash_table.h"
-#include "args.h"
 #include "pkg.h"
 #include "pkg_hash.h"
 #include "pkg_src_list.h"
@@ -32,6 +31,8 @@ extern opkg_conf_t *conf;
 #define OPKG_CONF_DEFAULT_TMP_DIR_BASE "/tmp"
 #define OPKG_CONF_TMP_DIR_SUFFIX "opkg-XXXXXX"
 #define OPKG_CONF_LISTS_DIR  OPKG_STATE_DIR_PREFIX "/lists"
+
+#define OPKG_CONF_DEFAULT_CONF_FILE_DIR OPKGETCDIR"/opkg"
 
 /* In case the config file defines no dest */
 #define OPKG_CONF_DEFAULT_DEST_NAME "root"
@@ -47,6 +48,9 @@ struct opkg_conf
 
      int restrict_to_default_dest;
      pkg_dest_t *default_dest;
+     char *dest_str;
+
+     char *conf_file;
 
      char *tmp_dir;
      char *lists_dir;
@@ -120,7 +124,7 @@ struct opkg_option {
      void * const value;
 };
 
-int opkg_conf_init(const args_t *args);
+int opkg_conf_init(void);
 void opkg_conf_deinit(void);
 
 int opkg_conf_write_status_files(void);

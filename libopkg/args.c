@@ -46,25 +46,7 @@ enum long_args_opt
      ARGS_OPT_CACHE,
 };
 
-void args_init(args_t *args)
-{
-     memset(args, 0, sizeof(args_t));
-
-     args->dest = ARGS_DEFAULT_DEST;
-
-     sprintf_alloc(&args->conf_file, "%s/%s", OPKGETCDIR,
-		   ARGS_DEFAULT_CONF_FILE_NAME);
-     conf->verbosity = ARGS_DEFAULT_VERBOSITY;
-}
-
-void args_deinit(args_t *args)
-{
-     free (args->dest);
-     free(args->conf_file);
-     args->conf_file = NULL;
-}
-
-int args_parse(args_t *args, int argc, char *argv[])
+int args_parse(int argc, char *argv[])
 {
      int c;
      int option_index = 0;
@@ -120,11 +102,10 @@ int args_parse(args_t *args, int argc, char *argv[])
 	       conf->query_all = 1;
 	       break;
 	  case 'd':
-	       args->dest = xstrdup(optarg);
+	       conf->dest_str = xstrdup(optarg);
 	       break;
 	  case 'f':
-	       free(args->conf_file);
-	       args->conf_file = xstrdup(optarg);
+	       conf->conf_file = xstrdup(optarg);
 	       break;
 	  case 'o':
 	       conf->offline_root = xstrdup(optarg);
@@ -240,7 +221,8 @@ void args_usage(const char *complaint)
      printf("\t				4 debug level 2\n");
      printf("\t-f <conf_file>		Use <conf_file> as the opkg configuration file\n");
      printf("\t--conf <conf_file>	Default configuration file location\n");
-     printf("				is %s/%s\n", ARGS_DEFAULT_CONF_FILE_DIR, ARGS_DEFAULT_CONF_FILE_NAME);
+     printf("				is %s/opkg.conf\n",
+		     OPKG_CONF_DEFAULT_CONF_FILE_DIR);
      printf("\t--cache <directory>	Use a package cache\n");
      printf("\t-d <dest_name>		Use <dest_name> as the the root directory for\n");
      printf("\t--dest <dest_name>	package installation, removal, upgrading.\n");
