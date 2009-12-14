@@ -1120,7 +1120,7 @@ pkg_get_installed_files(pkg_t *pkg)
 			pkg->dest->info_dir, pkg->name);
 	  list_file = fopen(list_file_name, "r");
 	  if (list_file == NULL) {
-	       opkg_perror(ERROR, "Failed to open %s.\n",
+	       opkg_perror(ERROR, "Failed to open %s",
 		       list_file_name);
 	       free(list_file_name);
 	       return pkg->installed_files;

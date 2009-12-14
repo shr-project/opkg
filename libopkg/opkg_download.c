@@ -101,7 +101,7 @@ opkg_download(const char *src, const char *dest_file_name,
     sprintf_alloc(&tmp_file_location, "%s/%s", conf->tmp_dir, src_base);
     err = unlink(tmp_file_location);
     if (err && errno != ENOENT) {
-	opkg_perror(ERROR, "Failed to unlink %s\n", tmp_file_location);
+	opkg_perror(ERROR, "Failed to unlink %s", tmp_file_location);
 	free(tmp_file_location);
 	return -1;
     }
