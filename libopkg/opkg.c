@@ -697,6 +697,20 @@ opkg_update_package_lists(opkg_progress_callback_t progress_callback,
 	return result;
 }
 
+static int
+pkg_compare_names_and_version(const void *a0, const void *b0)
+{
+	const pkg_t *a = *(const pkg_t **)a0;
+	const pkg_t *b = *(const pkg_t **)b0;
+	int ret;
+
+	ret = strcmp(a->name, b->name);
+
+	if (ret == 0)
+		ret = pkg_compare_versions(a, b);
+
+	return ret;
+}
 
 int
 opkg_list_packages(opkg_package_callback_t callback, void *user_data)
@@ -708,6 +722,9 @@ opkg_list_packages(opkg_package_callback_t callback, void *user_data)
 
 	all = pkg_vec_alloc();
 	pkg_hash_fetch_available(all);
+
+	pkg_vec_sort(all, pkg_compare_names_and_version);
+
 	for (i = 0; i < all->len; i++) {
 		pkg_t *pkg;
 
