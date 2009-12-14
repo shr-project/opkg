@@ -86,8 +86,6 @@ opkg_download(const char *src, const char *dest_file_name,
     char *src_base = basename(src_basec);
     char *tmp_file_location;
 
-    free(src_basec);
-
     opkg_msg(NOTICE,"Downloading %s.\n", src);
 	
     if (str_starts_with(src, "file:")) {
@@ -95,10 +93,12 @@ opkg_download(const char *src, const char *dest_file_name,
 	opkg_msg(INFO, "Copying %s to %s...", file_src, dest_file_name);
 	err = file_copy(file_src, dest_file_name);
 	opkg_msg(INFO, "Done.\n");
+        free(src_basec);
 	return err;
     }
 
     sprintf_alloc(&tmp_file_location, "%s/%s", conf->tmp_dir, src_base);
+    free(src_basec);
     err = unlink(tmp_file_location);
     if (err && errno != ENOENT) {
 	opkg_perror(ERROR, "Failed to unlink %s", tmp_file_location);
