@@ -34,7 +34,7 @@
 #include <glob.h>
 
 static int lock_fd;
-char *lock_file;
+static char *lock_file = NULL;
 
 static opkg_conf_t _conf;
 opkg_conf_t *conf = &_conf;
@@ -398,7 +398,6 @@ opkg_conf_init(void)
 	int i;
 	char *tmp, *tmp_dir_base, **tmp_val;
 	nv_pair_list_t tmp_dest_nv_pair_list;
-	char *lock_file = NULL;
 	glob_t globbuf;
 	char *etc_opkg_conf_pattern;
 
