@@ -73,7 +73,7 @@ opkg_op (int argc, char *argv[])
 
 	conf->pfm = cmd->pfm;
 
-	if(opkg_conf_init())
+	if (opkg_conf_init())
 		goto err0;
 
 	if (!nocheckfordirorfile) {
