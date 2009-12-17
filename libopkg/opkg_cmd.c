@@ -302,7 +302,7 @@ opkg_recurse_pkgs_in_order(pkg_t *pkg, pkg_vec_t *all,
     /* If the  package has already been visited (by this function), skip it */
     for(j = 0; j < visited->len; j++) 
         if ( ! strcmp(visited->pkgs[j]->name, pkg->name)) {
-            opkg_msg(INFO, "pkg %s already visited, skipping.\n", pkg->name);
+            opkg_msg(DEBUG, "pkg %s already visited, skipping.\n", pkg->name);
             return 0;
         }
     
@@ -311,7 +311,7 @@ opkg_recurse_pkgs_in_order(pkg_t *pkg, pkg_vec_t *all,
     count = pkg->pre_depends_count + pkg->depends_count + \
         pkg->recommends_count + pkg->suggests_count;
 
-    opkg_msg(INFO, "pkg %s.\n", pkg->name);
+    opkg_msg(DEBUG, "pkg %s.\n", pkg->name);
 
     /* Iterate over all the dependencies of pkg. For each one, find a package 
        that is either installed or unpacked and satisfies this dependency.
@@ -326,7 +326,7 @@ opkg_recurse_pkgs_in_order(pkg_t *pkg, pkg_vec_t *all,
             l = 0;
             if (dependents != NULL)
                 while (l < abpkg->provided_by->len && dependents[l] != NULL) {
-                    opkg_msg(INFO, "Descending on pkg %s.\n", 
+                    opkg_msg(DEBUG, "Descending on pkg %s.\n", 
                                  dependents [l]->name);
     
                     /* find whether dependent l is installed or unpacked,
