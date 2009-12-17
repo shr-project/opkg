@@ -63,7 +63,7 @@ satisfy_dependencies_for(pkg_t *pkg)
 	       unresolved++;
 	  }
 	  free(tmp);
-	  opkg_msg(ERROR, "\n");
+	  opkg_message(ERROR, "\n");
 	  if (! conf->force_depends) {
 	       opkg_msg(INFO,
 			    "This could mean that your package list is out of date or that the packages\n"

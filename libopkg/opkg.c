@@ -299,6 +299,7 @@ opkg_install_package(const char *package_name,
 		}
 		free(unresolved);
 		pkg_vec_free(deps);
+		opkg_message(ERROR, "\n");
 		return -1;
 	}
 
