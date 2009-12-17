@@ -57,6 +57,9 @@ struct opkg_conf
 
      uint pfm; /* package field mask */
 
+     /* For libopkg users to capture messages. */
+     void (*opkg_vmessage)(int, const char *fmt, va_list ap);
+
      /* options */
      int autoremove;
      int force_depends;

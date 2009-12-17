@@ -78,14 +78,26 @@ opkg_message (message_level_t level, const char *fmt, ...)
 {
 	va_list ap;
 
-	if (conf && (conf->verbosity < level))
+	if (conf->verbosity < level)
 		return;
+
+	if (conf->opkg_vmessage) {
+		/* Pass the message to libopkg users. */
+		va_start (ap, fmt);
+		conf->opkg_vmessage(level, fmt, ap);
+		va_end (ap);
+		return;
+	}
 
 	va_start (ap, fmt);
 
 	if (level == ERROR) {
-		char msg[256];
-		vsnprintf(msg, 256, fmt, ap);
+#define MSG_LEN 256
+		char msg[MSG_LEN];
+		if (vsnprintf(msg, MSG_LEN, fmt, ap) >= MSG_LEN) {
+			fprintf(stderr, "%s: Message truncated!\n",
+					__FUNCTION__);
+		}
 		push_error_list(msg);
 	} else
 		vprintf(fmt, ap);
