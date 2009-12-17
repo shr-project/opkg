@@ -392,10 +392,21 @@ root_filename_alloc(char *filename)
 	return root_filename;
 }
 
+static int
+glob_errfunc(const char *epath, int eerrno)
+{
+	if (eerrno == ENOENT)
+		/* If leading dir does not exist, we get GLOB_NOMATCH. */
+		return 0;
+
+	opkg_msg(ERROR, "glob failed for %s: %s\n", epath, strerror(eerrno));
+	return 0;
+}
+
 int
 opkg_conf_init(void)
 {
-	int i;
+	int i, glob_ret;
 	char *tmp, *tmp_dir_base, **tmp_val;
 	nv_pair_list_t tmp_dest_nv_pair_list;
 	glob_t globbuf;
@@ -436,7 +447,8 @@ opkg_conf_init(void)
 	}
 
 	memset(&globbuf, 0, sizeof(globbuf));
-	if (glob(etc_opkg_conf_pattern, 0, NULL, &globbuf)) {
+	glob_ret = glob(etc_opkg_conf_pattern, 0, glob_errfunc, &globbuf);
+	if (glob_ret && glob_ret != GLOB_NOMATCH) {
 		free(etc_opkg_conf_pattern);
 		globfree(&globbuf);
 		goto err1;
