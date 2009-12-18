@@ -5,7 +5,7 @@ libopkg_includedir=$(includedir)/libopkg
 libopkg_include_HEADERS= *.h
 
 
-opkg_libcore_sources = args.c args.h libopkg.c libopkg.h\
+opkg_libcore_sources = args.c args.h \
 		    includes.h \
 		    opkg.c opkg.h \
 		    opkg_defines.h

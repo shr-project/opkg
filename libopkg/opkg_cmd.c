@@ -38,7 +38,6 @@
 #include "opkg_upgrade.h"
 #include "opkg_remove.h"
 #include "opkg_configure.h"
-#include "libopkg.h"
 #include "xsystem.h"
 
 static void

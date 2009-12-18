@@ -1,4 +1,4 @@
-/* opkglib.c - the opkg package management system
+/* opkg-cl.c - the opkg package management system
 
    Florian Boor
 
@@ -13,6 +13,8 @@
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
+
+   opkg command line frontend using libopkg
 */
 
 #include "includes.h"
@@ -25,9 +27,8 @@
 
 #include "opkg_message.h"
 
-/* This is used for backwards compatibility */
 int
-opkg_op (int argc, char *argv[])
+main(int argc, char *argv[])
 {
 	int opts;
 	char *cmd_name;
