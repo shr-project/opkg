@@ -38,7 +38,6 @@ opkg_configure(pkg_t *pkg)
 	return err;
     }
 
-    opkg_state_changed++;
     return 0;
 }
 

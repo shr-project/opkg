@@ -400,6 +400,7 @@ opkg_configure_packages(char *pkg_name)
 		    pkg->state_status = SS_INSTALLED;
 		    pkg->parent->state_status = SS_INSTALLED;
 		    pkg->state_flag &= ~SF_PREFER;
+		    opkg_state_changed++;
 	       } else {
 		    if (!err)
 			err = r;
