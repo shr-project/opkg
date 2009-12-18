@@ -21,7 +21,6 @@
 
 #include "xregex.h"
 #include "sprintf_alloc.h"
-#include "args.h"
 #include "opkg_message.h"
 #include "file_util.h"
 #include "opkg_defines.h"
