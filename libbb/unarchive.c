@@ -746,7 +746,6 @@ deb_extract(const char *package_filename, FILE *out_stream,
 				gz_err = gz_close(gunzip_pid);
 				if (gz_err)
 					*err = -1;
-				free_header_tar(tar_header);
 				break;
 			}
 			seek_sub_file(unzipped_opkg_stream, tar_header->size);
