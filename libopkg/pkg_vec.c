@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <fnmatch.h>
 
-#include "xregex.h"
 #include "pkg.h"
 #include "opkg_message.h"
 #include "libbb/libbb.h"

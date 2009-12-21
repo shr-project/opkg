@@ -18,6 +18,8 @@
 #ifndef PKG_H
 #define PKG_H
 
+#include "config.h"
+
 #include <sys/types.h>
 
 #include "pkg_vec.h"

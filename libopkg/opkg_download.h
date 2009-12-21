@@ -18,6 +18,7 @@
 #ifndef OPKG_DOWNLOAD_H
 #define OPKG_DOWNLOAD_H
 
+#include "config.h"
 #include "pkg.h"
 
 typedef void (*opkg_download_progress_callback)(int percent, char *url);
