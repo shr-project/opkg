@@ -258,7 +258,7 @@ usage()
 int
 main(int argc, char *argv[])
 {
-	int opts;
+	int opts, err = -1;
 	char *cmd_name;
 	opkg_cmd_t *cmd;
 	int nocheckfordirorfile = 0;
@@ -322,15 +322,8 @@ main(int argc, char *argv[])
 		usage();
 	}
 
-	if (opkg_cmd_exec(cmd, argc - opts, (const char **) (argv + opts)))
-		goto err2;
+	err = opkg_cmd_exec(cmd, argc - opts, (const char **) (argv + opts));
 
-	print_error_list();
-	free_error_list();
-
-	return 0;
-
-err2:
 #ifdef HAVE_CURL
 	opkg_curl_cleanup();
 #endif
@@ -341,5 +334,5 @@ err0:
 	print_error_list();
 	free_error_list();
 
-	return -1;
+	return err;
 }
