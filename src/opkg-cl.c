@@ -264,6 +264,8 @@ main(int argc, char *argv[])
 	int nocheckfordirorfile = 0;
         int noreadfeedsfile = 0;
 
+	conf->verbosity = NOTICE;
+
 	opts = args_parse(argc, argv);
 	if (opts == argc || opts < 0) {
 		fprintf (stderr, "%s: unknown sub-command %s\n", argv[0],
@@ -299,7 +301,6 @@ main(int argc, char *argv[])
 		usage();
 	}
 
-	conf->verbosity = NOTICE;	
 	conf->pfm = cmd->pfm;
 
 	if (opkg_conf_init())
