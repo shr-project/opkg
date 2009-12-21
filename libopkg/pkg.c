@@ -1315,53 +1315,11 @@ pkg_arch_supported(pkg_t *pkg)
      return 0;
 }
 
-static int
-pkg_get_arch_priority(const char *archname)
-{
-     nv_pair_list_elt_t *l;
-
-     list_for_each_entry(l , &conf->arch_list.head, node) {
-	  nv_pair_t *nv = (nv_pair_t *)l->data;
-	  if (strcmp(nv->name, archname) == 0) {
-	       int priority = strtol(nv->value, NULL, 0);
-	       return priority;
-	  }
-     }
-     return 0;
-}
-
 void
 pkg_info_preinstall_check(void)
 {
      int i;
-     pkg_vec_t *available_pkgs = pkg_vec_alloc();
      pkg_vec_t *installed_pkgs = pkg_vec_alloc();
-
-     opkg_msg(INFO, "Updating arch priority for each package.\n");
-     pkg_hash_fetch_available(available_pkgs);
-     /* update arch_priority for each package */
-     for (i = 0; i < available_pkgs->len; i++) {
-	  pkg_t *pkg = available_pkgs->pkgs[i];
-	  int arch_priority = 1;
-	  if (!pkg)
-	       continue;
-	  arch_priority = pkg_get_arch_priority(pkg->architecture);
-	  pkg->arch_priority = arch_priority;
-     }
-
-     for (i = 0; i < available_pkgs->len; i++) {
-	  pkg_t *pkg = available_pkgs->pkgs[i];
-	  if (!pkg->arch_priority && (pkg->state_flag || (pkg->state_want != SW_UNKNOWN))) {
-	       /* clear flags and want for any uninstallable package */
-	       opkg_msg(DEBUG, "Clearing state_want and state_flag for pkg=%s "
-			       "(arch_priority=%d flag=%d want=%d)\n", 
-			       pkg->name, pkg->arch_priority,
-			       pkg->state_flag, pkg->state_want);
-	       pkg->state_want = SW_UNKNOWN;
-	       pkg->state_flag = 0;
-	  }
-     }
-     pkg_vec_free(available_pkgs);
 
      /* update the file owner data structure */
      opkg_msg(INFO, "Updating file owner list.\n");

@@ -149,6 +149,19 @@ parse_version(pkg_t *pkg, const char *vstr)
 }
 
 static int
+get_arch_priority(const char *arch)
+{
+	nv_pair_list_elt_t *l;
+
+	list_for_each_entry(l , &conf->arch_list.head, node) {
+		nv_pair_t *nv = (nv_pair_t *)l->data;
+		if (strcmp(nv->name, arch) == 0)
+			return strtol(nv->value, NULL, 0);
+	}
+	return 0;
+}
+
+static int
 pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 {
 	/* these flags are a bit hackish... */
@@ -163,9 +176,10 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 
 	switch (*line) {
 	case 'A':
-		if ((mask & PFM_ARCHITECTURE ) && is_field("Architecture", line))
+		if ((mask & PFM_ARCHITECTURE ) && is_field("Architecture", line)) {
 			pkg->architecture = parse_simple("Architecture", line);
-		else if ((mask & PFM_AUTO_INSTALLED) && is_field("Auto-Installed", line)) {
+			pkg->arch_priority = get_arch_priority(pkg->architecture);
+		} else if ((mask & PFM_AUTO_INSTALLED) && is_field("Auto-Installed", line)) {
 			char *tmp = parse_simple("Auto-Installed", line);
 			if (strcmp(tmp, "yes") == 0)
 			    pkg->auto_installed = 1;
