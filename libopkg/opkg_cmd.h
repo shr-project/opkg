@@ -25,7 +25,7 @@ struct opkg_cmd
     const char *name;
     int requires_args;
     opkg_cmd_fun_t fun;
-    uint pfm; /* package field mask */
+    unsigned int pfm; /* package field mask */
 };
 typedef struct opkg_cmd opkg_cmd_t;
 

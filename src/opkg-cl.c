@@ -19,12 +19,10 @@
    opkg command line frontend using libopkg
 */
 
-#include "includes.h"
+#include "config.h"
 
+#include <stdio.h>
 #include <getopt.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 #include "opkg_conf.h"
 #include "opkg_cmd.h"

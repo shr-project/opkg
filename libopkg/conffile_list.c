@@ -15,8 +15,6 @@
    General Public License for more details.
 */
 
-#include "includes.h"
-
 #include "conffile_list.h"
 
 void conffile_list_init(conffile_list_t *list)

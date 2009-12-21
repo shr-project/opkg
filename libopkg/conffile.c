@@ -15,15 +15,14 @@
    General Public License for more details.
 */
 
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
 
-#include "includes.h"
 #include "opkg_message.h"
-
 #include "conffile.h"
 #include "file_util.h"
 #include "sprintf_alloc.h"
+#include "opkg_conf.h"
 
 int conffile_init(conffile_t *conffile, const char *file_name, const char *md5sum)
 {

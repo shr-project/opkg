@@ -18,8 +18,6 @@
 #ifndef XSYSTEM_H
 #define XSYSTEM_H
 
-#include <stdlib.h>
-
 /* Like system(3), but with error messages printed if the fork fails
    or if the child process dies due to an uncaught signal. Also, the
    return value is a bit simpler:

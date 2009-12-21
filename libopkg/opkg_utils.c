@@ -15,17 +15,10 @@
    General Public License for more details.
 */
 
-#include "includes.h"
-#include <errno.h>
 #include <ctype.h>
 #include <sys/statvfs.h>
 
-#include "opkg_utils.h"
-#include "pkg.h"
-#include "pkg_hash.h"
 #include "libbb/libbb.h"
-
-void print_pkg_status(pkg_t * pkg, FILE * file);
 
 unsigned long
 get_available_kbytes(char * filesystem)

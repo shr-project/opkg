@@ -21,9 +21,9 @@
 typedef struct opkg_conf opkg_conf_t;
 extern opkg_conf_t *conf;
 
+#include <stdarg.h>
+
 #include "hash_table.h"
-#include "pkg.h"
-#include "pkg_hash.h"
 #include "pkg_src_list.h"
 #include "pkg_dest_list.h"
 #include "nv_pair_list.h"
@@ -55,7 +55,7 @@ struct opkg_conf
      char *tmp_dir;
      char *lists_dir;
 
-     uint pfm; /* package field mask */
+     unsigned int pfm; /* package field mask */
 
      /* For libopkg users to capture messages. */
      void (*opkg_vmessage)(int, const char *fmt, va_list ap);

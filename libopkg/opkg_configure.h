@@ -18,7 +18,7 @@
 #ifndef OPKG_CONFIGURE_H
 #define OPKG_CONFIGURE_H
 
-#include "opkg_conf.h"
+#include "pkg.h"
 
 int opkg_configure(pkg_t *pkg);
 

@@ -14,8 +14,8 @@
    General Public License for more details.
 */
 
+#include <stdio.h>
 
-#include "includes.h"
 #include "opkg_conf.h"
 #include "opkg_message.h"
 #include "libbb/libbb.h"

@@ -15,7 +15,8 @@
    General Public License for more details.
 */
 
-#include "includes.h"
+#include <stdio.h>
+
 #include "sprintf_alloc.h"
 #include "opkg_configure.h"
 #include "opkg_message.h"

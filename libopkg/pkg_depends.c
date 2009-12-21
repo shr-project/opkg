@@ -15,10 +15,9 @@
    General Public License for more details.
 */
 
-#include "includes.h"
-#include <errno.h>
+#include <stdio.h>
 #include <ctype.h>
-   
+
 #include "pkg.h"
 #include "opkg_utils.h"
 #include "pkg_hash.h"

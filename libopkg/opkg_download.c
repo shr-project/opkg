@@ -16,9 +16,12 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
 */
+
 #include "config.h"
 
-#include "includes.h"
+#include <stdio.h>
+#include <unistd.h>
+
 #include "opkg_download.h"
 #include "opkg_message.h"
 

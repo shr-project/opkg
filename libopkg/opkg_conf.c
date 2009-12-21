@@ -16,21 +16,22 @@
    General Public License for more details.
 */
 
-#include "includes.h"
-#include "opkg_conf.h"
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <glob.h>
+#include <unistd.h>
 
+#include "opkg_conf.h"
+#include "pkg_vec.h"
+#include "pkg.h"
 #include "xregex.h"
 #include "sprintf_alloc.h"
 #include "opkg_message.h"
 #include "file_util.h"
 #include "opkg_defines.h"
 #include "libbb/libbb.h"
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <glob.h>
 
 static int lock_fd;
 static char *lock_file = NULL;

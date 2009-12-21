@@ -19,8 +19,6 @@
 #define PKG_H
 
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 #include "pkg_vec.h"
 #include "str_list.h"

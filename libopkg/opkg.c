@@ -15,7 +15,10 @@
    General Public License for more details.
  */
 
-#include <config.h>
+#include "config.h"
+
+#include <stdio.h>
+#include <unistd.h>
 #include <fnmatch.h>
 
 #include "opkg.h"

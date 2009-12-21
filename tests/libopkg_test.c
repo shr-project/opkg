@@ -1,8 +1,9 @@
-#include <opkg.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
+
+#include <opkg.h>
 
 pkg_t *find_pkg = NULL;
 

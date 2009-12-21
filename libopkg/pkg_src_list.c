@@ -15,8 +15,6 @@
    General Public License for more details.
 */
 
-#include "includes.h"
-
 #include "pkg_src_list.h"
 #include "void_list.h"
 #include "libbb/libbb.h"

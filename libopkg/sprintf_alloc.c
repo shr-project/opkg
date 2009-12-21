@@ -15,7 +15,6 @@
    GNU General Public License for more details.
 */
 
-#include "includes.h"
 #include <stdarg.h>
 
 #include "sprintf_alloc.h"

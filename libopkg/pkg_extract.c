@@ -15,11 +15,9 @@
    General Public License for more details.
 */
 
-#include "includes.h"
-#include <errno.h>
+#include <stdio.h>
 
 #include "pkg_extract.h"
-
 #include "libbb/libbb.h"
 #include "file_util.h"
 #include "sprintf_alloc.h"

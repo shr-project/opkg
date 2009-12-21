@@ -15,8 +15,9 @@
    General Public License for more details.
 */
 
-#include "includes.h"
+#include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 #include "xsystem.h"
 #include "libbb/libbb.h"

@@ -17,12 +17,11 @@
 
 #include <openssl/ssl.h>
 #include <libpathfinder.h>
-
+#include <stdlib.h>
 #if defined(HAVE_SSLCURL)
 #include <curl/curl.h>
 #endif
 
-#include "includes.h"
 #include "libbb/libbb.h"
 #include "opkg_message.h"
 

@@ -15,8 +15,9 @@
    General Public License for more details.
 */
 
-#include "includes.h"
+#include <stdio.h>
 #include <fnmatch.h>
+
 #include "xregex.h"
 #include "pkg.h"
 #include "opkg_message.h"

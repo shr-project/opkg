@@ -15,11 +15,12 @@
    General Public License for more details.
 */
 
-
-#include "includes.h"
+#include <stdio.h>
 #include <dirent.h>
 #include <glob.h>
 #include <fnmatch.h>
+#include <signal.h>
+#include <unistd.h>
 
 #include "opkg_conf.h"
 #include "opkg_cmd.h"

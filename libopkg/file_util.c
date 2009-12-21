@@ -16,16 +16,16 @@
    General Public License for more details.
 */
 
-#include "includes.h"
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <unistd.h>
 
 #include "sprintf_alloc.h"
 #include "file_util.h"
 #include "md5.h"
 #include "libbb/libbb.h"
-#undef strlen
 
 #if defined HAVE_SHA256
 #include "sha256.h"

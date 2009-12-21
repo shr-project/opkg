@@ -15,12 +15,10 @@
    General Public License for more details.
 */
 
-#include "includes.h"
-#include <errno.h>
-#include <dirent.h>
-#include <glob.h>
+#include <stdio.h>
 #include <time.h>
 #include <signal.h>
+#include <unistd.h>
 
 #include "pkg.h"
 #include "pkg_hash.h"

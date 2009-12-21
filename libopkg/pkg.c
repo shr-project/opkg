@@ -15,12 +15,12 @@
    General Public License for more details.
 */
 
-#include "includes.h"
-#include <ctype.h>
-#include <alloca.h>
+#include "config.h"
+
+#include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
-#include <errno.h>
+#include <ctype.h>
+#include <unistd.h>
 
 #include "pkg.h"
 
@@ -274,15 +274,17 @@ pkg_init_from_file(pkg_t *pkg, const char *filename)
 {
 	int fd, err = 0;
 	FILE *control_file;
-	char *control_path;
+	char *control_path, *tmp;
 
 	pkg_init(pkg);
 
 	pkg->local_filename = xstrdup(filename);
 
+	tmp = xstrdup(filename);
 	sprintf_alloc(&control_path, "%s/%s.control.XXXXXX", 
                         conf->tmp_dir,
-                        basename(filename));
+                        basename(tmp));
+	free(tmp);
 	fd = mkstemp(control_path);
 	if (fd == -1) {
 		opkg_perror(ERROR, "Failed to make temp file %s", control_path);
