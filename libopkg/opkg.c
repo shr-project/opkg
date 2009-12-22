@@ -523,6 +523,10 @@ opkg_upgrade_all(opkg_progress_callback_t progress_callback, void *user_data)
 	if (err)
 		return 1;
 
+	/* write out status files and file lists */
+	opkg_conf_write_status_files();
+	pkg_write_changed_filelists();
+
 	pdata.pkg = NULL;
 	progress(pdata, 100);
 	return 0;
