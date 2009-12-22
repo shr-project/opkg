@@ -144,7 +144,7 @@ opkg_download(const char *src, const char *dest_file_name,
 	    opkg_msg(ERROR, "Failed to download %s: %s.\n",
 		    src, curl_easy_strerror(res));
 	    free(tmp_file_location);
-	    return res;
+	    return -1;
 	}
 
     }
@@ -174,7 +174,7 @@ opkg_download(const char *src, const char *dest_file_name,
       if (res) {
 	opkg_msg(ERROR, "Failed to download %s, wget returned %d.\n", src, res);
 	free(tmp_file_location);
-	return res;
+	return -1;
       }
     }
 #endif
