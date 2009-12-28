@@ -243,6 +243,22 @@ if test x$opkgetcdir = x; then
         opkgetcdir=/etc
 fi
 
+opkglockfile=
+AC_ARG_WITH(opkglockfile,
+[  --with-opkglockfile=FILE specifies the file used to make sure there is only
+                           one instance of opkg runnning.
+                           Defaults to ${opkglibdir}/opkg/lock, i.e.
+                           /usr/lib/opkg/lock ],
+[case "${withval}" in
+yes)    AC_MSG_ERROR(bad value ${withval} given for opkg lock file ) ;;
+no)     ;;
+*)      opkglockfile=$with_opkglockfile ;;
+esac])
+
+# Default if empty
+if test x$opkglockfile = x; then
+        opkglockfile=${opkglibdir}/opkg/lock
+fi
 
 dnl Some special cases for the wow64 build
 if test "x$want_gpgme" = "xyes"
@@ -258,6 +274,7 @@ fi
 
 AC_SUBST(opkglibdir)
 AC_SUBST(opkgetcdir)
+AC_SUBST(opkglockfile)
 
 # Setup output beautifier.
 SHAVE_INIT([shave], [enable])

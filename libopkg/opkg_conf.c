@@ -473,9 +473,9 @@ opkg_conf_init(void)
 	globfree(&globbuf);
 
 	if (conf->offline_root)
-		sprintf_alloc (&lock_file, "%s/%s/lock", conf->offline_root, OPKG_STATE_DIR_PREFIX);
+		sprintf_alloc (&lock_file, "%s/%s", conf->offline_root, OPKGLOCKFILE);
 	else
-		sprintf_alloc (&lock_file, "%s/lock", OPKG_STATE_DIR_PREFIX);
+		sprintf_alloc (&lock_file, "%s", OPKGLOCKFILE);
 
 	lock_fd = creat(lock_file, S_IRUSR | S_IWUSR | S_IRGRP);
 	if (lock_fd == -1) {
