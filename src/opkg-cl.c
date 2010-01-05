@@ -40,6 +40,7 @@ enum {
 	ARGS_OPT_FORCE_REMOVAL_OF_ESSENTIAL_PACKAGES,
 	ARGS_OPT_FORCE_SPACE,
 	ARGS_OPT_NOACTION,
+	ARGS_OPT_DOWNLOAD_ONLY,
 	ARGS_OPT_NODEPS,
 	ARGS_OPT_AUTOREMOVE,
 	ARGS_OPT_CACHE,
@@ -74,6 +75,7 @@ static struct option long_options[] = {
 	{"force_removal_of_essential_packages", 0, 0,
 		ARGS_OPT_FORCE_REMOVAL_OF_ESSENTIAL_PACKAGES},
 	{"noaction", 0, 0, ARGS_OPT_NOACTION},
+	{"download-only", 0, 0, ARGS_OPT_DOWNLOAD_ONLY},
 	{"nodeps", 0, 0, ARGS_OPT_NODEPS},
 	{"offline", 1, 0, 'o'},
 	{"offline-root", 1, 0, 'o'},
@@ -157,6 +159,9 @@ args_parse(int argc, char *argv[])
 		case ARGS_OPT_NOACTION:
 			conf->noaction = 1;
 			break;
+        case ARGS_OPT_DOWNLOAD_ONLY:
+			conf->download_only = 1;
+			break;
 		case ':':
 			parse_err = -1;
 			break;
@@ -235,6 +240,7 @@ usage()
 	printf("\t--force-downgrade	Allow opkg to downgrade packages\n");
 	printf("\t--force-space		Disable free space checks\n");
 	printf("\t--noaction		No action -- test only\n");
+	printf("\t--download-only	No action -- download only\n");
 	printf("\t--nodeps		Do not follow dependences\n");
 	printf("\t--force-removal-of-dependent-packages\n");
 	printf("\t			Remove package and all dependencies\n");

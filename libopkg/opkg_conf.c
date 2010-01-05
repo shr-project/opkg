@@ -59,6 +59,7 @@ opkg_option_t options[] = {
 	  { "no_proxy", OPKG_OPT_TYPE_STRING, &_conf.no_proxy },
 	  { "test", OPKG_OPT_TYPE_BOOL, &_conf.noaction },
 	  { "noaction", OPKG_OPT_TYPE_BOOL, &_conf.noaction },
+	  { "download_only", OPKG_OPT_TYPE_BOOL, &_conf.download_only },
 	  { "nodeps", OPKG_OPT_TYPE_BOOL, &_conf.nodeps },
 	  { "offline_root", OPKG_OPT_TYPE_STRING, &_conf.offline_root },
 	  { "proxy_passwd", OPKG_OPT_TYPE_STRING, &_conf.proxy_passwd },

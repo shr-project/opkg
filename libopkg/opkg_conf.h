@@ -79,6 +79,7 @@ struct opkg_conf
      int query_all;
      int verbosity;
      int noaction;
+     int download_only;
      char *cache;
 
 #ifdef HAVE_SSLCURL

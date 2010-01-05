@@ -453,25 +453,29 @@ opkg_install_check_downgrade(pkg_t *pkg, pkg_t *old_pkg, int message)
           } 
 
 	  if (cmp > 0) {
-	       opkg_msg(NOTICE,
-			    "Not downgrading package %s on %s from %s to %s.\n",
-			    old_pkg->name, old_pkg->dest->name, old_version, new_version);
+              if(!conf->download_only)
+                  opkg_msg(NOTICE,
+                          "Not downgrading package %s on %s from %s to %s.\n",
+                          old_pkg->name, old_pkg->dest->name, old_version, new_version);
 	       rc = 1;
 	  } else if (cmp < 0) {
-	       opkg_msg(NOTICE, "%s%s on %s from %s to %s...\n",
-			    message_out, pkg->name, old_pkg->dest->name, old_version, new_version);
+              if(!conf->download_only)
+                  opkg_msg(NOTICE, "%s%s on %s from %s to %s...\n",
+                          message_out, pkg->name, old_pkg->dest->name, old_version, new_version);
 	       pkg->dest = old_pkg->dest;
 	       rc = 0;
 	  } else /* cmp == 0 */ {
 	       if (conf->force_reinstall) {
-		    opkg_msg(NOTICE, "Reinstalling %s (%s) on %s...\n",
-				 pkg->name, new_version, old_pkg->dest->name);
+               if(!conf->download_only)
+                   opkg_msg(NOTICE, "Reinstalling %s (%s) on %s...\n",
+                           pkg->name, new_version, old_pkg->dest->name);
 		    pkg->dest = old_pkg->dest;
 		    rc = 0;
 	       } else {
-		    opkg_msg(NOTICE, "%s (%s) already install on %s."
-				   " Not reinstalling.\n",
-				 pkg->name, new_version, old_pkg->dest->name);
+                   if(!conf->download_only)
+                       opkg_msg(NOTICE, "%s (%s) already install on %s."
+                               " Not reinstalling.\n",
+                               pkg->name, new_version, old_pkg->dest->name);
 		    rc = 1;
 	       }
 	  } 
@@ -487,8 +491,9 @@ opkg_install_check_downgrade(pkg_t *pkg, pkg_t *old_pkg, int message)
           strncpy( message_out,"Installing ",strlen("Installing ") );
 	  char *version = pkg_version_str_alloc(pkg);
       
-	  opkg_msg(NOTICE, "%s%s (%s) to %s...\n", message_out,
-		       pkg->name, version, pkg->dest->name);
+      if(!conf->download_only)
+          opkg_msg(NOTICE, "%s%s (%s) to %s...\n", message_out,
+                  pkg->name, version, pkg->dest->name);
 	  free(version);
 	  return 0;
      }
@@ -1329,6 +1334,14 @@ opkg_install_pkg(pkg_t *pkg, int from_upgrade)
               free(file_sha256);
      }
 #endif
+     if(conf->download_only) {
+         if (conf->nodeps == 0) {
+             err = satisfy_dependencies_for(pkg);
+             if (err)
+                 return -1;
+         }
+         return 0;
+     }
 
      if (pkg->tmp_unpack_dir == NULL) {
 	  if (unpack_pkg_control_files(pkg) == -1) {
