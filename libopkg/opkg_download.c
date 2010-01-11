@@ -199,6 +199,13 @@ opkg_download_cache(const char *src, const char *dest_file_name,
 	goto out1;
     }
 
+    if(!file_is_dir(conf->cache)){
+	    opkg_msg(ERROR, "%s is not a directory.\n",
+			    conf->cache);
+	    err = 1;
+	    goto out1;
+    }
+
     for (p = cache_name; *p; p++)
 	if (*p == '/')
 	    *p = ',';	/* looks nicer than | or # */
