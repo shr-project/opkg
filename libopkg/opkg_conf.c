@@ -376,7 +376,7 @@ opkg_conf_write_status_files(void)
 
      list_for_each_entry(iter, &conf->pkg_dest_list.head, node) {
           dest = (pkg_dest_t *)iter->data;
-          if (fclose(dest->status_fp) == EOF) {
+          if (dest->status_fp && fclose(dest->status_fp) == EOF) {
                opkg_perror(ERROR, "Couldn't close %s", dest->status_file_name);
 	       ret = -1;
           }
