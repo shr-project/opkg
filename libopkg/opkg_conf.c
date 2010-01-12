@@ -344,7 +344,7 @@ opkg_conf_write_status_files(void)
           dest = (pkg_dest_t *)iter->data;
 
           dest->status_fp = fopen(dest->status_file_name, "w");
-          if (dest->status_fp == NULL) {
+          if (dest->status_fp == NULL && errno != EROFS) {
                opkg_perror(ERROR, "Can't open status file %s",
                     dest->status_file_name);
                ret = -1;
