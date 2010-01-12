@@ -1237,7 +1237,7 @@ opkg_install_pkg(pkg_t *pkg, int from_upgrade)
 
      pkg->state_want = SW_INSTALL;
      if (old_pkg){                          
-         old_pkg->state_want = SW_DEINSTALL; /* needed for check_data_file_clashes of dependences */
+         old_pkg->state_want = SW_DEINSTALL; /* needed for check_data_file_clashes of dependencies */
      }
 
      err = check_conflicts_for(pkg);

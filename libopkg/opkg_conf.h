@@ -74,7 +74,7 @@ struct opkg_conf
      int force_removal_of_dependent_packages;
      int force_removal_of_essential_packages;
      int check_signature;
-     int nodeps; /* do not follow dependences */
+     int nodeps; /* do not follow dependencies */
      char *offline_root;
      int query_all;
      int verbosity;

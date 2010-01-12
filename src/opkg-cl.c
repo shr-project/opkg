@@ -233,7 +233,7 @@ usage()
 	printf("\t--offline-root <dir>	offline installation of packages.\n");
 
 	printf("\nForce Options:\n");
-	printf("\t--force-depends		Install/remove despite failed dependences\n");
+	printf("\t--force-depends		Install/remove despite failed dependencies\n");
 	printf("\t--force-maintainer	Overwrite preexisting config files\n");
 	printf("\t--force-reinstall	Reinstall package(s)\n");
 	printf("\t--force-overwrite	Overwrite files from other package(s)\n");
@@ -241,7 +241,7 @@ usage()
 	printf("\t--force-space		Disable free space checks\n");
 	printf("\t--noaction		No action -- test only\n");
 	printf("\t--download-only	No action -- download only\n");
-	printf("\t--nodeps		Do not follow dependences\n");
+	printf("\t--nodeps		Do not follow dependencies\n");
 	printf("\t--force-removal-of-dependent-packages\n");
 	printf("\t			Remove package and all dependencies\n");
 	printf("\t--autoremove		Remove packages that were installed\n");

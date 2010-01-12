@@ -50,7 +50,7 @@ static int pkg_constraint_satisfied(pkg_t *pkg, void *cdata)
 	  return 0;
 }
 
-/* returns ndependences or negative error value */ 
+/* returns ndependencies or negative error value */ 
 int
 pkg_hash_fetch_unsatisfied_dependencies(pkg_t * pkg, pkg_vec_t *unsatisfied,
 		char *** unresolved)
