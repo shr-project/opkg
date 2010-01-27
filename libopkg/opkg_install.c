@@ -297,7 +297,7 @@ unpack_pkg_control_files(pkg_t *pkg)
 static int
 pkg_remove_orphan_dependent(pkg_t *pkg, pkg_t *old_pkg) 
 {
-	int i, j, k, l, found;
+	int i, j, k, l, found,r, err = 0;
 	int n_deps;
 	pkg_t *p;
 	struct compound_depend *cd0, *cd1;
@@ -362,7 +362,9 @@ pkg_remove_orphan_dependent(pkg_t *pkg, pkg_t *old_pkg)
 				 * which we need to ignore during removal. */
 				p->state_flag |= SF_REPLACE;
 
-				opkg_remove_pkg(p, 0);
+				r = opkg_remove_pkg(p, 0);
+				if (!err)
+					err = r;
 			} else 
 				opkg_msg(INFO, "%s was autoinstalled and is "
 						"still required by %d "
@@ -372,7 +374,7 @@ pkg_remove_orphan_dependent(pkg_t *pkg, pkg_t *old_pkg)
 		}
 	}
 
-	return 0;
+	return err;
 }
 
 /* returns number of installed replacees */
@@ -483,20 +485,20 @@ opkg_install_check_downgrade(pkg_t *pkg, pkg_t *old_pkg, int message)
 	  free(new_version);
 	  return rc;
      } else {
-      char message_out[15] ;
-      memset(message_out,'\x0',15);
-      if ( message ) 
-          strncpy( message_out,"Upgrading ",strlen("Upgrading ") );
-      else
-          strncpy( message_out,"Installing ",strlen("Installing ") );
-	  char *version = pkg_version_str_alloc(pkg);
-      
-      if(!conf->download_only)
-          opkg_msg(NOTICE, "%s%s (%s) to %s...\n", message_out,
+          char message_out[15] ;
+          memset(message_out,'\x0',15);
+          if ( message ) 
+               strncpy( message_out,"Upgrading ",strlen("Upgrading ") );
+          else
+               strncpy( message_out,"Installing ",strlen("Installing ") );
+          char *version = pkg_version_str_alloc(pkg);
+
+          if(!conf->download_only)
+               opkg_msg(NOTICE, "%s%s (%s) to %s...\n", message_out,
                   pkg->name, version, pkg->dest->name);
-	  free(version);
-	  return 0;
+          free(version);
      }
+     return 0;
 }
 
 
@@ -929,7 +931,7 @@ postrm_upgrade_old_pkg_unwind(pkg_t *pkg, pkg_t *old_pkg)
 static int
 remove_obsolesced_files(pkg_t *pkg, pkg_t *old_pkg)
 {
-     int err;
+     int err = 0;
      str_list_t *old_files;
      str_list_elt_t *of;
      str_list_t *new_files;
@@ -984,7 +986,7 @@ remove_obsolesced_files(pkg_t *pkg, pkg_t *old_pkg)
      pkg_free_installed_files(old_pkg);
      pkg_free_installed_files(pkg);
 
-     return 0;
+     return err;
 }
 
 static int

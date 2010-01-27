@@ -426,7 +426,7 @@ error:
 static int
 opkg_install_cmd(int argc, char **argv)
 {
-     int i;
+     int i, r;
      char *arg;
      int err=0;
 
@@ -453,7 +453,9 @@ opkg_install_cmd(int argc, char **argv)
 	  }
      }
 
-     opkg_configure_packages(NULL);
+     r = opkg_configure_packages(NULL);
+     if (!err)
+	  err = r;
 
      write_status_files_if_changed();
 
@@ -463,7 +465,7 @@ opkg_install_cmd(int argc, char **argv)
 static int
 opkg_upgrade_cmd(int argc, char **argv)
 {
-     int i;
+     int i, r;
      pkg_t *pkg;
      int err;
 
@@ -511,7 +513,9 @@ opkg_upgrade_cmd(int argc, char **argv)
 	  pkg_vec_free(installed);
      }
 
-     opkg_configure_packages(NULL);
+     r = opkg_configure_packages(NULL);
+     if (!err)
+	  err = r;
 
      write_status_files_if_changed();
 
@@ -521,7 +525,7 @@ opkg_upgrade_cmd(int argc, char **argv)
 static int
 opkg_download_cmd(int argc, char **argv)
 {
-     int i, err;
+     int i, err = 0;
      char *arg;
      pkg_t *pkg;
 
@@ -545,7 +549,7 @@ opkg_download_cmd(int argc, char **argv)
 	  }
      }
 
-     return 0;
+     return err;
 }
 
 
@@ -698,7 +702,7 @@ opkg_configure_cmd(int argc, char **argv)
 static int
 opkg_remove_cmd(int argc, char **argv)
 {
-     int i, a, done;
+     int i, a, done, r, err = 0;
      pkg_t *pkg;
      pkg_t *pkg_to_remove;
      pkg_vec_t *available;
@@ -734,7 +738,10 @@ opkg_remove_cmd(int argc, char **argv)
 	         opkg_msg(ERROR, "Package %s not installed.\n", pkg->name);
                  continue;
             }
-            opkg_remove_pkg(pkg_to_remove, 0);
+            r = opkg_remove_pkg(pkg_to_remove, 0);
+	    if (!err)
+	         err = r;
+
             done = 1;
         }
      }
@@ -745,7 +752,7 @@ opkg_remove_cmd(int argc, char **argv)
         opkg_msg(NOTICE, "No packages removed.\n");
 
      write_status_files_if_changed();
-     return 0;
+     return err;
 }
 
 static int
