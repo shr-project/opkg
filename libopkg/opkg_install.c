@@ -58,7 +58,7 @@ satisfy_dependencies_for(pkg_t *pkg)
 		       pkg->name);
 	  tmp = unresolved;
 	  while (*unresolved) {
-	       opkg_msg(ERROR, "\t%s", *unresolved);
+	       opkg_message(ERROR, "\t%s", *unresolved);
 	       free(*unresolved);
 	       unresolved++;
 	  }
