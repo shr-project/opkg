@@ -390,8 +390,8 @@ opkg_configure_packages(char *pkg_name)
 	     goto error;
      }
     
-     for(i = 0; i < all->len; i++) {
-	  pkg = all->pkgs[i];
+     for(i = 0; i < ordered->len; i++) {
+	  pkg = ordered->pkgs[i];
 
 	  if (pkg_name && fnmatch(pkg_name, pkg->name, 0)) 
 	       continue;
