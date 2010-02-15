@@ -38,6 +38,12 @@ gz_open(FILE *compressed_file, int *pid)
 		perror_msg("pipe");
 		return(NULL);
 	}
+
+    /* If we don't flush, we end up with two copies of anything pending, 
+       one from the parent, one from the child */
+    fflush(stdout);
+    fflush(stderr);
+
 	if ((*pid = fork()) == -1) {
 		perror_msg("fork");
 		return(NULL);
