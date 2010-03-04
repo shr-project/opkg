@@ -1103,7 +1103,7 @@ resolve_conffiles(pkg_t *pkg)
                   } else {
                       char *new_conffile;
                       sprintf_alloc(&new_conffile, "%s-opkg", root_filename);
-                      opkg_msg(NOTICE, "Existing conffile %s "
+                      opkg_msg(ERROR, "Existing conffile %s "
                            "is different from the conffile in the new package."
                            " The new conffile will be placed at %s.\n",
                            root_filename, new_conffile);
