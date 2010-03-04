@@ -107,7 +107,7 @@ pkg_hash_add_from_file(const char *file_name,
 
 		if (!pkg->architecture || !pkg->arch_priority) {
 			char *version_str = pkg_version_str_alloc(pkg);
-			opkg_msg(ERROR, "Package %s version %s has no "
+			opkg_msg(NOTICE, "Package %s version %s has no "
 					"valid architecture, ignoring.\n",
 					pkg->name, version_str);
 			free(version_str);
