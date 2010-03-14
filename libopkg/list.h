@@ -20,12 +20,12 @@
 #ifndef _LINUX_LIST_H
 #define _LINUX_LIST_H
 
-#define LIST_POISON1  ((void *) 0x00100100)
-#define LIST_POISON2  ((void *) 0x00200200)
-
 struct list_head {
     struct list_head *next, *prev;
 };
+
+#define LIST_POISON1  ((struct list_head *) 0x00100100)
+#define LIST_POISON2  ((struct list_head *) 0x00200200)
 
 #define LIST_HEAD_INIT(name) { &(name), &(name) }
 
@@ -36,37 +36,37 @@ struct list_head {
 	(ptr)->next = (ptr); (ptr)->prev = (ptr); \
 } while (0)
 
-static inline void __list_add(struct list_head *new,
+static inline void __list_add(struct list_head *newitem,
                               struct list_head *prev,
                               struct list_head *next) {
-    next->prev = new;
-    new->next = next;
-    new->prev = prev;
-    prev->next = new;
+    next->prev = newitem;
+    newitem->next = next;
+    newitem->prev = prev;
+    prev->next = newitem;
 }
 
 /**
  * list_add - add a new entry
- * @new: new entry to be added
+ * @newitem: new entry to be added
  * @head: list head to add it after
  *
  * Insert a new entry after the specified head.
  * This is good for implementing stacks.
  */
-static inline void list_add(struct list_head *new, struct list_head *head) {
-    __list_add(new, head, head->next);
+static inline void list_add(struct list_head *newitem, struct list_head *head) {
+    __list_add(newitem, head, head->next);
 }
 
 /**
  * list_add_tail - add a new entry
- * @new: new entry to be added
+ * @newitem: new entry to be added
  * @head: list head to add it before
  *
  * Insert a new entry before the specified head.
  * This is useful for implementing queues.
  */
-static inline void list_add_tail(struct list_head *new, struct list_head *head) {
-    __list_add(new, head->prev, head);
+static inline void list_add_tail(struct list_head *newitem, struct list_head *head) {
+    __list_add(newitem, head->prev, head);
 }
 
 
