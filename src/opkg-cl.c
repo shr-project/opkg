@@ -274,8 +274,6 @@ main(int argc, char *argv[])
 
 	opts = args_parse(argc, argv);
 	if (opts == argc || opts < 0) {
-		fprintf (stderr, "%s: unknown sub-command %s\n", argv[0],
-			 cmd_name);
 		fprintf(stderr, "opkg must have one sub-command argument\n");
 		usage();
 	}
