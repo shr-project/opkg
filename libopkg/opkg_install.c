@@ -1138,8 +1138,10 @@ opkg_install_by_name(const char *pkg_name)
 			old->version);
     
      new = pkg_hash_fetch_best_installation_candidate_by_name(pkg_name);
-     if (new == NULL)
+     if (new == NULL) {
+	opkg_msg(NOTICE, "Unknown package '%s'.\n", pkg_name);
 	return -1;
+     }
 
      opkg_msg(DEBUG2, "Versions from pkg_hash_fetch:");
      if ( old ) 
