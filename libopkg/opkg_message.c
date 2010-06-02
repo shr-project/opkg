@@ -92,7 +92,7 @@ opkg_message (message_level_t level, const char *fmt, ...)
 	va_start (ap, fmt);
 
 	if (level == ERROR) {
-#define MSG_LEN 256
+#define MSG_LEN 4096
 		char msg[MSG_LEN];
 		if (vsnprintf(msg, MSG_LEN, fmt, ap) >= MSG_LEN) {
 			fprintf(stderr, "%s: Message truncated!\n",
