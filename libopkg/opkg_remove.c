@@ -341,6 +341,11 @@ remove_data_files_and_list(pkg_t *pkg)
      for (iter = str_list_first(installed_files); iter; iter = str_list_next(installed_files, iter)) {
 	  file_name = (char *)iter->data;
 
+	  owner = file_hash_get_file_owner(file_name);
+	  if (owner != pkg)
+		  /* File may have been claimed by another package. */
+		  continue;
+
 	  if (file_is_dir(file_name)) {
 	       str_list_append(&installed_dirs, file_name);
 	       continue;
