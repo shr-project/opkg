@@ -748,7 +748,7 @@ check_data_file_clashes(pkg_t *pkg, pkg_t *old_pkg)
      */
      str_list_t *files_list;
      str_list_elt_t *iter, *niter;
-
+     char *filename;
      int clashes = 0;
 
      files_list = pkg_get_installed_files(pkg);
@@ -758,14 +758,12 @@ check_data_file_clashes(pkg_t *pkg, pkg_t *old_pkg)
      for (iter = str_list_first(files_list), niter = str_list_next(files_list, iter); 
              iter; 
              iter = niter, niter = str_list_next(files_list, iter)) {
-	  char *root_filename;
-	  char *filename = (char *) iter->data;
-	  root_filename = root_filename_alloc(filename);
-	  if (file_exists(root_filename) && (! file_is_dir(root_filename))) {
+	  filename = (char *) iter->data;
+	  if (file_exists(filename) && (! file_is_dir(filename))) {
 	       pkg_t *owner;
 	       pkg_t *obs;
 
-	       if (backup_exists_for(root_filename)) {
+	       if (backup_exists_for(filename)) {
 		    continue;
 	       }
 
@@ -816,14 +814,13 @@ check_data_file_clashes(pkg_t *pkg, pkg_t *old_pkg)
 			    "\tBut that file is already provided by package ",
 			    pkg->name, filename);
 	       if (owner) {
-		    opkg_msg(ERROR, "%s\n", owner->name);
+		    opkg_message(ERROR, "%s\n", owner->name);
 	       } else {
-		    opkg_msg(ERROR, "<no package>\n"
+		    opkg_message(ERROR, "<no package>\n"
 			"Please move this file out of the way and try again.\n");
 	       }
 	       clashes++;
 	  }
-	  free(root_filename);
      }
      pkg_free_installed_files(pkg);
 
