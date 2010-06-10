@@ -174,7 +174,7 @@ update_file_ownership(pkg_t *new_pkg, pkg_t *old_pkg)
                   iter = niter, niter = str_list_next(old_list, niter)) {
 	       char *old_file = (char *)iter->data;
 	       pkg_t *owner = file_hash_get_file_owner(old_file);
-	       if (owner == old_pkg) {
+	       if (!owner || (owner == old_pkg)) {
 		    /* obsolete */
 		    hash_table_insert(&conf->obs_file_hash, old_file, old_pkg);
 	       }
