@@ -156,9 +156,12 @@ update_file_ownership(pkg_t *new_pkg, pkg_t *old_pkg)
              iter = niter, niter = str_list_next(new_list, niter)) {
 	  char *new_file = (char *)iter->data;
 	  pkg_t *owner = file_hash_get_file_owner(new_file);
-	  if (!new_file)
-	       opkg_msg(ERROR, "Null new_file for new_pkg=%s\n", new_pkg->name);
-	  if (!owner || (owner == old_pkg))
+	  pkg_t *obs = hash_table_get(&conf->obs_file_hash, new_file);
+
+	  opkg_msg(DEBUG2, "%s: new_pkg=%s wants file %s, from owner=%s\n",
+		__func__, new_pkg->name, new_file, owner?owner->name:"<NULL>");
+
+	  if (!owner || (owner == old_pkg) || obs)
 	       file_hash_set_file_owner(new_file, new_pkg);
      }
 
