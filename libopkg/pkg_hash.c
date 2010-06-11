@@ -623,7 +623,14 @@ hash_insert_pkg(pkg_t *pkg, int set_status)
 pkg_t *
 file_hash_get_file_owner(const char *file_name)
 {
-	return hash_table_get(&conf->file_hash, file_name); 
+	if (conf->offline_root) {
+		unsigned int len = strlen(conf->offline_root);
+		if (strncmp(file_name, conf->offline_root, len) == 0) {
+			file_name += len;
+		}
+	}
+
+	return hash_table_get(&conf->file_hash, file_name);
 }
 
 void
