@@ -970,7 +970,7 @@ remove_obsolesced_files(pkg_t *pkg, pkg_t *old_pkg)
 	  }
  
 	  /* old file is obsolete */
-	  opkg_msg(INFO, "Removing obsolete file %s.\n", old);
+	  opkg_msg(NOTICE, "Removing obsolete file %s.\n", old);
 	  if (!conf->noaction) {
 	       err = unlink(old);
 	       if (err) {
