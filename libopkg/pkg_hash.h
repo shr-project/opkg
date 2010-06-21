@@ -47,6 +47,7 @@ pkg_t *pkg_hash_fetch_installed_by_name(const char *pkg_name);
 pkg_t *pkg_hash_fetch_installed_by_name_dest(const char *pkg_name,
 					     pkg_dest_t *dest);
 
+void file_hash_remove(const char *file_name);
 pkg_t *file_hash_get_file_owner(const char *file_name);
 void file_hash_set_file_owner(const char *file_name, pkg_t *pkg);
 

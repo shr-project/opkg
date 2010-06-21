@@ -470,19 +470,10 @@ opkg_install_check_downgrade(pkg_t *pkg, pkg_t *old_pkg, int message)
 	       pkg->dest = old_pkg->dest;
 	       rc = 0;
 	  } else /* cmp == 0 */ {
-	       if (conf->force_reinstall) {
                if(!conf->download_only)
-                   opkg_msg(NOTICE, "Reinstalling %s (%s) on %s...\n",
-                           pkg->name, new_version, old_pkg->dest->name);
-		    pkg->dest = old_pkg->dest;
-		    rc = 0;
-	       } else {
-                   if(!conf->download_only)
-                       opkg_msg(NOTICE, "%s (%s) already install on %s."
-                               " Not reinstalling.\n",
-                               pkg->name, new_version, old_pkg->dest->name);
-		    rc = 1;
-	       }
+                   opkg_msg(NOTICE, "%s (%s) already install on %s.\n",
+			pkg->name, new_version, old_pkg->dest->name);
+	       rc = 1;
 	  } 
 	  free(old_version);
 	  free(new_version);
@@ -1145,8 +1136,8 @@ opkg_install_by_name(const char *pkg_name)
 
      opkg_msg(DEBUG2, "Versions from pkg_hash_fetch:");
      if ( old ) 
-        opkg_msg(DEBUG2, " old %s ", old->version);
-     opkg_msg(DEBUG2, " new %s\n", new->version);
+        opkg_message(DEBUG2, " old %s ", old->version);
+     opkg_message(DEBUG2, " new %s\n", new->version);
 
      new->state_flag |= SF_USER;
      if (old) {
@@ -1165,7 +1156,7 @@ opkg_install_by_name(const char *pkg_name)
 		       "\n\t%s is available "
 		       "\n\t%d was comparison result\n",
 		       pkg_name, old_version, new_version, cmp);
-	  if (cmp == 0 && !conf->force_reinstall) {
+	  if (cmp == 0) {
 	       opkg_msg(NOTICE,
 			    "Package %s (%s) installed in %s is up to date.\n",
 			    old->name, old_version, old->dest->name);
@@ -1219,7 +1210,7 @@ opkg_install_pkg(pkg_t *pkg, int from_upgrade)
 		       pkg->architecture, pkg->name);
 	  return -1;
      }
-     if (pkg->state_status == SS_INSTALLED && conf->force_reinstall == 0 && conf->nodeps == 0) {
+     if (pkg->state_status == SS_INSTALLED && conf->nodeps == 0) {
 	  err = satisfy_dependencies_for(pkg);
 	  if (err)
 		  return -1;
@@ -1252,7 +1243,7 @@ opkg_install_pkg(pkg_t *pkg, int from_upgrade)
 	installing pkg A, A deps B & B deps on A. So both B and A are
 	installed. Then A's installation is started resulting in an
 	uncecessary upgrade */ 
-     if (pkg->state_status == SS_INSTALLED && conf->force_reinstall == 0)
+     if (pkg->state_status == SS_INSTALLED)
 	     return 0;
     
      err = verify_pkg_installable(pkg);
@@ -1426,7 +1417,7 @@ opkg_install_pkg(pkg_t *pkg, int from_upgrade)
 		  return 0;
 
 	  /* point of no return: no unwinding after this */
-	  if (old_pkg && !conf->force_reinstall) {
+	  if (old_pkg) {
 	       old_pkg->state_want = SW_DEINSTALL;
 
 	       if (old_pkg->state_flag & SF_NOPRUNE) {
@@ -1485,9 +1476,8 @@ opkg_install_pkg(pkg_t *pkg, int from_upgrade)
 	  opkg_msg(DEBUG, "pkg=%s old_state_flag=%x state_flag=%x\n",
 			  pkg->name, old_state_flag, pkg->state_flag);
 
-	  if (old_pkg && !conf->force_reinstall) {
+	  if (old_pkg)
 	       old_pkg->state_status = SS_NOT_INSTALLED;
-	  }
 
 	  time(&pkg->installed_time);
 

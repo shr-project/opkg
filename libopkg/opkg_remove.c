@@ -367,6 +367,7 @@ remove_data_files_and_list(pkg_t *pkg)
 	  	opkg_msg(INFO, "Not deleting %s. (noaction)\n",
 				file_name);
 
+	  file_hash_remove(file_name);
      }
 
      /* Remove empty directories */

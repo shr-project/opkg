@@ -619,17 +619,31 @@ hash_insert_pkg(pkg_t *pkg, int set_status)
 	pkg->parent = ab_pkg;
 }
 
+static const char *
+strip_offline_root(const char *file_name)
+{
+	unsigned int len;
+
+	if (conf->offline_root) {
+		len = strlen(conf->offline_root);
+		if (strncmp(file_name, conf->offline_root, len) == 0)
+			file_name += len;
+	}
+
+	return file_name;
+}
+
+void
+file_hash_remove(const char *file_name)
+{
+	file_name = strip_offline_root(file_name);
+	hash_table_remove(&conf->file_hash, file_name);
+}
 
 pkg_t *
 file_hash_get_file_owner(const char *file_name)
 {
-	if (conf->offline_root) {
-		unsigned int len = strlen(conf->offline_root);
-		if (strncmp(file_name, conf->offline_root, len) == 0) {
-			file_name += len;
-		}
-	}
-
+	file_name = strip_offline_root(file_name);
 	return hash_table_get(&conf->file_hash, file_name);
 }
 
@@ -642,12 +656,7 @@ file_hash_set_file_owner(const char *file_name, pkg_t *owning_pkg)
 	if (file_name[file_name_len -1] == '/')
 		return;
 
-	if (conf->offline_root) {
-		unsigned int len = strlen(conf->offline_root);
-		if (strncmp(file_name, conf->offline_root, len) == 0) {
-			file_name += len;
-		}
-	}
+	file_name = strip_offline_root(file_name);
 
 	hash_table_insert(&conf->file_hash, file_name, owning_pkg); 
 

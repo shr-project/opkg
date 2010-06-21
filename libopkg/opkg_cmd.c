@@ -424,11 +424,22 @@ error:
 }
 
 static int
+opkg_remove_cmd(int argc, char **argv);
+
+static int
 opkg_install_cmd(int argc, char **argv)
 {
      int i, r;
      char *arg;
      int err=0;
+
+     if (conf->force_reinstall) {
+	     int saved_force_depends = conf->force_depends;
+	     conf->force_depends = 1;
+	     (void)opkg_remove_cmd(argc, argv);
+	     conf->force_depends = saved_force_depends;
+	     conf->force_reinstall = 0;
+     }
 
      signal(SIGINT, sigint_handler);
 
