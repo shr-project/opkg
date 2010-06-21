@@ -1072,6 +1072,7 @@ pkg_get_installed_files(pkg_t *pkg)
      char *line;
      char *installed_file_name;
      unsigned int rootdirlen = 0;
+     int list_from_package;
 
      pkg->installed_files_ref_cnt++;
 
@@ -1081,17 +1082,23 @@ pkg_get_installed_files(pkg_t *pkg)
 
      pkg->installed_files = str_list_alloc();
 
-     /* For uninstalled packages, get the file list directly from the package.
-	For installed packages, look at the package.list file in the database.
-     */
-     if (pkg->state_status == SS_NOT_INSTALLED || pkg->dest == NULL) {
+     /*
+      * For installed packages, look at the package.list file in the database.
+      * For uninstalled packages, get the file list directly from the package.
+      */
+     if (pkg->state_status == SS_NOT_INSTALLED || pkg->dest == NULL)
+	     list_from_package = 1;
+     else
+	     list_from_package = 0;
+
+     if (list_from_package) {
 	  if (pkg->local_filename == NULL) {
 	       return pkg->installed_files;
 	  }
 	  /* XXX: CLEANUP: Maybe rewrite this to avoid using a temporary
 	     file. In other words, change deb_extract so that it can
 	     simply return the file list as a char *[] rather than
-	     insisting on writing in to a FILE * as it does now. */
+	     insisting on writing it to a FILE * as it does now. */
 	  sprintf_alloc(&list_file_name, "%s/%s.list.XXXXXX",
 					  conf->tmp_dir, pkg->name);
 	  fd = mkstemp(list_file_name);
@@ -1147,7 +1154,7 @@ pkg_get_installed_files(pkg_t *pkg)
 	  }
 	  file_name = line;
 
-	  if (pkg->state_status == SS_NOT_INSTALLED || pkg->dest == NULL) {
+	  if (list_from_package) {
 	       if (*file_name == '.') {
 		    file_name++;
 	       }
@@ -1173,7 +1180,7 @@ pkg_get_installed_files(pkg_t *pkg)
 
      fclose(list_file);
 
-     if (pkg->state_status == SS_NOT_INSTALLED || pkg->dest == NULL) {
+     if (list_from_package) {
 	  unlink(list_file_name);
 	  free(list_file_name);
      }
