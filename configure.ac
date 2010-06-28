@@ -225,13 +225,13 @@ if test x$opkglibdir = x; then
         opkglibdir=/usr/lib
 fi
 
-ipkgetcdir=
+opkgetcdir=
 AC_ARG_WITH(opkgetcdir,
-[  --with-ipkgetcdir=DIR   specifies directory for opkg.conf file,
+[  --with-opkgetcdir=DIR   specifies directory for opkg.conf file,
                            "/opkg" is always added so if you want your files
                            to be in /usr/etc/opkg instead of /etc/opkg
                            you should indicate
-                           --with-ipkgetcdir=/usr/etc ],
+                           --with-opkgetcdir=/usr/etc ],
 [case "${withval}" in
 yes)    AC_MSG_ERROR(bad value ${withval} given for opkg.conf directory ) ;;
 no)     ;;
