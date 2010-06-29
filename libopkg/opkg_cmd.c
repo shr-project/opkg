@@ -455,13 +455,13 @@ opkg_install_cmd(int argc, char **argv)
 
      for (i=0; i < argc; i++) {
 	  arg = argv[i];
-          if (opkg_install_by_name(arg) != 0) {
+          if (opkg_install_by_name(arg)) {
 	       opkg_msg(ERROR, "Cannot install package %s.\n", arg);
 	       err = -1;
 	  }
      }
 
-     if (opkg_configure_packages(NULL) != 0)
+     if (opkg_configure_packages(NULL))
 	  err = -1;
 
      write_status_files_if_changed();
