@@ -405,15 +405,13 @@ opkg_configure_packages(char *pkg_name)
 		    pkg->state_flag &= ~SF_PREFER;
 		    opkg_state_changed++;
 	       } else {
-		    if (!err)
-			err = r;
+		    err = -1;
 	       }
 	  }
      }
 
-     r = opkg_finalize_intercepts (ic);
-     if (r && !err)
-	 err = r;
+     if (opkg_finalize_intercepts (ic))
+	 err = -1;
 
 error:
      pkg_vec_free(all);
@@ -429,9 +427,9 @@ opkg_remove_cmd(int argc, char **argv);
 static int
 opkg_install_cmd(int argc, char **argv)
 {
-     int i, r;
+     int i;
      char *arg;
-     int err=0;
+     int err = 0;
 
      if (conf->force_reinstall) {
 	     int saved_force_depends = conf->force_depends;
@@ -450,23 +448,21 @@ opkg_install_cmd(int argc, char **argv)
 	  arg = argv[i];
 
           opkg_msg(DEBUG2, "%s\n", arg);
-          err = opkg_prepare_url_for_install(arg, &argv[i]);
-          if (err)
-              return err;
+          if (opkg_prepare_url_for_install(arg, &argv[i]))
+              return -1;
      }
      pkg_info_preinstall_check();
 
      for (i=0; i < argc; i++) {
 	  arg = argv[i];
-          err = opkg_install_by_name(arg);
-	  if (err) {
+          if (opkg_install_by_name(arg) != 0) {
 	       opkg_msg(ERROR, "Cannot install package %s.\n", arg);
+	       err = -1;
 	  }
      }
 
-     r = opkg_configure_packages(NULL);
-     if (!err)
-	  err = r;
+     if (opkg_configure_packages(NULL) != 0)
+	  err = -1;
 
      write_status_files_if_changed();
 
@@ -476,9 +472,9 @@ opkg_install_cmd(int argc, char **argv)
 static int
 opkg_upgrade_cmd(int argc, char **argv)
 {
-     int i, r;
+     int i;
      pkg_t *pkg;
-     int err;
+     int err = 0;
 
      signal(SIGINT, sigint_handler);
 
@@ -486,9 +482,8 @@ opkg_upgrade_cmd(int argc, char **argv)
 	  for (i=0; i < argc; i++) {
 	       char *arg = argv[i];
 
-               err = opkg_prepare_url_for_install(arg, &arg);
-               if (err)
-                   return err;
+               if (opkg_prepare_url_for_install(arg, &arg))
+                   return -1;
 	  }
 	  pkg_info_preinstall_check();
 
@@ -505,10 +500,12 @@ opkg_upgrade_cmd(int argc, char **argv)
 	       } else {
 		    pkg = pkg_hash_fetch_installed_by_name(argv[i]);
 	       }
-	       if (pkg)
-		    opkg_upgrade_pkg(pkg);
-	       else {
-		    opkg_install_by_name(arg);
+	       if (pkg) {
+		    if (opkg_upgrade_pkg(pkg))
+			    err = -1;
+	       } else {
+		    if (opkg_install_by_name(arg))
+			    err = -1;
                }
 	  }
      } else {
@@ -519,18 +516,18 @@ opkg_upgrade_cmd(int argc, char **argv)
 	  pkg_hash_fetch_all_installed(installed);
 	  for (i = 0; i < installed->len; i++) {
 	       pkg = installed->pkgs[i];
-	       opkg_upgrade_pkg(pkg);
+	       if (opkg_upgrade_pkg(pkg))
+		       err = -1;
 	  }
 	  pkg_vec_free(installed);
      }
 
-     r = opkg_configure_packages(NULL);
-     if (!err)
-	  err = r;
+     if (opkg_configure_packages(NULL))
+	  err = -1;
 
      write_status_files_if_changed();
 
-     return 0;
+     return err;
 }
 
 static int
@@ -550,7 +547,8 @@ opkg_download_cmd(int argc, char **argv)
 	       continue;
 	  }
 
-	  err = opkg_download_pkg(pkg, ".");
+	  if (opkg_download_pkg(pkg, "."))
+		  err = -1;
 
 	  if (err) {
 	       opkg_msg(ERROR, "Failed to download %s.\n", pkg->name);
@@ -713,7 +711,7 @@ opkg_configure_cmd(int argc, char **argv)
 static int
 opkg_remove_cmd(int argc, char **argv)
 {
-     int i, a, done, r, err = 0;
+     int i, a, done, err = 0;
      pkg_t *pkg;
      pkg_t *pkg_to_remove;
      pkg_vec_t *available;
@@ -745,15 +743,15 @@ opkg_remove_cmd(int argc, char **argv)
 	         opkg_msg(ERROR, "Package %s is not installed.\n", pkg->name);
 	         continue;
             }
-            if (pkg->state_status == SS_NOT_INSTALLED) {    // Added the control, so every already removed package could be skipped
+            if (pkg->state_status == SS_NOT_INSTALLED) {
 	         opkg_msg(ERROR, "Package %s not installed.\n", pkg->name);
                  continue;
             }
-            r = opkg_remove_pkg(pkg_to_remove, 0);
-	    if (!err)
-	         err = r;
 
-            done = 1;
+            if (opkg_remove_pkg(pkg_to_remove, 0))
+	         err = -1;
+	    else
+                 done = 1;
         }
      }
 
