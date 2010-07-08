@@ -486,7 +486,10 @@ opkg_conf_init(void)
 
 	if (lockf(lock_fd, F_TLOCK, (off_t)0) == -1) {
 		opkg_perror(ERROR, "Could not lock %s", lock_file);
-		goto err3;
+		if (close(lock_fd) == -1)
+			opkg_perror(ERROR, "Couldn't close descriptor %d (%s)",
+				lock_fd, lock_file);
+		goto err2;
 	}
 
 	if (conf->tmp_dir)
@@ -502,7 +505,7 @@ opkg_conf_init(void)
 	conf->tmp_dir = mkdtemp(tmp);
 	if (conf->tmp_dir == NULL) {
 		opkg_perror(ERROR, "Creating temp dir %s failed", tmp);
-		goto err4;
+		goto err3;
 	}
 
 	pkg_hash_init();
@@ -533,14 +536,14 @@ opkg_conf_init(void)
 	}
 
 	if (resolve_pkg_dest_list(&tmp_dest_nv_pair_list))
-		goto err5;
+		goto err4;
 
 	nv_pair_list_deinit(&tmp_dest_nv_pair_list);
 
 	return 0;
 
 
-err5:
+err4:
 	free(conf->lists_dir);
 
 	pkg_hash_deinit();
@@ -549,10 +552,10 @@ err5:
 
 	if (rmdir(conf->tmp_dir) == -1)
 		opkg_perror(ERROR, "Couldn't remove dir %s", conf->tmp_dir);
-err4:
+err3:
 	if (lockf(lock_fd, F_ULOCK, (off_t)0) == -1)
 		opkg_perror(ERROR, "Couldn't unlock %s", lock_file);
-err3:
+
 	if (close(lock_fd) == -1)
 		opkg_perror(ERROR, "Couldn't close descriptor %d (%s)",
 				lock_fd, lock_file);
