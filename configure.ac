@@ -270,11 +270,12 @@ Use --disable-gpg if you want OpenSSL smime signatures])
 	fi
 fi
 
-
+CLEAN_DATE=`date +"%B %Y" | tr -d '\n'`
 
 AC_SUBST(opkglibdir)
 AC_SUBST(opkgetcdir)
 AC_SUBST(opkglockfile)
+AC_SUBST([CLEAN_DATE])
 
 # Setup output beautifier.
 SHAVE_INIT([shave], [enable])
@@ -290,4 +291,7 @@ AC_OUTPUT(
     libopkg.pc
     shave/shave
     shave/shave-libtool
+    man/Makefile
+    man/opkg-cl.1
+    man/opkg-key.1
     )
