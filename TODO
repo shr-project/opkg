@@ -20,10 +20,6 @@ See issue list: http://code.google.com/p/opkg/issues/list
 
  * Reduce memory used per pkg_t and peak memory use in general.
 
- * Refactor opkg_conf_t *conf.
-   Make it global instead of passing it to every function.
-   Remove args_t args in favour of conf.
-
  * #includes are a mess.
 
  * Refactor opkg_install_pkg() into more precise functions.
