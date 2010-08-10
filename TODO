@@ -38,7 +38,5 @@ FEATURES
 
  * Start with all "XXX: FEATURE" comments. Remove them if they are bogus.
 
- * Implement chrooting to an offline_root for running maintainer scripts.
-
  * Improve dpkg compatibility, according to the Debian Policy Manual.
    http://www.debian.org/doc/debian-policy/ch-controlfields.html
