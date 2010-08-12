@@ -95,7 +95,7 @@ args_parse(int argc, char *argv[])
 	int parse_err = 0;
 
 	while (1) {
-		c = getopt_long_only(argc, argv, "Ad:f:no:p:t:vV:",
+		c = getopt_long_only(argc, argv, "Ad:f:no:p:t:vV::",
 				long_options, &option_index);
 		if (c == -1)
 			break;
@@ -120,7 +120,9 @@ args_parse(int argc, char *argv[])
 			printf("opkg version %s\n", VERSION);
 			exit(0);
 		case 'V':
-			conf->verbosity = atoi(optarg);
+			conf->verbosity = INFO;
+			if (optarg != NULL)
+				conf->verbosity = atoi(optarg);
 			break;
 		case ARGS_OPT_AUTOREMOVE:
 			conf->autoremove = 1;
@@ -214,8 +216,8 @@ usage()
 
 	printf("\nOptions:\n");
 	printf("\t-A			Query all packages not just those installed\n"); 
-	printf("\t-V <level>		Set verbosity level to <level>.\n");
-	printf("\t--verbosity <level>	Verbosity levels:\n");
+	printf("\t-V[<level>]		Set verbosity level to <level>.\n");
+	printf("\t--verbosity[=<level>]	Verbosity levels:\n");
 	printf("\t				0 errors only\n");
 	printf("\t				1 normal messages (default)\n");
 	printf("\t				2 informative messages\n");
