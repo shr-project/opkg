@@ -31,7 +31,7 @@
  * correct mode described by the string. */
 extern int parse_mode(const char *s, mode_t * theMode)
 {
-	static const mode_t group_set[] = { 
+	static const mode_t group_set[] = {
 		S_ISUID | S_IRWXU,		/* u */
 		S_ISGID | S_IRWXG,		/* g */
 		S_IRWXO,				/* o */

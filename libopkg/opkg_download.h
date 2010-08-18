@@ -28,7 +28,7 @@ typedef int (*curl_progress_func)(void *data, double t, double d, double ultotal
 int opkg_download(const char *src, const char *dest_file_name, curl_progress_func cb, void *data);
 int opkg_download_pkg(pkg_t *pkg, const char *dir);
 /*
- * Downloads file from url, installs in package database, return package name. 
+ * Downloads file from url, installs in package database, return package name.
  */
 int opkg_prepare_url_for_install(const char *url, char **namep);
 

@@ -1,7 +1,7 @@
 /* pkg_hash.h - the opkg package management system
 
    Steven M. Ayer
-   
+
    Copyright (C) 2002 Compaq Computer Corporation
 
    This program is free software; you can redistribute it and/or
@@ -40,7 +40,7 @@ abstract_pkg_t * ensure_abstract_pkg_by_name(const char * pkg_name);
 void pkg_hash_fetch_all_installed(pkg_vec_t *installed);
 pkg_t * pkg_hash_fetch_by_name_version(const char *pkg_name,
 				       const char * version);
-pkg_t *pkg_hash_fetch_best_installation_candidate(abstract_pkg_t *apkg, 
+pkg_t *pkg_hash_fetch_best_installation_candidate(abstract_pkg_t *apkg,
 						  int (*constraint_fcn)(pkg_t *pkg, void *data), void *cdata, int quiet);
 pkg_t *pkg_hash_fetch_best_installation_candidate_by_name(const char *name);
 pkg_t *pkg_hash_fetch_installed_by_name(const char *pkg_name);

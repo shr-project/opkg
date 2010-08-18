@@ -44,10 +44,10 @@ opkg_upgrade_pkg(pkg_t *old)
           free(old_version);
           return 0;
      }
-          
+
      old_version = pkg_version_str_alloc(old);
      new_version = pkg_version_str_alloc(new);
-               
+
      cmp = pkg_compare_versions(old, new);
      opkg_msg(DEBUG, "Comparing visible versions of pkg %s:"
                   "\n\t%s is installed "
@@ -122,7 +122,7 @@ prepare_upgrade_list(void)
         cmp = pkg_compare_versions(old, new);
 
         if ( cmp < 0 ) {
-           node = active_list_move_node(all, head, &old->list); 
+           node = active_list_move_node(all, head, &old->list);
         }
     }
     active_list_head_delete(all);

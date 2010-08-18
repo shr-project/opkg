@@ -1,7 +1,7 @@
 /* pkg_depends.h - the opkg package management system
 
    Steven M. Ayer
-   
+
    Copyright (C) 2002 Compaq Computer Corporation
 
    This program is free software; you can redistribute it and/or
@@ -47,7 +47,7 @@ struct depend{
     abstract_pkg_t * pkg;
 };
 typedef struct depend depend_t;
-    
+
 struct compound_depend{
     depend_type_t type;
     int possibility_count;

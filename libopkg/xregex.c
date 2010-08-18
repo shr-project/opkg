@@ -35,7 +35,7 @@ static void print_regcomp_err(const regex_t *preg, int err)
 {
     unsigned int size;
     char *error;
-    
+
     size = regerror(err, preg, 0, 0);
     error = xcalloc(1, size);
     regerror(err, preg, error, size);

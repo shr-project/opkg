@@ -61,7 +61,7 @@ int make_directory (const char *path, long mode, int flags)
 			   memory of the path argument and may return
 			   a pointer to static memory, which can then
 			   be modified by consequtive calls to dirname */
-			
+
 			pathcopy = xstrdup (path);
 			parent = dirname (pathcopy);
 			parentcopy = xstrdup (parent);

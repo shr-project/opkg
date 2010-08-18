@@ -71,7 +71,7 @@ extern char * xstrndup (const char *s, int n) {
 		error_msg_and_die("xstrndup bug");
 
 	t = xmalloc(++n);
-	
+
 	return safe_strncpy(t,s,n);
 }
 

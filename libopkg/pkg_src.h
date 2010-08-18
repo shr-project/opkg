@@ -20,7 +20,7 @@
 
 #include "nv_pair.h"
 
-typedef struct 
+typedef struct
 {
   char *name;
   char *value;

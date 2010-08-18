@@ -1,7 +1,7 @@
 /* pkg_vec.h - the opkg package management system
 
    Steven M. Ayer
-   
+
    Copyright (C) 2002 Compaq Computer Corporation
 
    This program is free software; you can redistribute it and/or

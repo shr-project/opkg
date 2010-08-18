@@ -1,7 +1,7 @@
 /* hash.h - hash tables for opkg
 
    Steven M. Ayer, Jamey Hicks
-   
+
    Copyright (C) 2002 Compaq Computer Corporation
 
    This program is free software; you can redistribute it and/or
@@ -28,8 +28,8 @@ struct hash_entry {
 };
 
 struct hash_table {
-  const char *name; 
-  hash_entry_t * entries;  
+  const char *name;
+  hash_entry_t * entries;
   unsigned int n_buckets;
   unsigned int n_elements;
 

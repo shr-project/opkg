@@ -63,7 +63,7 @@ write_status_files_if_changed(void)
 	  opkg_msg(INFO, "Writing status file.\n");
 	  opkg_conf_write_status_files();
 	  pkg_write_changed_filelists();
-     } else { 
+     } else {
 	  opkg_msg(DEBUG, "Nothing to be done.\n");
      }
 }
@@ -87,9 +87,9 @@ opkg_update_cmd(int argc, char **argv)
      pkg_src_list_elt_t *iter;
      pkg_src_t *src;
 
- 
+
     sprintf_alloc(&lists_dir, "%s", conf->restrict_to_default_dest ? conf->default_dest->lists_dir : conf->lists_dir);
- 
+
     if (! file_is_dir(lists_dir)) {
 	  if (file_exists(lists_dir)) {
 	       opkg_msg(ERROR, "%s exists, but is not a directory.\n",
@@ -101,8 +101,8 @@ opkg_update_cmd(int argc, char **argv)
 	  if (err) {
 	       free(lists_dir);
 	       return -1;
-	  }	
-     } 
+	  }
+     }
 
      failures = 0;
 
@@ -119,7 +119,7 @@ opkg_update_cmd(int argc, char **argv)
 	  src = (pkg_src_t *)iter->data;
 
 	  if (src->extra_data)	/* debian style? */
-	      sprintf_alloc(&url, "%s/%s/%s", src->value, src->extra_data, 
+	      sprintf_alloc(&url, "%s/%s/%s", src->value, src->extra_data,
 			    src->gzip ? "Packages.gz" : "Packages");
 	  else
 	      sprintf_alloc(&url, "%s/%s", src->value, src->gzip ? "Packages.gz" : "Packages");
@@ -128,7 +128,7 @@ opkg_update_cmd(int argc, char **argv)
 	  if (src->gzip) {
 	      char *tmp_file_name;
 	      FILE *in, *out;
-	      
+
 	      sprintf_alloc (&tmp_file_name, "%s/%s.gz", tmp, src->name);
 	      err = opkg_download(url, tmp_file_name, NULL, NULL);
 	      if (err == 0) {
@@ -252,7 +252,7 @@ opkg_finalize_intercepts(opkg_intercept_t ctx)
 
 	    if (de->d_name[0] == '.')
 		continue;
-	    
+
 	    sprintf_alloc (&path, "%s/%s", ctx->statedir, de->d_name);
 	    if (access (path, X_OK) == 0) {
 		const char *argv[] = {"sh", "-c", path, NULL};
@@ -263,7 +263,7 @@ opkg_finalize_intercepts(opkg_intercept_t ctx)
         closedir(dir);
     } else
 	opkg_perror(ERROR, "Failed to open dir %s", ctx->statedir);
-	
+
     rm_r(ctx->statedir);
     free (ctx->statedir);
     free (ctx);
@@ -272,10 +272,10 @@ opkg_finalize_intercepts(opkg_intercept_t ctx)
 }
 
 /* For package pkg do the following: If it is already visited, return. If not,
-   add it in visited list and recurse to its deps. Finally, add it to ordered 
+   add it in visited list and recurse to its deps. Finally, add it to ordered
    list.
    pkg_vec all contains all available packages in repos.
-   pkg_vec visited contains packages already visited by this function, and is 
+   pkg_vec visited contains packages already visited by this function, and is
    used to end recursion and avoid an infinite loop on graph cycles.
    pkg_vec ordered will finally contain the ordered set of packages.
 */
@@ -293,21 +293,21 @@ opkg_recurse_pkgs_in_order(pkg_t *pkg, pkg_vec_t *all,
 
     /* If it's just an available package, that is, not installed and not even
        unpacked, skip it */
-    /* XXX: This is probably an overkill, since a state_status != SS_UNPACKED 
-       would do here. However, if there is an intermediate node (pkg) that is 
-       configured and installed between two unpacked packages, the latter 
+    /* XXX: This is probably an overkill, since a state_status != SS_UNPACKED
+       would do here. However, if there is an intermediate node (pkg) that is
+       configured and installed between two unpacked packages, the latter
        won't be properly reordered, unless all installed/unpacked pkgs are
        checked */
-    if (pkg->state_status == SS_NOT_INSTALLED) 
+    if (pkg->state_status == SS_NOT_INSTALLED)
         return 0;
 
     /* If the  package has already been visited (by this function), skip it */
-    for(j = 0; j < visited->len; j++) 
+    for(j = 0; j < visited->len; j++)
         if ( ! strcmp(visited->pkgs[j]->name, pkg->name)) {
             opkg_msg(DEBUG, "pkg %s already visited, skipping.\n", pkg->name);
             return 0;
         }
-    
+
     pkg_vec_insert(visited, pkg);
 
     count = pkg->pre_depends_count + pkg->depends_count + \
@@ -315,9 +315,9 @@ opkg_recurse_pkgs_in_order(pkg_t *pkg, pkg_vec_t *all,
 
     opkg_msg(DEBUG, "pkg %s.\n", pkg->name);
 
-    /* Iterate over all the dependencies of pkg. For each one, find a package 
+    /* Iterate over all the dependencies of pkg. For each one, find a package
        that is either installed or unpacked and satisfies this dependency.
-       (there should only be one such package per dependency installed or 
+       (there should only be one such package per dependency installed or
        unpacked). Then recurse to the dependency package */
     for (j=0; j < count ; j++) {
         compound_depend = &pkg->depends[j];
@@ -328,16 +328,16 @@ opkg_recurse_pkgs_in_order(pkg_t *pkg, pkg_vec_t *all,
             l = 0;
             if (dependents != NULL)
                 while (l < abpkg->provided_by->len && dependents[l] != NULL) {
-                    opkg_msg(DEBUG, "Descending on pkg %s.\n", 
+                    opkg_msg(DEBUG, "Descending on pkg %s.\n",
                                  dependents [l]->name);
-    
+
                     /* find whether dependent l is installed or unpacked,
                      * and then find which package in the list satisfies it */
                     for(m = 0; m < all->len; m++) {
                         dep = all->pkgs[m];
                         if ( dep->state_status != SS_NOT_INSTALLED)
                             if ( ! strcmp(dep->name, dependents[l]->name)) {
-                                opkg_recurse_pkgs_in_order(dep, all, 
+                                opkg_recurse_pkgs_in_order(dep, all,
                                                            visited, ordered);
                                 /* Stop the outer loop */
                                 l = abpkg->provided_by->len;
@@ -350,7 +350,7 @@ opkg_recurse_pkgs_in_order(pkg_t *pkg, pkg_vec_t *all,
         }
     }
 
-    /* When all recursions from this node down, are over, and all 
+    /* When all recursions from this node down, are over, and all
        dependencies have been added in proper order in the ordered array, add
        also the package pkg to ordered array */
     pkg_vec_insert(ordered, pkg);
@@ -389,11 +389,11 @@ opkg_configure_packages(char *pkg_name)
 	     err = -1;
 	     goto error;
      }
-    
+
      for(i = 0; i < ordered->len; i++) {
 	  pkg = ordered->pkgs[i];
 
-	  if (pkg_name && fnmatch(pkg_name, pkg->name, 0)) 
+	  if (pkg_name && fnmatch(pkg_name, pkg->name, 0))
 	       continue;
 
 	  if (pkg->state_status == SS_UNPACKED) {
@@ -579,7 +579,7 @@ opkg_list_cmd(int argc, char **argv)
      for (i=0; i < available->len; i++) {
 	  pkg = available->pkgs[i];
 	  /* if we have package name or pattern and pkg does not match, then skip it */
-	  if (pkg_name && fnmatch(pkg_name, pkg->name, 0)) 
+	  if (pkg_name && fnmatch(pkg_name, pkg->name, 0))
 	       continue;
           print_pkg(pkg);
      }
@@ -606,7 +606,7 @@ opkg_list_installed_cmd(int argc, char **argv)
      for (i=0; i < available->len; i++) {
 	  pkg = available->pkgs[i];
 	  /* if we have package name or pattern and pkg does not match, then skip it */
-	  if (pkg_name && fnmatch(pkg_name, pkg->name, 0)) 
+	  if (pkg_name && fnmatch(pkg_name, pkg->name, 0))
 	       continue;
           print_pkg(pkg);
      }
@@ -738,7 +738,7 @@ opkg_remove_cmd(int argc, char **argv)
             } else {
 	         pkg_to_remove = pkg_hash_fetch_installed_by_name(pkg->name);
             }
-        
+
             if (pkg_to_remove == NULL) {
 	         opkg_msg(ERROR, "Package %s is not installed.\n", pkg->name);
 	         continue;
@@ -770,7 +770,7 @@ opkg_flag_cmd(int argc, char **argv)
      int i;
      pkg_t *pkg;
      const char *flags = argv[0];
-    
+
      signal(SIGINT, sigint_handler);
 
      for (i=1; i < argc; i++) {
@@ -790,7 +790,7 @@ opkg_flag_cmd(int argc, char **argv)
 	      pkg->state_flag = pkg_state_flag_from_str(flags);
           }
 
-	  /* 
+	  /*
 	   * Useful if a package is installed in an offline_root, and
 	   * should be configured by opkg-cl configure at a later date.
 	   */
@@ -931,7 +931,7 @@ opkg_what_depends_conflicts_cmd(enum depend_type what_field_type, int recursive,
 	case RECOMMEND: rel_str = "recommends"; break;
 	default: return -1;
 	}
-     
+
 	available_pkgs = pkg_vec_alloc();
 
 	if (conf->query_all)
@@ -987,14 +987,14 @@ opkg_what_depends_conflicts_cmd(enum depend_type what_field_type, int recursive,
 								& SF_MARKED)
 							!= SF_MARKED)
 						continue;
-					
+
 					/* mark the depending package so we
 					* won't visit it again */
 					pkg->state_flag |= SF_MARKED;
 					pkg_mark_provides(pkg);
 					changed++;
 
-					ver = pkg_version_str_alloc(pkg); 
+					ver = pkg_version_str_alloc(pkg);
 				        opkg_msg(NOTICE, "\t%s %s\t%s %s",
 							pkg->name,
 							ver,
@@ -1061,7 +1061,7 @@ opkg_what_provides_replaces_cmd(enum what_field_type what_field_type, int argc, 
 	  pkg_vec_t *available_pkgs = pkg_vec_alloc();
 	  const char *rel_str = (what_field_type == WHATPROVIDES ? "provides" : "replaces");
 	  int i;
-     
+
 	  pkg_info_preinstall_check();
 
 	  if (conf->query_all)
@@ -1079,8 +1079,8 @@ opkg_what_provides_replaces_cmd(enum what_field_type what_field_type, int argc, 
 		    int k;
 		    int count = (what_field_type == WHATPROVIDES) ? pkg->provides_count : pkg->replaces_count;
 		    for (k = 0; k < count; k++) {
-			 abstract_pkg_t *apkg = 
-			      ((what_field_type == WHATPROVIDES) 
+			 abstract_pkg_t *apkg =
+			      ((what_field_type == WHATPROVIDES)
 			       ? pkg->provides[k]
 			       : pkg->replaces[k]);
 			 if (fnmatch(target, apkg->name, 0) == 0) {
@@ -1124,7 +1124,7 @@ opkg_search_cmd(int argc, char **argv)
      if (argc < 1) {
 	  return -1;
      }
- 
+
      installed = pkg_vec_alloc();
      pkg_hash_fetch_all_installed(installed);
      pkg_vec_sort(installed, pkg_compare_names);
@@ -1154,8 +1154,8 @@ opkg_compare_versions_cmd(int argc, char **argv)
      if (argc == 3) {
 	  /* this is a bit gross */
 	  struct pkg p1, p2;
-	  parse_version(&p1, argv[0]); 
-	  parse_version(&p2, argv[2]); 
+	  parse_version(&p1, argv[0]);
+	  parse_version(&p2, argv[2]);
 	  return pkg_version_satisfied(&p1, &p2, argv[1]);
      } else {
 	  opkg_msg(ERROR,

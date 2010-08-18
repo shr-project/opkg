@@ -1,7 +1,7 @@
 /* pkg_vec.c - the opkg package management system
 
    Steven M. Ayer
-   
+
    Copyright (C) 2002 Compaq Computer Corporation
 
    This program is free software; you can redistribute it and/or
@@ -56,7 +56,7 @@ void pkg_vec_insert_merge(pkg_vec_t *vec, pkg_t *pkg, int set_status)
      /* look for a duplicate pkg by name, version, and architecture */
      for (i = 0; i < vec->len; i++){
          opkg_msg(DEBUG2, "%s %s arch=%s vs. %s %s arch=%s.\n",
-			pkg->name, pkg->version, pkg->architecture, 
+			pkg->name, pkg->version, pkg->architecture,
 			vec->pkgs[i]->name, vec->pkgs[i]->version,
 			vec->pkgs[i]->architecture);
 	  if ((strcmp(pkg->name, vec->pkgs[i]->name) == 0)
@@ -70,7 +70,7 @@ void pkg_vec_insert_merge(pkg_vec_t *vec, pkg_t *pkg, int set_status)
      }
 
      /* we didn't find one, add it */
-     if (!found){   
+     if (!found){
           opkg_msg(DEBUG2, "Adding new pkg=%s version=%s arch=%s.\n",
 			pkg->name, pkg->version, pkg->architecture);
           pkg_vec_insert(vec, pkg);
@@ -143,7 +143,7 @@ int pkg_vec_mark_if_matches(pkg_vec_t *vec, const char *pattern)
 
 abstract_pkg_vec_t * abstract_pkg_vec_alloc(void)
 {
-    abstract_pkg_vec_t * vec ; 
+    abstract_pkg_vec_t * vec ;
     vec = xcalloc(1, sizeof(abstract_pkg_vec_t));
     vec->pkgs = NULL;
     vec->len = 0;
@@ -171,7 +171,7 @@ void abstract_pkg_vec_insert(abstract_pkg_vec_t *vec, abstract_pkg_t *pkg)
 
 abstract_pkg_t * abstract_pkg_vec_get(abstract_pkg_vec_t *vec, int i)
 {
-    if (vec->len > i) 
+    if (vec->len > i)
 	return vec->pkgs[i];
     else
 	return NULL;

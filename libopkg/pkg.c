@@ -95,7 +95,7 @@ pkg_init(pkg_t *pkg)
      pkg->recommends_str = NULL;
      pkg->suggests_count = 0;
      pkg->recommends_count = 0;
-     
+
      active_list_init(&pkg->list);
 
      pkg->conflicts = NULL;
@@ -103,7 +103,7 @@ pkg_init(pkg_t *pkg)
 
      pkg->replaces = NULL;
      pkg->replaces_count = 0;
-    
+
      pkg->pre_depends_count = 0;
      pkg->pre_depends_str = NULL;
      pkg->provides_count = 0;
@@ -188,7 +188,7 @@ pkg_deinit(pkg_t *pkg)
 	if (pkg->description)
 		free(pkg->description);
 	pkg->description = NULL;
-	
+
 	pkg->state_want = SW_UNKNOWN;
 	pkg->state_flag = SF_OK;
 	pkg->state_status = SS_NOT_INSTALLED;
@@ -221,11 +221,11 @@ pkg_deinit(pkg_t *pkg)
 
 	pkg->pre_depends_count = 0;
 	pkg->provides_count = 0;
-	
+
 	if (pkg->filename)
 		free(pkg->filename);
 	pkg->filename = NULL;
-	
+
 	if (pkg->local_filename)
 		free(pkg->local_filename);
 	pkg->local_filename = NULL;
@@ -281,7 +281,7 @@ pkg_init_from_file(pkg_t *pkg, const char *filename)
 	pkg->local_filename = xstrdup(filename);
 
 	tmp = xstrdup(filename);
-	sprintf_alloc(&control_path, "%s/%s.control.XXXXXX", 
+	sprintf_alloc(&control_path, "%s/%s.control.XXXXXX",
                         conf->tmp_dir,
                         basename(tmp));
 	free(tmp);
@@ -641,8 +641,8 @@ pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
                fprintf(fp, "Conffiles:\n");
 	       for (iter = nv_pair_list_first(&pkg->conffiles); iter; iter = nv_pair_list_next(&pkg->conffiles, iter)) {
 		    if (((conffile_t *)iter->data)->name && ((conffile_t *)iter->data)->value) {
-                         fprintf(fp, " %s %s\n", 
-                                 ((conffile_t *)iter->data)->name, 
+                         fprintf(fp, " %s %s\n",
+                                 ((conffile_t *)iter->data)->name,
                                  ((conffile_t *)iter->data)->value);
 		    }
 	       }
@@ -1004,7 +1004,7 @@ pkg_name_version_and_architecture_compare(const void *p1, const void *p2)
 	       a->name, b->name);
        return 0;
      }
-       
+
      namecmp = strcmp(a->name, b->name);
      if (namecmp)
 	  return namecmp;
@@ -1147,7 +1147,7 @@ pkg_get_installed_files(pkg_t *pkg)
 
      while (1) {
 	  char *file_name;
-	
+
 	  line = file_read_line_alloc(list_file);
 	  if (line == NULL) {
 	       break;
@@ -1345,8 +1345,8 @@ pkg_info_preinstall_check(void)
 			       "files for pkg %s.\n", pkg->name);
 	       break;
 	  }
-	  for (iter = str_list_first(installed_files), niter = str_list_next(installed_files, iter); 
-                  iter; 
+	  for (iter = str_list_first(installed_files), niter = str_list_next(installed_files, iter);
+                  iter;
                   iter = niter, niter = str_list_next(installed_files, iter)) {
 	       char *installed_file = (char *) iter->data;
 	       file_hash_set_file_owner(installed_file, pkg);

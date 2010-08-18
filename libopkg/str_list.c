@@ -76,7 +76,7 @@ void str_list_remove(str_list_t *list, str_list_elt_t **iter)
     char *str = void_list_remove((void_list_t *) list,
 					       (void_list_elt_t **) iter);
 
-    if (str) 
+    if (str)
 	free(str);
 }
 
@@ -85,7 +85,7 @@ void str_list_remove_elt(str_list_t *list, const char *target_str)
      char *str = void_list_remove_elt((void_list_t *) list,
 					 (void *)target_str,
 					 (void_list_cmp_t)strcmp);
-     if (str) 
+     if (str)
          free(str);
 }
 

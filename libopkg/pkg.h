@@ -145,7 +145,7 @@ struct pkg
      char **conflicts_str;
      compound_depend_t * conflicts;
      unsigned int conflicts_count;
-	
+
      char **replaces_str;
      unsigned int replaces_count;
      abstract_pkg_t ** replaces;
@@ -191,7 +191,7 @@ void pkg_deinit(pkg_t *pkg);
 int pkg_init_from_file(pkg_t *pkg, const char *filename);
 abstract_pkg_t *abstract_pkg_new(void);
 
-/* 
+/*
  * merges fields from newpkg into oldpkg.
  * Forcibly sets oldpkg state_status, state_want and state_flags
  */

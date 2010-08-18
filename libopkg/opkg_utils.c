@@ -1,7 +1,7 @@
 /* opkg_utils.c - the opkg package management system
 
    Steven M. Ayer
-   
+
    Copyright (C) 2002 Compaq Computer Corporation
 
    This program is free software; you can redistribute it and/or
@@ -30,9 +30,9 @@ get_available_kbytes(char * filesystem)
         return 0;
     }
 
-    // Actually ((sfs.f_bavail * sfs.f_frsize) / 1024) 
-    // and here we try to avoid overflow. 
-    if (f.f_frsize >= 1024) 
+    // Actually ((sfs.f_bavail * sfs.f_frsize) / 1024)
+    // and here we try to avoid overflow.
+    if (f.f_frsize >= 1024)
         return (f.f_bavail * (f.f_frsize / 1024));
     else if (f.f_frsize > 0)
         return f.f_bavail / (1024 / f.f_frsize);
@@ -47,8 +47,8 @@ char *trim_xstrdup(const char *src)
 {
      const char *end;
 
-     /* remove it from the front */    
-     while(src && 
+     /* remove it from the front */
+     while(src &&
 	   isspace(*src) &&
 	   *src)
 	  src++;

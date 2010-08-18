@@ -62,7 +62,7 @@ parse_comma_separated(const char *raw, unsigned int *count)
 
 	while (*raw) {
 		depends = xrealloc(depends, sizeof(char *) * (line_count + 1));
-	
+
 		while (isspace(*raw))
 			raw++;
 
@@ -230,7 +230,7 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 			char *tmp = parse_simple("Installed-Time", line);
 			pkg->installed_time = strtoul(tmp, NULL, 0);
 			free (tmp);
-		}	    
+		}
 		break;
 
 	case 'M':
@@ -246,7 +246,7 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 		break;
 
 	case 'P':
-		if ((mask & PFM_PACKAGE) && is_field("Package", line)) 
+		if ((mask & PFM_PACKAGE) && is_field("Package", line))
 			pkg->name = parse_simple("Package", line);
 		else if ((mask & PFM_PRIORITY) && is_field("Priority", line))
 			pkg->priority = parse_simple("Priority", line);

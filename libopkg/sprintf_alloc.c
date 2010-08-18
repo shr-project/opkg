@@ -35,12 +35,12 @@ int sprintf_alloc(char **str, const char *fmt, ...)
       return -1;
     }
 
-    /* On x86_64 systems, any strings over 100 were segfaulting.  
+    /* On x86_64 systems, any strings over 100 were segfaulting.
        It seems that the ap needs to be reinitalized before every
        use of the v*printf() functions. I pulled the functionality out
-       of vsprintf_alloc and combined it all here instead. 
+       of vsprintf_alloc and combined it all here instead.
     */
-    
+
 
     /* ripped more or less straight out of PRINTF(3) */
 

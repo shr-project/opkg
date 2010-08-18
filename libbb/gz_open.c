@@ -39,7 +39,7 @@ gz_open(FILE *compressed_file, int *pid)
 		return(NULL);
 	}
 
-    /* If we don't flush, we end up with two copies of anything pending, 
+    /* If we don't flush, we end up with two copies of anything pending,
        one from the parent, one from the child */
     fflush(stdout);
     fflush(stderr);
@@ -71,7 +71,7 @@ gz_close(int gunzip_pid)
 		perror_msg("waitpid");
 		return -1;
 	}
-	
+
 	if (WIFSIGNALED(status)) {
 		error_msg("Unzip process killed by signal %d.\n",
 			WTERMSIG(status));

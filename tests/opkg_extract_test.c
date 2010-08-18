@@ -3,7 +3,7 @@
 #include <libbb/libbb.h>
 
 /*
- * build thus: 
+ * build thus:
 
  * gcc -o opkg_extract_test opkg_extract_test.c -I./busybox-0.60.2/libbb -L./busybox-0.60.2 -lbb
  *
@@ -14,7 +14,7 @@ int main(int argc, char * argv[])
 {
   /*
    * see libbb.h and let your imagination run wild
-   * or, set the last item below to extract_one_to_buffer, and you get the control file in 
+   * or, set the last item below to extract_one_to_buffer, and you get the control file in
    * "returned"
    * or, set the last one to extract_all_to_fs, and, well, guess what happens
    */
@@ -23,12 +23,12 @@ int main(int argc, char * argv[])
     enum extract_functions_e dowhat = extract_control_tar_gz | extract_all_to_fs | extract_preserve_date;
   char * returned;
   char * filename;
-  
+
   if(argc < 2){
     fprintf(stderr, "syntax: %s <opkg file> [<file_to_extract>]\n", argv[0]);
     exit(0);
   }
-  
+
   if (argc < 3){
     filename=NULL;
   } else {
@@ -36,7 +36,7 @@ int main(int argc, char * argv[])
   }
 
   returned = deb_extract(argv[1], stdout, dowhat, NULL, filename);
-  
+
   if(returned)
     fprintf(stderr, "returned %s\n", returned);
   else

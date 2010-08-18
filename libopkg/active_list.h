@@ -2,7 +2,7 @@
 
    Tick Chen <tick@openmoko.com>
 
-   Copyright (C) 2008 Openmoko Inc. 
+   Copyright (C) 2008 Openmoko Inc.
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as

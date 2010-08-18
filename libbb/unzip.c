@@ -59,7 +59,7 @@ static unsigned long crc; /* shift register contents */
 
 /*
  * window size--must be a power of two, and
- *  at least 32K for zip's deflate method 
+ *  at least 32K for zip's deflate method
  */
 static const int WSIZE = 0x8000;
 
@@ -93,7 +93,7 @@ static const unsigned short mask_bits[] = {
 /* ========================================================================
  * Signal and error handler.
  */
- 
+
 static void abort_gzip()
 {
 	error_msg("gzip aborted\n");
@@ -111,7 +111,7 @@ static void make_crc_table()
 	static int p[] = {0,1,2,4,5,7,8,10,11,12,16,22,23,26};
 
 	/* initial shift register value */
-	crc = 0xffffffffL;	
+	crc = 0xffffffffL;
 	crc_table = (unsigned long *) xmalloc(256 * sizeof(unsigned long));
 
 	/* Make exclusive-or pattern from polynomial (0xedb88320) */
@@ -165,7 +165,7 @@ static void flush_window(void)
 /*
  * Free the malloc'ed tables built by huft_build(), which makes a linked
  * list of the tables it made, with the links in a dummy first entry of
- * each table. 
+ * each table.
  * t: table to free
  */
 static int huft_free(huft_t *t)
@@ -196,7 +196,7 @@ static int huft_free(huft_t *t)
  * t:	result: starting table
  * m:	maximum lookup bits, returns actual
  */
-static int huft_build(unsigned int *b, const unsigned int n, const unsigned int s, 
+static int huft_build(unsigned int *b, const unsigned int n, const unsigned int s,
 	const unsigned short *d, const unsigned short *e, huft_t **t, int *m)
 {
 	unsigned a;		/* counter for codes of length k */
@@ -605,7 +605,7 @@ static int inflate_block(int *e)
 			bk = k_stored;
 			return 0;
 		}
-	case 1:	/* Inflate fixed 
+	case 1:	/* Inflate fixed
 			 * decompress an inflated type 1 (fixed Huffman codes) block.  We should
 			 * either replace this with a custom decoder, or at least precompute the
 			 * Huffman tables.

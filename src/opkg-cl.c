@@ -31,7 +31,7 @@
 #include "../libbb/libbb.h"
 
 enum {
-	ARGS_OPT_FORCE_MAINTAINER = 129, 
+	ARGS_OPT_FORCE_MAINTAINER = 129,
 	ARGS_OPT_FORCE_DEPENDS,
 	ARGS_OPT_FORCE_OVERWRITE,
 	ARGS_OPT_FORCE_DOWNGRADE,
@@ -174,7 +174,7 @@ args_parse(int argc, char *argv[])
 			printf("Confusion: getopt_long returned %d\n", c);
 		}
 	}
-    
+
 	if (parse_err)
 		return parse_err;
 	else
@@ -215,7 +215,7 @@ usage()
 	printf("\twhatreplaces [-A] [pkgname|pat]+\n");
 
 	printf("\nOptions:\n");
-	printf("\t-A			Query all packages not just those installed\n"); 
+	printf("\t-A			Query all packages not just those installed\n");
 	printf("\t-V[<level>]		Set verbosity level to <level>.\n");
 	printf("\t--verbosity[=<level>]	Verbosity levels:\n");
 	printf("\t				0 errors only\n");
@@ -256,7 +256,7 @@ usage()
 	printf(" regexp could be something like 'pkgname*' '*file*' or similar\n");
 	printf(" e.g. opkg info 'libstd*' or opkg search '*libop*' or opkg remove 'libncur*'\n");
 
-	/* --force-removal-of-essential-packages	Let opkg remove essential packages. 
+	/* --force-removal-of-essential-packages	Let opkg remove essential packages.
 		Using this option is almost guaranteed to break your system, hence this option
 		is not even advertised in the usage statement. */
 
@@ -317,7 +317,7 @@ main(int argc, char *argv[])
 			if (pkg_hash_load_feeds())
 				goto err1;
 		}
-   
+
 		if (pkg_hash_load_status_files())
 			goto err1;
 	}

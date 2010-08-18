@@ -1,7 +1,7 @@
 /*
  *  Copyright (C) 2000 by Glenn McGrath
  *  Copyright (C) 2001 by Laurence Anderson
- *	
+ *
  *  Based on previous work by busybox developers and others.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -47,8 +47,8 @@ seek_by_read(FILE* fd, size_t len)
         char buf[SEEK_BUF];
 
         while (len) {
-                cc = fread(buf, sizeof(buf[0]), 
-                                len > SEEK_BUF ? SEEK_BUF : len, 
+                cc = fread(buf, sizeof(buf[0]),
+                                len > SEEK_BUF ? SEEK_BUF : len,
                                 fd);
 
                 total += cc;
@@ -74,17 +74,17 @@ seek_sub_file(FILE *fd, const int count)
 }
 
 
-/* Extract the data postioned at src_stream to either filesystem, stdout or 
- * buffer depending on the value of 'function' which is defined in libbb.h 
+/* Extract the data postioned at src_stream to either filesystem, stdout or
+ * buffer depending on the value of 'function' which is defined in libbb.h
  *
  * prefix doesnt have to be just a directory, it may prefix the filename as well.
  *
- * e.g. '/var/lib/dpkg/info/dpkg.' will extract all files to the base bath 
- * '/var/lib/dpkg/info/' and all files/dirs created in that dir will have 
+ * e.g. '/var/lib/dpkg/info/dpkg.' will extract all files to the base bath
+ * '/var/lib/dpkg/info/' and all files/dirs created in that dir will have
  * 'dpkg.' as their prefix
  *
  * For this reason if prefix does point to a dir then it must end with a
- * trailing '/' or else the last dir will be assumed to be the file prefix 
+ * trailing '/' or else the last dir will be assumed to be the file prefix
  */
 static char *
 extract_archive(FILE *src_stream, FILE *out_stream,
@@ -100,7 +100,7 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 
 	*err = 0;
 
-	/* prefix doesnt have to be a proper path it may prepend 
+	/* prefix doesnt have to be a proper path it may prepend
 	 * the filename as well */
 	if (prefix != NULL) {
 		/* strip leading '/' in filename to extract as prefix may not be dir */
@@ -129,11 +129,11 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 
 	if (function & extract_to_stream) {
 		if (S_ISREG(file_entry->mode)) {
-			*err = copy_file_chunk(src_stream, out_stream, file_entry->size);			
+			*err = copy_file_chunk(src_stream, out_stream, file_entry->size);
 			archive_offset += file_entry->size;
 		}
 	}
-	else if (function & extract_one_to_buffer) { 
+	else if (function & extract_one_to_buffer) {
 		if (S_ISREG(file_entry->mode)) {
 			buffer = (char *) xmalloc(file_entry->size + 1);
 			fread(buffer, 1, file_entry->size, src_stream);
@@ -189,7 +189,7 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 						goto cleanup;
 					}
 					archive_offset += file_entry->size;
-					*err = copy_file_chunk(src_stream, dst_stream, file_entry->size);			
+					*err = copy_file_chunk(src_stream, dst_stream, file_entry->size);
 					fclose(dst_stream);
 				}
 				break;
@@ -230,7 +230,7 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 
 		}
 
-		/* Changing a symlink's properties normally changes the properties of the 
+		/* Changing a symlink's properties normally changes the properties of the
 		 * file pointed to, so dont try and change the date or mode, lchown does
 		 * does the right thing, but isnt available in older versions of libc */
 		if (S_ISLNK(file_entry->mode)) {
@@ -247,7 +247,7 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 			chmod(full_name, file_entry->mode);
 		}
 	} else {
-		/* If we arent extracting data we have to skip it, 
+		/* If we arent extracting data we have to skip it,
 		 * if data size is 0 then then just do it anyway
 		 * (saves testing for it) */
 		seek_sub_file(src_stream, file_entry->size);
@@ -256,7 +256,7 @@ extract_archive(FILE *src_stream, FILE *out_stream,
 	/* extract_list and extract_verbose_list can be used in conjunction
 	 * with one of the above four extraction functions, so do this seperately */
 	if (function & extract_verbose_list) {
-		fprintf(out_stream, "%s %d/%d %8d %s ", mode_string(file_entry->mode), 
+		fprintf(out_stream, "%s %d/%d %8d %s ", mode_string(file_entry->mode),
 			file_entry->uid, file_entry->gid,
 			(int) file_entry->size, time_string(file_entry->mtime));
 	}
@@ -373,7 +373,7 @@ get_header_ar(FILE *src_stream)
 		/* raw_header[60] wont be '\n' as it should, but it doesnt matter */
 		memmove(ar.raw, &ar.raw[1], 59);
 	}
-		
+
 	typed = (file_header_t *) xcalloc(1, sizeof(file_header_t));
 
 	typed->size = (size_t) atoi(ar.formated.size);
@@ -409,7 +409,7 @@ get_header_ar(FILE *src_stream)
 	}
 	typed->name[strcspn(typed->name, " /")]='\0';
 
-	/* convert the rest of the now valid char header to its typed struct */	
+	/* convert the rest of the now valid char header to its typed struct */
 	parse_mode(ar.formated.mode, &typed->mode);
 	typed->mtime = atoi(ar.formated.date);
 	typed->uid = atoi(ar.formated.uid);
@@ -555,7 +555,7 @@ get_header_tar(FILE *tar_stream)
 # ifdef CONFIG_FEATURE_TAR_OLDGNU_COMPATABILITY
 		if (last_char_is(tar_entry->name, '/')) {
 			tar_entry->mode |= S_IFDIR;
-		} else 
+		} else
 # endif
 			tar_entry->mode |= S_IFREG;
 		break;
@@ -623,7 +623,7 @@ free_header_tar(file_header_t *tar_entry)
 }
 
 char *
-deb_extract(const char *package_filename, FILE *out_stream, 
+deb_extract(const char *package_filename, FILE *out_stream,
 	const int extract_function, const char *prefix,
 	const char *filename, int *err)
 {
@@ -642,11 +642,11 @@ deb_extract(const char *package_filename, FILE *out_stream,
 		file_list[0] = filename;
 		file_list[1] = NULL;
 	}
-	
+
 	if (extract_function & extract_control_tar_gz) {
 		ared_file = "control.tar.gz";
 	}
-	else if (extract_function & extract_data_tar_gz) {		
+	else if (extract_function & extract_data_tar_gz) {
 		ared_file = "data.tar.gz";
 	} else {
                 opkg_msg(ERROR, "Internal error: extract_function=%x\n",
@@ -719,7 +719,7 @@ deb_extract(const char *package_filename, FILE *out_stream,
 			*err = -1;
 			goto cleanup;
 		}
-		
+
 		/* walk through outer tar file to find ared_file */
 		while ((tar_header = get_header_tar(unzipped_opkg_stream)) != NULL) {
                         int name_offset = 0;
@@ -736,12 +736,12 @@ deb_extract(const char *package_filename, FILE *out_stream,
 				}
 				archive_offset = 0;
 
-				output_buffer = unarchive(uncompressed_stream, 
-							  out_stream, 
+				output_buffer = unarchive(uncompressed_stream,
+							  out_stream,
 							  get_header_tar,
 							  free_header_tar,
-							  extract_function, 
-							  prefix, 
+							  extract_function,
+							  prefix,
 							  file_list,
 							  err);
 

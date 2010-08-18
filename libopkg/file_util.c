@@ -175,9 +175,9 @@ char *file_md5sum_alloc(const char *file_name)
 	md5sum_hex[i*2] = bin2hex[md5sum_bin[i] >> 4];
 	md5sum_hex[i*2+1] = bin2hex[md5sum_bin[i] & 0xf];
     }
-    
+
     md5sum_hex[md5sum_hex_len] = '\0';
-    
+
     return md5sum_hex;
 }
 
@@ -222,9 +222,9 @@ char *file_sha256sum_alloc(const char *file_name)
 	sha256sum_hex[i*2] = bin2hex[sha256sum_bin[i] >> 4];
 	sha256sum_hex[i*2+1] = bin2hex[sha256sum_bin[i] & 0xf];
     }
-    
+
     sha256sum_hex[sha256sum_hex_len] = '\0';
-    
+
     return sha256sum_hex;
 }
 

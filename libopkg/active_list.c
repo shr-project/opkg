@@ -2,7 +2,7 @@
 
    Tick Chen <tick@openmoko.com>
 
-   Copyright (C) 2008 Openmoko Inc. 
+   Copyright (C) 2008 Openmoko Inc.
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -30,7 +30,7 @@ void active_list_init(struct active_list *ptr) {
 }
 
 /**
- */ 
+ */
 struct active_list * active_list_next(struct active_list *head, struct active_list *ptr) {
     struct active_list *next=NULL;
     if ( !head ) {
@@ -47,7 +47,7 @@ struct active_list * active_list_next(struct active_list *head, struct active_li
         return ptr->depended;
     }
     while ( next->depend.next != &next->depend ) {
-        next = list_entry(next->depend.next, struct active_list, node); 
+        next = list_entry(next->depend.next, struct active_list, node);
     }
     return next;
 }
@@ -64,10 +64,10 @@ struct active_list * active_list_prev(struct active_list *head, struct active_li
     if ( ptr->depend.prev != &ptr->depend ) {
         prev = list_entry(ptr->depend.prev, struct active_list, node);
         return prev;
-    } 
+    }
     if ( ptr->depended  && ptr->depended != head && &ptr->depended->depend == ptr->node.prev ) {
         prev = list_entry(ptr->depended->node.prev, struct active_list, node);
-    } else 
+    } else
         prev = list_entry(ptr->node.prev, struct active_list, node);
     if ( prev == head )
         return NULL;
@@ -131,8 +131,8 @@ void active_list_head_delete(struct active_list *head) {
 }
 
 /*
- *  Using insert sort. 
- *  Note. the list should not be large, or it will be very inefficient. 
+ *  Using insert sort.
+ *  Note. the list should not be large, or it will be very inefficient.
  *
  */
 struct active_list * active_list_sort(struct active_list *head, int (*compare)(const void *, const void *)) {

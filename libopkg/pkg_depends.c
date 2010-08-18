@@ -1,7 +1,7 @@
 /* pkg_depends.c - the opkg package management system
 
    Steven M. Ayer
-   
+
    Copyright (C) 2002 Compaq Computer Corporation
 
    This program is free software; you can redistribute it and/or
@@ -50,7 +50,7 @@ static int pkg_constraint_satisfied(pkg_t *pkg, void *cdata)
 	  return 0;
 }
 
-/* returns ndependencies or negative error value */ 
+/* returns ndependencies or negative error value */
 int
 pkg_hash_fetch_unsatisfied_dependencies(pkg_t * pkg, pkg_vec_t *unsatisfied,
 		char *** unresolved)
@@ -61,8 +61,8 @@ pkg_hash_fetch_unsatisfied_dependencies(pkg_t * pkg, pkg_vec_t *unsatisfied,
      char ** the_lost;
      abstract_pkg_t * ab_pkg;
 
-     /* 
-      * this is a setup to check for redundant/cyclic dependency checks, 
+     /*
+      * this is a setup to check for redundant/cyclic dependency checks,
       * which are marked at the abstract_pkg level
       */
      if (!(ab_pkg = pkg->parent)) {
@@ -73,7 +73,7 @@ pkg_hash_fetch_unsatisfied_dependencies(pkg_t * pkg, pkg_vec_t *unsatisfied,
      if (ab_pkg->dependencies_checked) {    /* avoid duplicate or cyclic checks */
 	  *unresolved = NULL;
 	  return 0;
-     } else { 
+     } else {
 	  ab_pkg->dependencies_checked = 1;  /* mark it for subsequent visits */
      }
      /**/
@@ -85,7 +85,7 @@ pkg_hash_fetch_unsatisfied_dependencies(pkg_t * pkg, pkg_vec_t *unsatisfied,
      }
 
      the_lost = NULL;
-	
+
      /* foreach dependency */
      for (i = 0; i < count; i++) {
 	  compound_depend_t * compound_depend = &pkg->depends[i];
@@ -100,7 +100,7 @@ pkg_hash_fetch_unsatisfied_dependencies(pkg_t * pkg, pkg_vec_t *unsatisfied,
 		    abstract_pkg_t *abpkg = possible_satisfiers[j]->pkg;
 		    abstract_pkg_vec_t *ab_provider_vec = abpkg->provided_by;
 		    int nposs = ab_provider_vec->len;
-		    abstract_pkg_t **ab_providers = ab_provider_vec->pkgs; 
+		    abstract_pkg_t **ab_providers = ab_provider_vec->pkgs;
 		    int l;
 		    for (l = 0; l < nposs; l++) {
 			 pkg_vec_t *test_vec = ab_providers[l]->pkgs;
@@ -108,7 +108,7 @@ pkg_hash_fetch_unsatisfied_dependencies(pkg_t * pkg, pkg_vec_t *unsatisfied,
 			 if (!test_vec){   /* no pkg_vec hooked up to the abstract_pkg!  (need another feed?) */
 			      continue;
 			 }
-	      
+
 			 /* cruise this possiblity's pkg_vec looking for an installed version */
 			 for (k = 0; k < test_vec->len; k++) {
 			      pkg_t *pkg_scout = test_vec->pkgs[k];
@@ -167,9 +167,9 @@ pkg_hash_fetch_unsatisfied_dependencies(pkg_t * pkg, pkg_vec_t *unsatisfied,
 	       /* foreach provided_by, which includes the abstract_pkg itself */
 	       depend_t *dependence_to_satisfy = possible_satisfiers[j];
 	       abstract_pkg_t *satisfying_apkg = possible_satisfiers[j]->pkg;
-	       pkg_t *satisfying_pkg = 
-		    pkg_hash_fetch_best_installation_candidate(satisfying_apkg, 
-							       pkg_installed_and_constraint_satisfied, 
+	       pkg_t *satisfying_pkg =
+		    pkg_hash_fetch_best_installation_candidate(satisfying_apkg,
+							       pkg_installed_and_constraint_satisfied,
 							       dependence_to_satisfy, 1);
                /* Being that I can't test constraing in pkg_hash, I will test it here */
 	       if (satisfying_pkg != NULL) {
@@ -191,9 +191,9 @@ pkg_hash_fetch_unsatisfied_dependencies(pkg_t * pkg, pkg_vec_t *unsatisfied,
 		    /* foreach provided_by, which includes the abstract_pkg itself */
 		    depend_t *dependence_to_satisfy = possible_satisfiers[j];
 		    abstract_pkg_t *satisfying_apkg = possible_satisfiers[j]->pkg;
-		    pkg_t *satisfying_pkg = 
-			 pkg_hash_fetch_best_installation_candidate(satisfying_apkg, 
-								    pkg_constraint_satisfied, 
+		    pkg_t *satisfying_pkg =
+			 pkg_hash_fetch_best_installation_candidate(satisfying_apkg,
+								    pkg_constraint_satisfied,
 								    dependence_to_satisfy, 1);
                     /* Being that I can't test constraing in pkg_hash, I will test it here too */
 	            if (satisfying_pkg != NULL) {
@@ -239,7 +239,7 @@ pkg_hash_fetch_unsatisfied_dependencies(pkg_t * pkg, pkg_vec_t *unsatisfied,
 				pkg->name, satisfier_entry_pkg->name);
 		    } else {
 			 char ** newstuff = NULL;
-			 
+
 			 if (satisfier_entry_pkg != pkg &&
 			     !is_pkg_in_pkg_vec(unsatisfied, satisfier_entry_pkg)) {
 			      pkg_vec_insert(unsatisfied, satisfier_entry_pkg);
@@ -259,10 +259,10 @@ pkg_hash_fetch_unsatisfied_dependencies(pkg_t * pkg, pkg_vec_t *unsatisfied,
      return unsatisfied->len;
 }
 
-/*checking for conflicts !in replaces 
-  If a packages conflicts with another but is also replacing it, I should not consider it a 
-  really conflicts 
-  returns 0 if conflicts <> replaces or 1 if conflicts == replaces 
+/*checking for conflicts !in replaces
+  If a packages conflicts with another but is also replacing it, I should not consider it a
+  really conflicts
+  returns 0 if conflicts <> replaces or 1 if conflicts == replaces
 */
 static int
 is_pkg_a_replaces(pkg_t *pkg_scout,pkg_t *pkg)
@@ -297,11 +297,11 @@ pkg_vec_t * pkg_hash_fetch_conflicts(pkg_t * pkg)
     int i, j, k;
     int count;
     abstract_pkg_t * ab_pkg;
-    pkg_t **pkg_scouts; 
-    pkg_t *pkg_scout; 
+    pkg_t **pkg_scouts;
+    pkg_t *pkg_scout;
 
-    /* 
-     * this is a setup to check for redundant/cyclic dependency checks, 
+    /*
+     * this is a setup to check for redundant/cyclic dependency checks,
      * which are marked at the abstract_pkg level
      */
     if(!(ab_pkg = pkg->parent)){
@@ -340,7 +340,7 @@ pkg_vec_t * pkg_hash_fetch_conflicts(pkg_t * pkg)
                     pkg_scout = pkg_scouts[k];
                     if (!pkg_scout) {
                         opkg_msg(ERROR,  "Internal error: pkg_scout=NULL\n");
-                        continue; 
+                        continue;
                     }
 		    if ((pkg_scout->state_status == SS_INSTALLED || pkg_scout->state_want == SW_INSTALL) &&
 		       version_constraints_satisfied(possible_satisfier, pkg_scout) && !is_pkg_a_replaces(pkg_scout,pkg)){
@@ -377,21 +377,21 @@ int version_constraints_satisfied(depend_t * depends, pkg_t * pkg)
     free (temp->version);
     free(temp);
 
-    if((depends->constraint == EARLIER) && 
+    if((depends->constraint == EARLIER) &&
        (comparison < 0))
 	return 1;
-    else if((depends->constraint == LATER) && 
+    else if((depends->constraint == LATER) &&
 	    (comparison > 0))
 	return 1;
     else if(comparison == 0)
 	return 1;
-    else if((depends->constraint == LATER_EQUAL) && 
+    else if((depends->constraint == LATER_EQUAL) &&
 	    (comparison >= 0))
 	return 1;
-    else if((depends->constraint == EARLIER_EQUAL) && 
+    else if((depends->constraint == EARLIER_EQUAL) &&
 	    (comparison <= 0))
 	return 1;
-    
+
     return 0;
 }
 
@@ -402,7 +402,7 @@ int pkg_dependence_satisfiable(depend_t *depend)
      int n_providers = provider_apkgs->len;
      abstract_pkg_t **apkgs = provider_apkgs->pkgs;
      pkg_vec_t *pkg_vec;
-     int n_pkgs ; 
+     int n_pkgs ;
      int i;
      int j;
 
@@ -556,9 +556,9 @@ static char ** merge_unresolved(char ** oldstuff, char ** newstuff)
     return result;
 }
 
-/* 
+/*
  * a kinda kludgy way to back out depends str from two different arrays (reg'l'r 'n pre)
- * this is null terminated, no count is carried around 
+ * this is null terminated, no count is carried around
  */
 char ** add_unresolved_dep(pkg_t * pkg, char ** the_lost, int ref_ndx)
 {
@@ -572,7 +572,7 @@ char ** add_unresolved_dep(pkg_t * pkg, char ** the_lost, int ref_ndx)
     resized = xrealloc(the_lost, sizeof(char *) * (count + 1));
     resized[count - 1] = pkg_depend_str(pkg, ref_ndx);
     resized[count] = NULL;
-    
+
     return resized;
 }
 
@@ -798,7 +798,7 @@ void buildDependedUponBy(pkg_t * pkg, abstract_pkg_t * ab_pkg)
 	       }
 	       *temp = ab_pkg;
 
-	       ab_depend->depended_upon_by = xrealloc(ab_depend->depended_upon_by, 
+	       ab_depend->depended_upon_by = xrealloc(ab_depend->depended_upon_by,
 									(othercount + 1) * sizeof(abstract_pkg_t *));
 	       /* the array may have moved */
 	       temp = ab_depend->depended_upon_by + othercount;
@@ -810,15 +810,15 @@ void buildDependedUponBy(pkg_t * pkg, abstract_pkg_t * ab_pkg)
 
 static depend_t * depend_init(void)
 {
-    depend_t * d = xcalloc(1, sizeof(depend_t));    
+    depend_t * d = xcalloc(1, sizeof(depend_t));
     d->constraint = NONE;
     d->version = NULL;
     d->pkg = NULL;
-    
+
     return d;
 }
 
-static int parseDepends(compound_depend_t *compound_depend, 
+static int parseDepends(compound_depend_t *compound_depend,
 			char * depend_str)
 {
      char * pkg_name, buffer[2048];
@@ -852,9 +852,9 @@ static int parseDepends(compound_depend_t *compound_depend,
 	       *dest++ = *src++;
 	  *dest = '\0';
 	  pkg_name = trim_xstrdup(buffer);
-	
+
 	  /* now look at possible version info */
-	
+
 	  /* skip to next chars */
 	  if(isspace(*src))
 	       while(*src && isspace(*src)) src++;
@@ -889,7 +889,7 @@ static int parseDepends(compound_depend_t *compound_depend,
 	       }
 	       else if(!strncmp(src, ">", 1)){
 		    possibilities[i]->constraint = LATER_EQUAL;
-		    src++; 
+		    src++;
 	       }
 
 	       /* now we have any constraint, pass space to version string */
@@ -907,7 +907,7 @@ static int parseDepends(compound_depend_t *compound_depend,
 	  possibilities[i]->pkg = ensure_abstract_pkg_by_name(pkg_name);
 
 	  free(pkg_name);
-	
+
 	  /* now get past the ) and any possible | chars */
 	  while(*src &&
 		(isspace(*src) ||

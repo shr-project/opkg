@@ -71,7 +71,7 @@ void_list_elt_t *void_list_pop(void_list_t *list)
 {
     struct list_head *node;
 
-    if (void_list_empty(list)) 
+    if (void_list_empty(list))
         return NULL;
     node = list->head.next;
     list_del_init(node);

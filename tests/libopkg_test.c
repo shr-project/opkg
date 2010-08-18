@@ -151,7 +151,7 @@ main (int argc, char **argv)
   }
 
   setenv("OFFLINE_ROOT", "/tmp", 0);
- 
+
   if (opkg_new ()) {
 	  printf("opkg_new() failed. This sucks.\n");
 	  print_error_list();
@@ -223,7 +223,7 @@ main (int argc, char **argv)
         }
       }
       break;
-          
+
     case 'r':
       if (argv[1][1] == 'e')
       {

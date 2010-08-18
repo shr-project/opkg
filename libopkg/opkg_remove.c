@@ -93,7 +93,7 @@ opkg_remove_dependent_pkgs(pkg_t *pkg, abstract_pkg_t **dependents)
 		pkg->name);
 	return 0;
     }
-    
+
     if (dependents == NULL)
 	    return 0;
 
@@ -109,10 +109,10 @@ opkg_remove_dependent_pkgs(pkg_t *pkg, abstract_pkg_t **dependents)
 
     while (dependents [i] != NULL) {
         abstract_pkg_t *dep_ab_pkg = dependents[i];
-	
+
 	if (dep_ab_pkg->dependencies_checked == 2){
 	    i++;
-	    continue;	
+	    continue;
         }
         if (dep_ab_pkg->state_status == SS_INSTALLED) {
             for (a = 0; a < dep_ab_pkg->pkgs->len; a++) {
@@ -125,15 +125,15 @@ opkg_remove_dependent_pkgs(pkg_t *pkg, abstract_pkg_t **dependents)
         }
 	i++;
 	/* 1 - to keep track of visited ab_pkgs when checking for possiblility of a broken removal of pkgs.
-	 * 2 - to keep track of pkgs whose deps have been checked alrdy  - Karthik */	
+	 * 2 - to keep track of pkgs whose deps have been checked alrdy  - Karthik */
     }
-    
+
     if (count == 1) {
-        pkg_vec_free(dependent_pkgs);  
+        pkg_vec_free(dependent_pkgs);
 	return 0;
     }
-    
-    
+
+
     int err=0;
     for (i = 0; i < dependent_pkgs->len; i++) {
         err = opkg_remove_pkg(dependent_pkgs->pkgs[i],0);
@@ -254,13 +254,13 @@ opkg_remove_pkg(pkg_t *pkg, int from_upgrade)
      if (!conf->force_depends
 	 && !(pkg->state_flag & SF_REPLACE)) {
 	  abstract_pkg_t **dependents;
-	  int has_installed_dependents = 
+	  int has_installed_dependents =
 	       pkg_has_installed_dependents(pkg, &dependents);
 
 	  if (has_installed_dependents) {
 	       /*
 		* if this package is depended upon by others, then either we should
-		* not remove it or we should remove it and all of its dependents 
+		* not remove it or we should remove it and all of its dependents
 		*/
 
 	       if (!conf->force_removal_of_dependent_packages) {
@@ -303,7 +303,7 @@ opkg_remove_pkg(pkg_t *pkg, int from_upgrade)
      remove_maintainer_scripts(pkg);
      pkg->state_status = SS_NOT_INSTALLED;
 
-     if (parent_pkg) 
+     if (parent_pkg)
 	  parent_pkg->state_status = SS_NOT_INSTALLED;
 
      /* remove autoinstalled packages that are orphaned by the removal of this one */
@@ -376,7 +376,7 @@ remove_data_files_and_list(pkg_t *pkg)
 	       removed_a_dir = 0;
 	       for (iter = str_list_first(&installed_dirs); iter; iter = str_list_next(&installed_dirs, iter)) {
 		    file_name = (char *)iter->data;
-	    
+
 		    if (rmdir(file_name) == 0) {
 			 opkg_msg(INFO, "Deleting %s.\n", file_name);
 			 removed_a_dir = 1;

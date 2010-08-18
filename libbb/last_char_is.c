@@ -32,7 +32,7 @@ char * last_char_is(const char *s, int c)
 	if (!s)
 	    return NULL;
 	sret  = (char *)s+strlen(s)-1;
-	if (sret>=s && *sret == c) { 
+	if (sret>=s && *sret == c) {
 		return sret;
 	} else {
 		return NULL;

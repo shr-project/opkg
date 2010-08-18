@@ -66,9 +66,9 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "%s version %s\n", dep_vec->pkgs[k]->name, dep_vec->pkgs[k]->version);
 		    }
 		}
-		
+
 		fputs("", stdout);
-		
+
 	    }
  	}
     }

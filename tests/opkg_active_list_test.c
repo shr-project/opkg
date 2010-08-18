@@ -29,7 +29,7 @@ struct active_test {
 struct active_test *active_test_new(char *str) {
     struct active_test *ans = (struct active_test *)calloc(1, sizeof(struct active_test));
     ans->str = str;
-    active_list_init(&ans->list); 
+    active_list_init(&ans->list);
     return ans;
 }
 void active_test_add(struct active_list *head, struct active_test *node) {
@@ -47,7 +47,7 @@ void active_test_add_depend(struct active_test *A, struct active_test *B) {
     |__ G ---H ---I---J
              |_M      |_O
 
-Then the sequence will be 
+Then the sequence will be
 +: G M H I O J A B K N L C D E F
 -: F E D C L N K B A J O I H M G
 */
@@ -90,7 +90,7 @@ void make_list(struct active_list *head) {
     active_test_add_depend(A, J);
     active_test_add_depend(J, O);
     active_test_add_depend(C, K);
-    active_test_add_depend(C, L); 
+    active_test_add_depend(C, L);
     active_test_add_depend(L, N);
 }
 

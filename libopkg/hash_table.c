@@ -1,7 +1,7 @@
 /* hash.c - hash tables for opkg
 
    Steven M. Ayer, Jamey Hicks
-   
+
    Copyright (C) 2002 Compaq Computer Corporation
 
    This program is free software; you can redistribute it and/or
@@ -108,9 +108,9 @@ void *hash_table_get(hash_table_t *hash, const char *key)
 {
   int ndx= hash_index(hash, key);
   hash_entry_t *hash_entry = hash->entries + ndx;
-  while (hash_entry) 
+  while (hash_entry)
   {
-    if (hash_entry->key) 
+    if (hash_entry->key)
     {
       if (strcmp(key, hash_entry->key) == 0) {
 	 hash->n_hits++;
@@ -134,7 +134,7 @@ int hash_table_insert(hash_table_t *hash, const char *key, void *value)
 	       hash_entry->data = value;
 	       return 0;
 	  } else {
-	       /* 
+	       /*
 		* if this is a collision, we have to go to the end of the ll,
 		* then add a new entry
 		* before we can hook up the value
@@ -170,9 +170,9 @@ int hash_table_remove(hash_table_t *hash, const char *key)
     int ndx= hash_index(hash, key);
     hash_entry_t *hash_entry = hash->entries + ndx;
     hash_entry_t *next_entry=NULL, *last_entry=NULL;
-    while (hash_entry) 
+    while (hash_entry)
     {
-        if (hash_entry->key) 
+        if (hash_entry->key)
         {
             if (strcmp(key, hash_entry->key) == 0) {
                 free(hash_entry->key);
@@ -198,7 +198,7 @@ int hash_table_remove(hash_table_t *hash, const char *key)
 }
 
 void hash_table_foreach(hash_table_t *hash, void (*f)(const char *key, void *entry, void *data), void *data)
-{ 
+{
     int i;
     if (!hash || !f)
 	return;

@@ -47,13 +47,13 @@ opkg_conf_t *conf = &_conf;
 opkg_option_t options[] = {
 	  { "cache", OPKG_OPT_TYPE_STRING, &_conf.cache},
 	  { "force_defaults", OPKG_OPT_TYPE_BOOL, &_conf.force_defaults },
-          { "force_maintainer", OPKG_OPT_TYPE_BOOL, &_conf.force_maintainer }, 
+          { "force_maintainer", OPKG_OPT_TYPE_BOOL, &_conf.force_maintainer },
 	  { "force_depends", OPKG_OPT_TYPE_BOOL, &_conf.force_depends },
 	  { "force_overwrite", OPKG_OPT_TYPE_BOOL, &_conf.force_overwrite },
 	  { "force_downgrade", OPKG_OPT_TYPE_BOOL, &_conf.force_downgrade },
 	  { "force_reinstall", OPKG_OPT_TYPE_BOOL, &_conf.force_reinstall },
 	  { "force_space", OPKG_OPT_TYPE_BOOL, &_conf.force_space },
-          { "check_signature", OPKG_OPT_TYPE_BOOL, &_conf.check_signature }, 
+          { "check_signature", OPKG_OPT_TYPE_BOOL, &_conf.check_signature },
 	  { "ftp_proxy", OPKG_OPT_TYPE_STRING, &_conf.ftp_proxy },
 	  { "http_proxy", OPKG_OPT_TYPE_STRING, &_conf.http_proxy },
 	  { "no_proxy", OPKG_OPT_TYPE_STRING, &_conf.no_proxy },
@@ -72,7 +72,7 @@ opkg_option_t options[] = {
 	  { "signature_ca_path", OPKG_OPT_TYPE_STRING, &_conf.signature_ca_path },
 #endif
 #if defined(HAVE_PATHFINDER)
-          { "check_x509_path", OPKG_OPT_TYPE_BOOL, &_conf.check_x509_path }, 
+          { "check_x509_path", OPKG_OPT_TYPE_BOOL, &_conf.check_x509_path },
 #endif
 #if defined(HAVE_SSLCURL) && defined(HAVE_CURL)
           { "ssl_engine", OPKG_OPT_TYPE_STRING, &_conf.ssl_engine },
@@ -156,7 +156,7 @@ opkg_conf_set_option(const char *name, const char *value)
 			 opkg_msg(ERROR, "Option %s needs an argument\n",
 				name);
 			 return -1;
-		    }		    
+		    }
 	       case OPKG_OPT_TYPE_STRING:
 		    if (value) {
 			    if (*(char **)options[i].value) {
@@ -176,7 +176,7 @@ opkg_conf_set_option(const char *name, const char *value)
 	  }
 	  i++;
      }
-    
+
      opkg_msg(ERROR, "Unrecognized option: %s=%s\n", name, value);
      return -1;
 }
@@ -202,7 +202,7 @@ opkg_conf_parse_file(const char *filename,
 
      opkg_msg(INFO, "Loading conf file %s.\n", filename);
 
-     err = xregcomp(&comment_re, 
+     err = xregcomp(&comment_re,
 		    "^[[:space:]]*(#.*|[[:space:]]*)$",
 		    REG_EXTENDED);
      if (err)
@@ -460,11 +460,11 @@ opkg_conf_init(void)
 	free(etc_opkg_conf_pattern);
 
 	for (i = 0; i < globbuf.gl_pathc; i++) {
-		if (globbuf.gl_pathv[i]) 
+		if (globbuf.gl_pathv[i])
 			if (conf->conf_file &&
 					!strcmp(conf->conf_file, globbuf.gl_pathv[i]))
 				continue;
-		if ( opkg_conf_parse_file(globbuf.gl_pathv[i], 
+		if ( opkg_conf_parse_file(globbuf.gl_pathv[i],
 			&conf->pkg_src_list, &tmp_dest_nv_pair_list)<0) {
 			globfree(&globbuf);
 			goto err1;
@@ -617,7 +617,7 @@ opkg_conf_deinit(void)
 		}
 	}
 
-	if (conf->verbosity >= DEBUG) { 
+	if (conf->verbosity >= DEBUG) {
 		hash_print_stats(&conf->pkg_hash);
 		hash_print_stats(&conf->file_hash);
 		hash_print_stats(&conf->obs_file_hash);

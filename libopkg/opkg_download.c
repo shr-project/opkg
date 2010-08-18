@@ -90,7 +90,7 @@ opkg_download(const char *src, const char *dest_file_name,
     char *tmp_file_location;
 
     opkg_msg(NOTICE,"Downloading %s.\n", src);
-	
+
     if (str_starts_with(src, "file:")) {
 	const char *file_src = src + 5;
 	opkg_msg(INFO, "Copying %s to %s...", file_src, dest_file_name);
@@ -269,7 +269,7 @@ opkg_download_pkg(pkg_t *pkg, const char *dir)
 }
 
 /*
- * Downloads file from url, installs in package database, return package name. 
+ * Downloads file from url, installs in package database, return package name.
  */
 int
 opkg_prepare_url_for_install(const char *url, char **namep)
@@ -317,7 +317,7 @@ opkg_prepare_url_for_install(const char *url, char **namep)
      pkg->dest = conf->default_dest;
      pkg->state_want = SW_INSTALL;
      pkg->state_flag |= SF_PREFER;
-     hash_insert_pkg(pkg, 1);  
+     hash_insert_pkg(pkg, 1);
 
      if (namep) {
 	  *namep = pkg->name;
@@ -338,14 +338,14 @@ opkg_verify_file (char *text_file, char *sig_file)
     gpgme_verify_result_t result;
     gpgme_signature_t s;
     char *trusted_path = NULL;
-    
+
     err = gpgme_new (&ctx);
 
     if (err)
 	return -1;
 
     sprintf_alloc(&trusted_path, "%s/%s", conf->offline_root, "/etc/opkg/trusted.gpg");
-    err = gpgme_data_new_from_file (&key, trusted_path, 1); 
+    err = gpgme_data_new_from_file (&key, trusted_path, 1);
     free (trusted_path);
     if (err)
     {
@@ -359,14 +359,14 @@ opkg_verify_file (char *text_file, char *sig_file)
     }
     gpgme_data_release (key);
 
-    err = gpgme_data_new_from_file (&sig, sig_file, 1); 
+    err = gpgme_data_new_from_file (&sig, sig_file, 1);
     if (err)
     {
 	gpgme_release (ctx);
 	return -1;
     }
 
-    err = gpgme_data_new_from_file (&text, text_file, 1); 
+    err = gpgme_data_new_from_file (&text, text_file, 1);
     if (err)
     {
         gpgme_data_release (sig);

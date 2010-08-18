@@ -244,7 +244,7 @@ opkg_set_option(char *option, void *value)
 /**
  * @brief libopkg API: Install package
  * @param package_name The name of package in which is going to install
- * @param progress_callback The callback function that report the status to caller. 
+ * @param progress_callback The callback function that report the status to caller.
  */
 int
 opkg_install_package(const char *package_name,
@@ -822,7 +822,7 @@ opkg_find_package(const char *name, const char *ver, const char *arch,
 
 /**
  * @brief Check the accessibility of repositories.
- * @return return how many repositories cannot access. 0 means all okay. 
+ * @return return how many repositories cannot access. 0 means all okay.
  */
 int
 opkg_repository_accessibility_check(void)

@@ -74,7 +74,7 @@ char *nv_pair_list_find(nv_pair_list_t *list, char *name)
 	  if (strcmp(nv_pair->name, name) == 0) {
 	       return nv_pair->value;
 	  }
-     }    
+     }
      return NULL;
 }
 

@@ -1,7 +1,7 @@
 /* opkg_hash.c - the opkg package management system
 
    Steven M. Ayer
-   
+
    Copyright (C) 2002 Compaq Computer Corporation
 
    This program is free software; you can redistribute it and/or
@@ -44,7 +44,7 @@ free_pkgs(const char *key, void *entry, void *data)
 	/* Each entry in the hash table is an abstract package, which contains
 	 * a list of packages that provide the abstract package.
 	 */
-  
+
 	ab_pkg = (abstract_pkg_t*) entry;
 
 	if (ab_pkg->pkgs) {
@@ -171,7 +171,7 @@ pkg_hash_load_status_files(void)
 
 	for (iter = void_list_first(&conf->pkg_dest_list); iter;
 			iter = void_list_next(&conf->pkg_dest_list, iter)) {
-	
+
 		dest = (pkg_dest_t *)iter->data;
 
 		if (file_exists(dest->status_file_name)) {
@@ -247,7 +247,7 @@ pkg_hash_fetch_best_installation_candidate(abstract_pkg_t *apkg,
 	  }
 
 	  if (replacement_apkg)
-	       opkg_msg(DEBUG, "replacement_apkg=%s for provider_apkg=%s.\n", 
+	       opkg_msg(DEBUG, "replacement_apkg=%s for provider_apkg=%s.\n",
 			    replacement_apkg->name, provider_apkg->name);
 
 	  if (replacement_apkg && (replacement_apkg != provider_apkg)) {
@@ -262,7 +262,7 @@ pkg_hash_fetch_best_installation_candidate(abstract_pkg_t *apkg,
 			       provider_apkg->name);
 	       continue;
 	  }
-    
+
 
 	  /* now check for supported architecture */
 	  {
@@ -274,7 +274,7 @@ pkg_hash_fetch_best_installation_candidate(abstract_pkg_t *apkg,
 		    opkg_msg(DEBUG, "%s arch=%s arch_priority=%d version=%s.\n",
 				 maybe->name, maybe->architecture,
 				 maybe->arch_priority, maybe->version);
-                    /* We make sure not to add the same package twice. Need to search for the reason why 
+                    /* We make sure not to add the same package twice. Need to search for the reason why
                        they show up twice sometimes. */
 		    if ((maybe->arch_priority > 0) && (! pkg_vec_contains(matching_pkgs, maybe))) {
 			 max_count++;
@@ -313,7 +313,7 @@ pkg_hash_fetch_best_installation_candidate(abstract_pkg_t *apkg,
              good_pkg_by_name = matching;
 	     /* It has been provided by hand, so it is what user want */
              if (matching->provided_by_hand == 1)
-                break;                                 
+                break;
           }
      }
 
@@ -344,7 +344,7 @@ pkg_hash_fetch_best_installation_candidate(abstract_pkg_t *apkg,
 				matching->name, prio);
                   }
               }
-          
+
           }
 
      if (conf->verbosity >= INFO && matching_apkgs->len > 1) {
@@ -364,7 +364,7 @@ pkg_hash_fetch_best_installation_candidate(abstract_pkg_t *apkg,
      abstract_pkg_vec_free(matching_apkgs);
      abstract_pkg_vec_free(providers);
 
-     if (good_pkg_by_name) {   /* We found a good candidate, we will install it */ 
+     if (good_pkg_by_name) {   /* We found a good candidate, we will install it */
 	  return good_pkg_by_name;
      }
      if (held_pkg) {
@@ -404,7 +404,7 @@ pkg_name_constraint_fcn(pkg_t *pkg, void *cdata)
 	if (strcmp(pkg->name, name) == 0)
 		return 1;
 	else
-		return 0;   
+		return 0;
 }
 
 static pkg_vec_t *
@@ -449,10 +449,10 @@ pkg_hash_fetch_by_name_version(const char *pkg_name, const char * version)
 	pkg_vec_t * vec;
 	int i;
 	char *version_str = NULL;
-    
+
 	if(!(vec = pkg_vec_fetch_by_name(pkg_name)))
 		return NULL;
-    
+
 	for(i = 0; i < vec->len; i++) {
 		version_str = pkg_version_str_alloc(vec->pkgs[i]);
 		if(!strcmp(version_str, version)) {
@@ -464,7 +464,7 @@ pkg_hash_fetch_by_name_version(const char *pkg_name, const char * version)
 
 	if(i == vec->len)
 		return NULL;
-    
+
 	return vec->pkgs[i];
 }
 
@@ -658,7 +658,7 @@ file_hash_set_file_owner(const char *file_name, pkg_t *owning_pkg)
 
 	file_name = strip_offline_root(file_name);
 
-	hash_table_insert(&conf->file_hash, file_name, owning_pkg); 
+	hash_table_insert(&conf->file_hash, file_name, owning_pkg);
 
 	if (old_owning_pkg) {
 		pkg_get_installed_files(old_owning_pkg);
