@@ -1172,7 +1172,7 @@ opkg_install_by_name(const char *pkg_name)
 	       return 0;
 	  } else if (cmp < 0) {
 	       new->dest = old->dest;
-	       old->state_want = SW_DEINSTALL;    /* Here probably the problem for bug 1277 */
+	       old->state_want = SW_DEINSTALL;
 	  }
 	  free(old_version);
 	  free(new_version);
