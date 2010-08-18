@@ -59,9 +59,13 @@ void pkg_vec_insert_merge(pkg_vec_t *vec, pkg_t *pkg, int set_status)
 			pkg->name, pkg->version, pkg->architecture,
 			vec->pkgs[i]->name, vec->pkgs[i]->version,
 			vec->pkgs[i]->architecture);
-	  if ((strcmp(pkg->name, vec->pkgs[i]->name) == 0)
-	      && (pkg_compare_versions(pkg, vec->pkgs[i]) == 0)
-	      && (strcmp(pkg->architecture, vec->pkgs[i]->architecture) == 0)) {
+	 /* if the name,ver,arch matches, or the name matches and the
+	  * package is marked deinstall/hold  */
+	  if ((!strcmp(pkg->name, vec->pkgs[i]->name))
+	      && ((pkg->state_want == SW_DEINSTALL
+		  && (pkg->state_flag & SF_HOLD))
+	      || ((pkg_compare_versions(pkg, vec->pkgs[i]) == 0)
+	      && (!strcmp(pkg->architecture, vec->pkgs[i]->architecture))))) {
 	       found  = 1;
                opkg_msg(DEBUG2, "Duplicate for pkg=%s version=%s arch=%s.\n",
 			pkg->name, pkg->version, pkg->architecture);
