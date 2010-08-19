@@ -182,7 +182,9 @@ remove_autoinstalled(pkg_t *pkg)
 
 	for (i=0; i<count; i++) {
 		cdep = &pkg->depends[i];
-		if (cdep->type != DEPEND)
+		if (cdep->type != PREDEPEND
+		    && cdep->type != DEPEND
+		    && cdep->type != RECOMMEND)
 			continue;
 		for (j=0; j<cdep->possibility_count; j++) {
 			p = pkg_hash_fetch_installed_by_name(
