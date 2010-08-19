@@ -769,43 +769,49 @@ pkg_depend_str(pkg_t *pkg, int idx)
 	return str;
 }
 
-/*
- * WARNING: This function assumes pre_depends and depends are at the
- * start of the pkg->depends array.
- */
 void buildDependedUponBy(pkg_t * pkg, abstract_pkg_t * ab_pkg)
 {
-     compound_depend_t * depends;
-     int count, othercount;
-     int i, j;
-     abstract_pkg_t * ab_depend;
-     abstract_pkg_t ** temp;
+	compound_depend_t * depends;
+	int count, othercount;
+	int i, j;
+	abstract_pkg_t * ab_depend;
+	abstract_pkg_t ** temp;
 
-     count = pkg->pre_depends_count + pkg->depends_count;
-     depends = pkg->depends;
+	count = pkg->pre_depends_count +
+			pkg->depends_count +
+			pkg->recommends_count +
+			pkg->suggests_count;
 
-     for (i = 0; i < count; i++) {
-	  for (j = 0; j < depends->possibility_count; j++){
-	       ab_depend = depends->possibilities[j]->pkg;
-	       if(!ab_depend->depended_upon_by)
-		    ab_depend->depended_upon_by = xcalloc(1, sizeof(abstract_pkg_t *));
+	for (i = 0; i < count; i++) {
+		depends = &pkg->depends[i];
+		if (depends->type != PREDEPEND
+		    && depends->type != DEPEND
+		    && depends->type != RECOMMEND)
+			continue;
+		for (j = 0; j < depends->possibility_count; j++) {
+			ab_depend = depends->possibilities[j]->pkg;
+			if (!ab_depend->depended_upon_by) {
+				ab_depend->depended_upon_by =
+					xcalloc(1, sizeof(abstract_pkg_t *));
+			}
 
-	       temp = ab_depend->depended_upon_by;
-	       othercount = 1;
-	       while(*temp){
-		    temp++;
-		    othercount++;
-	       }
-	       *temp = ab_pkg;
+			temp = ab_depend->depended_upon_by;
+			othercount = 1;
+			while (*temp) {
+			    temp++;
+			    othercount++;
+			}
+			*temp = ab_pkg;
 
-	       ab_depend->depended_upon_by = xrealloc(ab_depend->depended_upon_by,
-									(othercount + 1) * sizeof(abstract_pkg_t *));
-	       /* the array may have moved */
-	       temp = ab_depend->depended_upon_by + othercount;
-	       *temp = NULL;
-	  }
-	  depends++;
-     }
+			ab_depend->depended_upon_by =
+				xrealloc(ab_depend->depended_upon_by,
+				(othercount + 1) * sizeof(abstract_pkg_t *));
+
+			/* the array may have been moved by realloc */
+			temp = ab_depend->depended_upon_by + othercount;
+			*temp = NULL;
+		}
+	}
 }
 
 static depend_t * depend_init(void)
