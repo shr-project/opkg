@@ -295,8 +295,13 @@ unarchive(FILE *src_stream, FILE *out_stream,
 
 		if (extract_names != NULL) {
 			int found_flag = FALSE;
+			char *p = file_entry->name;
+
+			if (p[0] == '.' && p[1] == '/')
+				p += 2;
+
 			for(i = 0; extract_names[i] != 0; i++) {
-				if (strcmp(extract_names[i], file_entry->name) == 0) {
+				if (strcmp(extract_names[i], p) == 0) {
 					found_flag = TRUE;
 					break;
 				}
