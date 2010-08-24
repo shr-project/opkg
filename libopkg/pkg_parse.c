@@ -398,7 +398,7 @@ pkg_parse_from_stream_nomalloc(pkg_t *pkg, FILE *fp, uint mask,
 		buf = *buf0;
 		buflen = buf0len;
 		buf[0] = '\0';
-	};
+	}
 
 	if (pkg->name == NULL) {
 		/* probably just a blank line */
