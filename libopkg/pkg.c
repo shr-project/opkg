@@ -1255,7 +1255,7 @@ pkg_run_script(pkg_t *pkg, const char *script, const char *args)
 
      /* XXX: FEATURE: When conf->offline_root is set, we should run the
 	maintainer script within a chroot environment. */
-     if (conf->offline_root) {
+     if (conf->offline_root && !conf->force_postinstall) {
           opkg_msg(INFO, "Offline root mode: not running %s.%s.\n",
 			  pkg->name, script);
 	  return 0;

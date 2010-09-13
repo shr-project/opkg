@@ -39,6 +39,7 @@ enum {
 	ARGS_OPT_FORCE_REMOVAL_OF_DEPENDENT_PACKAGES,
 	ARGS_OPT_FORCE_REMOVAL_OF_ESSENTIAL_PACKAGES,
 	ARGS_OPT_FORCE_SPACE,
+	ARGS_OPT_FORCE_POSTINSTALL,
 	ARGS_OPT_NOACTION,
 	ARGS_OPT_DOWNLOAD_ONLY,
 	ARGS_OPT_NODEPS,
@@ -74,6 +75,8 @@ static struct option long_options[] = {
 		ARGS_OPT_FORCE_REMOVAL_OF_ESSENTIAL_PACKAGES},
 	{"force_removal_of_essential_packages", 0, 0,
 		ARGS_OPT_FORCE_REMOVAL_OF_ESSENTIAL_PACKAGES},
+	{"force-postinstall", 0, 0, ARGS_OPT_FORCE_POSTINSTALL},
+	{"force_postinstall", 0, 0, ARGS_OPT_FORCE_POSTINSTALL},
 	{"noaction", 0, 0, ARGS_OPT_NOACTION},
 	{"download-only", 0, 0, ARGS_OPT_DOWNLOAD_ONLY},
 	{"nodeps", 0, 0, ARGS_OPT_NODEPS},
@@ -154,6 +157,9 @@ args_parse(int argc, char *argv[])
 			break;
 		case ARGS_OPT_FORCE_SPACE:
 			conf->force_space = 1;
+			break;
+		case ARGS_OPT_FORCE_POSTINSTALL:
+			conf->force_postinstall = 1;
 			break;
 		case ARGS_OPT_NODEPS:
 			conf->nodeps = 1;
@@ -241,6 +247,7 @@ usage()
 	printf("\t--force-overwrite	Overwrite files from other package(s)\n");
 	printf("\t--force-downgrade	Allow opkg to downgrade packages\n");
 	printf("\t--force-space		Disable free space checks\n");
+	printf("\t--force-postinstall	Run postinstall scripts even in offline mode\n");
 	printf("\t--noaction		No action -- test only\n");
 	printf("\t--download-only	No action -- download only\n");
 	printf("\t--nodeps		Do not follow dependencies\n");
