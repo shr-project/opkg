@@ -21,6 +21,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <libgen.h>
 
 #include "pkg.h"
 

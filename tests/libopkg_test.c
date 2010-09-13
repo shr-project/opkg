@@ -5,6 +5,7 @@
 
 #include <opkg.h>
 
+int opkg_state_changed;
 pkg_t *find_pkg = NULL;
 
 
