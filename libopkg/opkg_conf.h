@@ -46,6 +46,7 @@ struct opkg_conf
 {
      pkg_src_list_t pkg_src_list;
      pkg_dest_list_t pkg_dest_list;
+     pkg_dest_list_t tmp_dest_list;
      nv_pair_list_t arch_list;
 
      int restrict_to_default_dest;
@@ -132,6 +133,7 @@ struct opkg_option {
 };
 
 int opkg_conf_init(void);
+int opkg_conf_load(void);
 void opkg_conf_deinit(void);
 
 int opkg_conf_write_status_files(void);

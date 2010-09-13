@@ -90,15 +90,15 @@ opkg_option_t options[] = {
 };
 
 static int
-resolve_pkg_dest_list(nv_pair_list_t *nv_pair_list)
+resolve_pkg_dest_list(void)
 {
      nv_pair_list_elt_t *iter;
      nv_pair_t *nv_pair;
      pkg_dest_t *dest;
      char *root_dir;
 
-     for (iter = nv_pair_list_first(nv_pair_list); iter;
-		     iter = nv_pair_list_next(nv_pair_list, iter)) {
+     for (iter = nv_pair_list_first(&conf->tmp_dest_list); iter;
+		     iter = nv_pair_list_next(&conf->tmp_dest_list, iter)) {
 	  nv_pair = (nv_pair_t *)iter->data;
 
 	  if (conf->offline_root) {
@@ -184,8 +184,7 @@ opkg_conf_set_option(const char *name, const char *value)
 
 static int
 opkg_conf_parse_file(const char *filename,
-				pkg_src_list_t *pkg_src_list,
-				nv_pair_list_t *tmp_dest_nv_pair_list)
+				pkg_src_list_t *pkg_src_list)
 {
      int line_num = 0;
      int err = 0;
@@ -268,7 +267,7 @@ opkg_conf_parse_file(const char *filename,
 				regmatch[11].rm_eo - regmatch[11].rm_so);
 	  }
 
-	  /* We use the tmp_dest_nv_pair_list below instead of
+	  /* We use the conf->tmp_dest_list below instead of
 	     conf->pkg_dest_list because we might encounter an
 	     offline_root option later and that would invalidate the
 	     directories we would have computed in
@@ -291,7 +290,7 @@ opkg_conf_parse_file(const char *filename,
 				   "Skipping.\n", name, value);
 	       }
 	  } else if (strcmp(type, "dest") == 0) {
-	       nv_pair_list_append(tmp_dest_nv_pair_list, name, value);
+	       nv_pair_list_append(&conf->tmp_dest_list, name, value);
 	  } else if (strcmp(type, "lists_dir") == 0) {
 	       conf->lists_dir = xstrdup(value);
 	  } else if (strcmp(type, "arch") == 0) {
@@ -411,9 +410,19 @@ glob_errfunc(const char *epath, int eerrno)
 int
 opkg_conf_init(void)
 {
+	pkg_src_list_init(&conf->pkg_src_list);
+	pkg_dest_list_init(&conf->pkg_dest_list);
+	pkg_dest_list_init(&conf->tmp_dest_list);
+	nv_pair_list_init(&conf->arch_list);
+
+	return 0;
+}
+
+int
+opkg_conf_load(void)
+{
 	int i, glob_ret;
 	char *tmp, *tmp_dir_base, **tmp_val;
-	nv_pair_list_t tmp_dest_nv_pair_list;
 	glob_t globbuf;
 	char *etc_opkg_conf_pattern;
 
@@ -422,11 +431,6 @@ opkg_conf_init(void)
 #if defined(HAVE_PATHFINDER)
 	conf->check_x509_path = 1;
 #endif
-
-	pkg_src_list_init(&conf->pkg_src_list);
-	pkg_dest_list_init(&conf->pkg_dest_list);
-	nv_pair_list_init(&conf->arch_list);
-	nv_pair_list_init(&tmp_dest_nv_pair_list);
 
 	if (!conf->offline_root)
 		conf->offline_root = xstrdup(getenv("OFFLINE_ROOT"));
@@ -438,7 +442,7 @@ opkg_conf_init(void)
 			goto err0;
 		}
 		if (opkg_conf_parse_file(conf->conf_file,
-				&conf->pkg_src_list, &tmp_dest_nv_pair_list))
+				&conf->pkg_src_list))
 			goto err1;
 	}
 
@@ -467,7 +471,7 @@ opkg_conf_init(void)
 					!strcmp(conf->conf_file, globbuf.gl_pathv[i]))
 				continue;
 		if ( opkg_conf_parse_file(globbuf.gl_pathv[i],
-			&conf->pkg_src_list, &tmp_dest_nv_pair_list)<0) {
+			&conf->pkg_src_list)<0) {
 			globfree(&globbuf);
 			goto err1;
 		}
@@ -531,16 +535,16 @@ opkg_conf_init(void)
 	}
 
 	/* Even if there is no conf file, we'll need at least one dest. */
-	if (nv_pair_list_empty(&tmp_dest_nv_pair_list)) {
-	nv_pair_list_append(&tmp_dest_nv_pair_list,
+	if (nv_pair_list_empty(&conf->tmp_dest_list)) {
+		nv_pair_list_append(&conf->tmp_dest_list,
 			OPKG_CONF_DEFAULT_DEST_NAME,
 			OPKG_CONF_DEFAULT_DEST_ROOT_DIR);
 	}
 
-	if (resolve_pkg_dest_list(&tmp_dest_nv_pair_list))
+	if (resolve_pkg_dest_list())
 		goto err4;
 
-	nv_pair_list_deinit(&tmp_dest_nv_pair_list);
+	nv_pair_list_deinit(&conf->tmp_dest_list);
 
 	return 0;
 
@@ -580,7 +584,7 @@ err1:
 		}
 	}
 err0:
-	nv_pair_list_deinit(&tmp_dest_nv_pair_list);
+	nv_pair_list_deinit(&conf->tmp_dest_list);
 	if (conf->dest_str)
 		free(conf->dest_str);
 	if (conf->conf_file)
