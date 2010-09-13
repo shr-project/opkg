@@ -128,6 +128,14 @@ directory name in a pinch).
 \fB\-o <\fIdirectory\fP>, \fB\--offline-root <\fIdirectory\fP>\fR
 Use \fIdirectory\fP as the root directory for offline installation of 
 packages.
+.TP 
+\fB\--add-dest <\fIname\fP>:<\fIpath\fP>\fR
+Register \fIpath\fP as installation target \fIname\fP for use in
+conjunction with \fB\--dest\fP
+.TP 
+\fB\--add-arch <\fIarch\fP>:<\fIprio\fP>\fR
+Register the package architecture \fIarch\fP with the numeric
+priority \fIprio\fP. Lower priorities take precedence.
 .SS FORCE OPTIONS
 .TP 
 \fB\--force-depends \fR
@@ -147,6 +155,9 @@ Allow opkg-cl to downgrade packages
 .TP 
 \fB\--force-space \fR
 Disable free space checks
+.TP 
+\fB\--force-postinstall \fR
+Execute package postinstall scripts in offline installation mode
 .TP 
 \fB\--noaction\fR
 No action \- test only
