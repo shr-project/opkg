@@ -40,6 +40,8 @@ enum {
 	ARGS_OPT_FORCE_REMOVAL_OF_ESSENTIAL_PACKAGES,
 	ARGS_OPT_FORCE_SPACE,
 	ARGS_OPT_FORCE_POSTINSTALL,
+	ARGS_OPT_ADD_ARCH,
+	ARGS_OPT_ADD_DEST,
 	ARGS_OPT_NOACTION,
 	ARGS_OPT_DOWNLOAD_ONLY,
 	ARGS_OPT_NODEPS,
@@ -82,6 +84,8 @@ static struct option long_options[] = {
 	{"nodeps", 0, 0, ARGS_OPT_NODEPS},
 	{"offline", 1, 0, 'o'},
 	{"offline-root", 1, 0, 'o'},
+	{"add-arch", 1, 0, ARGS_OPT_ADD_ARCH},
+	{"add-dest", 1, 0, ARGS_OPT_ADD_DEST},
 	{"test", 0, 0, ARGS_OPT_NOACTION},
 	{"tmp-dir", 1, 0, 't'},
 	{"tmp_dir", 1, 0, 't'},
@@ -96,6 +100,7 @@ args_parse(int argc, char *argv[])
 	int c;
 	int option_index = 0;
 	int parse_err = 0;
+	char *tuple, *targ;
 
 	while (1) {
 		c = getopt_long_only(argc, argv, "Ad:f:no:p:t:vV::",
@@ -163,6 +168,20 @@ args_parse(int argc, char *argv[])
 			break;
 		case ARGS_OPT_NODEPS:
 			conf->nodeps = 1;
+			break;
+		case ARGS_OPT_ADD_ARCH:
+		case ARGS_OPT_ADD_DEST:
+			tuple = xstrdup(optarg);
+			if ((targ = strchr(tuple, ':')) != NULL) {
+				*targ++ = 0;
+				if ((strlen(tuple) > 0) && (strlen(targ) > 0)) {
+					nv_pair_list_append(
+						(c == ARGS_OPT_ADD_ARCH)
+							? &conf->arch_list : &conf->tmp_dest_list,
+						tuple, targ);
+				}
+			}
+			free(tuple);
 			break;
 		case ARGS_OPT_NOACTION:
 			conf->noaction = 1;
@@ -239,6 +258,8 @@ usage()
 	printf("				directory name in a pinch).\n");
 	printf("\t-o <dir>		Use <dir> as the root directory for\n");
 	printf("\t--offline-root <dir>	offline installation of packages.\n");
+	printf("\t--add-arch <arch>:<prio>	Register architecture with given priority\n");
+	printf("\t--add-dest <name>:<path>	Register destination with given path\n");
 
 	printf("\nForce Options:\n");
 	printf("\t--force-depends		Install/remove despite failed dependencies\n");
@@ -279,6 +300,9 @@ main(int argc, char *argv[])
 	int nocheckfordirorfile = 0;
         int noreadfeedsfile = 0;
 
+	if (opkg_conf_init())
+		goto err0;
+
 	conf->verbosity = NOTICE;
 
 	opts = args_parse(argc, argv);
@@ -316,7 +340,7 @@ main(int argc, char *argv[])
 
 	conf->pfm = cmd->pfm;
 
-	if (opkg_conf_init())
+	if (opkg_conf_load())
 		goto err0;
 
 	if (!nocheckfordirorfile) {
