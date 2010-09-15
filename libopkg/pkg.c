@@ -714,7 +714,7 @@ pkg_formatted_field(FILE *fp, pkg_t *pkg, const char *field)
      case 'M':
 	  if (strcasecmp(field, "Maintainer") == 0) {
 	       if (pkg->maintainer) {
-                   fprintf(fp, "maintainer: %s\n", pkg->maintainer);
+                   fprintf(fp, "Maintainer: %s\n", pkg->maintainer);
 	       }
 	  } else if (strcasecmp(field, "MD5sum") == 0) {
 	       if (pkg->md5sum) {
