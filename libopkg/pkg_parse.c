@@ -222,11 +222,11 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 		break;
 
 	case 'I':
-		if ((mask && PFM_INSTALLED_SIZE) && is_field("Installed-Size", line)) {
+		if ((mask & PFM_INSTALLED_SIZE) && is_field("Installed-Size", line)) {
 			char *tmp = parse_simple("Installed-Size", line);
 			pkg->installed_size = strtoul(tmp, NULL, 0);
 			free (tmp);
-		} else if ((mask && PFM_INSTALLED_TIME) && is_field("Installed-Time", line)) {
+		} else if ((mask & PFM_INSTALLED_TIME) && is_field("Installed-Time", line)) {
 			char *tmp = parse_simple("Installed-Time", line);
 			pkg->installed_time = strtoul(tmp, NULL, 0);
 			free (tmp);
@@ -234,14 +234,13 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 		break;
 
 	case 'M':
-		if (mask && PFM_MD5SUM) {
-			if (is_field("MD5sum:", line))
-				pkg->md5sum = parse_simple("MD5sum", line);
+		if ((mask & PFM_MD5SUM) && is_field("MD5sum:", line))
+			pkg->md5sum = parse_simple("MD5sum", line);
 			/* The old opkg wrote out status files with the wrong
 			* case for MD5sum, let's parse it either way */
-			else if (is_field("MD5Sum:", line))
-				pkg->md5sum = parse_simple("MD5Sum", line);
-		} else if((mask & PFM_MAINTAINER) && is_field("Maintainer", line))
+		else if ((mask & PFM_MD5SUM) && is_field("MD5Sum:", line)) 
+			pkg->md5sum = parse_simple("MD5Sum", line);
+		else if((mask & PFM_MAINTAINER) && is_field("Maintainer", line))
 			pkg->maintainer = parse_simple("Maintainer", line);
 		break;
 
@@ -301,7 +300,7 @@ pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
 			strcat(pkg->description, "\n");
 			strcat(pkg->description, (line));
 			goto dont_reset_flags;
-		} else if ((mask && PFM_CONFFILES) && reading_conffiles) {
+		} else if ((mask & PFM_CONFFILES) && reading_conffiles) {
 			parse_conffiles(pkg, line);
 			goto dont_reset_flags;
 		}
