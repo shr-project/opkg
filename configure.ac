@@ -66,8 +66,8 @@ fi
 # check for sha256
 AC_ARG_ENABLE(sha256,
               AC_HELP_STRING([--enable-sha256], [Enable sha256sum check
-      [[default=yes]] ]),
-    [want_sha256="$enableval"], [want_sha256="yes"])
+      (sha256.{c,h} are GPLv3 licensed) [[default=no]] ]),
+    [want_sha256="$enableval"], [want_sha256="no"])
 
 if test "x$want_sha256" = "xyes"; then
   AC_DEFINE(HAVE_SHA256, 1, [Define if you want sha256 support])
