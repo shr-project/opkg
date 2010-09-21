@@ -484,11 +484,6 @@ opkg_conf_load(void)
 	else
 		sprintf_alloc (&lock_file, "%s", OPKGLOCKFILE);
 
-	if (lock_file == NULL) {
-		opkg_perror(ERROR, "Could not allocate memory for lock file name");
-		goto err2;
-	}
-
 	lock_fd = creat(lock_file, S_IRUSR | S_IWUSR | S_IRGRP);
 	if (lock_fd == -1) {
 		opkg_perror(ERROR, "Could not create lock file %s", lock_file);
