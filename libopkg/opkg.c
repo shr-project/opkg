@@ -121,20 +121,21 @@ opkg_new()
 		goto err0;
 
 	if (opkg_conf_load())
-		goto err0;
+		goto err1;
 
 	if (pkg_hash_load_feeds())
-		goto err1;
+		goto err2;
 
 	if (pkg_hash_load_status_files())
-		goto err1;
+		goto err2;
 
 	return 0;
 
-err1:
+err2:
 	pkg_hash_deinit();
-err0:
+err1:
 	opkg_conf_deinit();
+err0:
 	return -1;
 }
 
