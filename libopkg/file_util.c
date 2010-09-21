@@ -238,6 +238,11 @@ rm_r(const char *path)
 	DIR *dir;
 	struct dirent *dent;
 
+	if (path == NULL) {
+		opkg_perror(ERROR, "Missing directory parameter");
+		return -1;
+	}
+
 	dir = opendir(path);
 	if (dir == NULL) {
 		opkg_perror(ERROR, "Failed to open dir %s", path);

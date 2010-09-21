@@ -484,6 +484,11 @@ opkg_conf_load(void)
 	else
 		sprintf_alloc (&lock_file, "%s", OPKGLOCKFILE);
 
+	if (lock_file == NULL) {
+		opkg_perror(ERROR, "Could not allocate memory for lock file name");
+		goto err2;
+	}
+
 	lock_fd = creat(lock_file, S_IRUSR | S_IWUSR | S_IRGRP);
 	if (lock_fd == -1) {
 		opkg_perror(ERROR, "Could not create lock file %s", lock_file);
@@ -495,6 +500,7 @@ opkg_conf_load(void)
 		if (close(lock_fd) == -1)
 			opkg_perror(ERROR, "Couldn't close descriptor %d (%s)",
 				lock_fd, lock_file);
+		lock_fd = -1;
 		goto err2;
 	}
 
@@ -568,7 +574,10 @@ err3:
 	if (unlink(lock_file) == -1)
 		opkg_perror(ERROR, "Couldn't unlink %s", lock_file);
 err2:
-	free(lock_file);
+	if (lock_file) {
+		free(lock_file);
+		lock_file = NULL;
+	}
 err1:
 	pkg_src_list_deinit(&conf->pkg_src_list);
 	pkg_dest_list_deinit(&conf->pkg_dest_list);
@@ -599,9 +608,11 @@ opkg_conf_deinit(void)
 	int i;
 	char **tmp;
 
-	rm_r(conf->tmp_dir);
+	if (conf->tmp_dir)
+		rm_r(conf->tmp_dir);
 
-	free(conf->lists_dir);
+	if (conf->lists_dir)
+		free(conf->lists_dir);
 
 	if (conf->dest_str)
 		free(conf->dest_str);
@@ -633,15 +644,20 @@ opkg_conf_deinit(void)
 	hash_table_deinit(&conf->file_hash);
 	hash_table_deinit(&conf->obs_file_hash);
 
-	if (lockf(lock_fd, F_ULOCK, (off_t)0) == -1)
-		opkg_perror(ERROR, "Couldn't unlock %s", lock_file);
+	if (lock_fd != -1) {
+		if (lockf(lock_fd, F_ULOCK, (off_t)0) == -1)
+			opkg_perror(ERROR, "Couldn't unlock %s", lock_file);
 
-	if (close(lock_fd) == -1)
-		opkg_perror(ERROR, "Couldn't close descriptor %d (%s)",
-				lock_fd, lock_file);
+		if (close(lock_fd) == -1)
+			opkg_perror(ERROR, "Couldn't close descriptor %d (%s)",
+					lock_fd, lock_file);
 
-	if (unlink(lock_file) == -1)
-		opkg_perror(ERROR, "Couldn't unlink %s", lock_file);
+	}
 
-	free(lock_file);
+	if (lock_file) {
+		if (unlink(lock_file) == -1)
+			opkg_perror(ERROR, "Couldn't unlink %s", lock_file);
+
+		free(lock_file);
+	}
 }
