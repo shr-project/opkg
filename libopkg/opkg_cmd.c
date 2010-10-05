@@ -617,6 +617,39 @@ opkg_list_installed_cmd(int argc, char **argv)
 }
 
 static int
+opkg_list_changed_conffiles_cmd(int argc, char **argv)
+{
+     int i ;
+     pkg_vec_t *available;
+     pkg_t *pkg;
+     char *pkg_name = NULL;
+     conffile_list_elt_t *iter;
+     conffile_t *cf;
+
+     if (argc > 0) {
+	  pkg_name = argv[0];
+     }
+     available = pkg_vec_alloc();
+     pkg_hash_fetch_all_installed(available);
+     pkg_vec_sort(available, pkg_compare_names);
+     for (i=0; i < available->len; i++) {
+	  pkg = available->pkgs[i];
+	  /* if we have package name or pattern and pkg does not match, then skip it */
+	  if (pkg_name && fnmatch(pkg_name, pkg->name, 0))
+	    continue;
+	  if (nv_pair_list_empty(&pkg->conffiles))
+	    continue;
+	  for (iter = nv_pair_list_first(&pkg->conffiles); iter; iter = nv_pair_list_next(&pkg->conffiles, iter)) {
+	    cf = (conffile_t *)iter->data;
+	    if (cf->name && cf->value && conffile_has_been_modified(cf))
+	      printf("%s\n", cf->name);
+	  }
+     }
+     pkg_vec_free(available);
+     return 0;
+}
+
+static int
 opkg_list_upgradable_cmd(int argc, char **argv)
 {
     struct active_list *head = prepare_upgrade_list();
@@ -1188,6 +1221,8 @@ static opkg_cmd_t cmds[] = {
      {"list-installed", 0, (opkg_cmd_fun_t)opkg_list_installed_cmd, PFM_SOURCE},
      {"list_upgradable", 0, (opkg_cmd_fun_t)opkg_list_upgradable_cmd, PFM_SOURCE},
      {"list-upgradable", 0, (opkg_cmd_fun_t)opkg_list_upgradable_cmd, PFM_SOURCE},
+     {"list_changed_conffiles", 0, (opkg_cmd_fun_t)opkg_list_changed_conffiles_cmd, PFM_SOURCE},
+     {"list-changed-conffiles", 0, (opkg_cmd_fun_t)opkg_list_changed_conffiles_cmd, PFM_SOURCE},
      {"info", 0, (opkg_cmd_fun_t)opkg_info_cmd, 0},
      {"flag", 1, (opkg_cmd_fun_t)opkg_flag_cmd, PFM_DESCRIPTION|PFM_SOURCE},
      {"status", 0, (opkg_cmd_fun_t)opkg_status_cmd, PFM_DESCRIPTION|PFM_SOURCE},

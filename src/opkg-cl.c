@@ -225,6 +225,7 @@ usage()
 	printf("\tlist			List available packages\n");
 	printf("\tlist-installed		List installed packages\n");
 	printf("\tlist-upgradable		List installed and upgradable packages\n");
+	printf("\tlist-changed-conffiles	List user modified configuration files\n");
 	printf("\tfiles <pkg>		List files belonging to <pkg>\n");
 	printf("\tsearch <file|regexp>	List package providing <file>\n");
 	printf("\tinfo [pkg|regexp]	Display all info for <pkg>\n");
@@ -328,6 +329,8 @@ main(int argc, char *argv[])
 	    !strcmp(cmd_name,"compare-versions") ||
 	    !strcmp(cmd_name,"list_installed") ||
 	    !strcmp(cmd_name,"list-installed") ||
+	    !strcmp(cmd_name,"list_changed_conffiles") ||
+	    !strcmp(cmd_name,"list-changed-conffiles") ||
 	    !strcmp(cmd_name,"status") )
 		noreadfeedsfile = 1;
 

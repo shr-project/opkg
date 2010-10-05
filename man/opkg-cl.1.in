@@ -52,6 +52,9 @@ List installed packages
 \fBlist-upgradable\fR
 List installed and upgradable packages
 .TP
+\fBlist-changed-conffiles\fR
+List package configuration files which have been modified after installation
+.TP
 \fBfiles <\fIpackage\fP>\fR
 List files belonging to \fIpackage\fP
 .TP
