@@ -51,7 +51,6 @@
 
 static FILE *in_file, *out_file;
 
-/* these are freed by gz_close */
 static unsigned char *window;
 static unsigned long *crc_table = NULL;
 
