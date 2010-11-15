@@ -778,6 +778,7 @@ pkg_t *
 opkg_find_package(const char *name, const char *ver, const char *arch,
 		const char *repo)
 {
+	int pkg_found = 0;
 	pkg_t *pkg = NULL;
 	pkg_vec_t *all;
 	int i;
@@ -815,12 +816,13 @@ opkg_find_package(const char *name, const char *ver, const char *arch,
 		}
 
 		/* match found */
+		pkg_found = 1;
 		break;
 	}
 
 	pkg_vec_free(all);
 
-	return pkg;
+	return pkg_found ? pkg : NULL;
 }
 
 /**
