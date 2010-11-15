@@ -252,7 +252,7 @@ opkg_download_pkg(pkg_t *pkg, const char *dir)
 
     sprintf_alloc(&url, "%s/%s", pkg->src->value, pkg->filename);
 
-    /* XXX: BUG: The pkg->filename might be something like
+    /* The pkg->filename might be something like
        "../../foo.opk". While this is correct, and exactly what we
        want to use to construct url above, here we actually need to
        use just the filename part, without any directory. */
