@@ -94,13 +94,28 @@ opkg_message (message_level_t level, const char *fmt, ...)
 	if (level == ERROR) {
 #define MSG_LEN 4096
 		char msg[MSG_LEN];
-		if (vsnprintf(msg, MSG_LEN, fmt, ap) >= MSG_LEN) {
-			fprintf(stderr, "%s: Message truncated!\n",
+		int ret;
+		ret = vsnprintf(msg, MSG_LEN, fmt, ap);
+		if (ret < 0) {
+			fprintf(stderr, "%s: encountered an output or encoding"
+					" error during vsnprintf.\n",
+					__FUNCTION__);
+			va_end (ap);
+			exit(EXIT_FAILURE);
+		}
+		if (ret >= MSG_LEN) {
+			fprintf(stderr, "%s: Message truncated.\n",
 					__FUNCTION__);
 		}
 		push_error_list(msg);
-	} else
-		vprintf(fmt, ap);
+	} else {
+		if (vprintf(fmt, ap) < 0) {
+			fprintf(stderr, "%s: encountered an output or encoding"
+					" error during vprintf.\n",
+					__FUNCTION__);
+			exit(EXIT_FAILURE);
+		}
+	}
 
 	va_end (ap);
 }
