@@ -204,8 +204,8 @@ verify_pkg_installable(pkg_t *pkg)
 	pkg_size_kbs = (pkg->installed_size + 1023)/1024;
 
 	if (pkg_size_kbs >= kbs_available) {
-		opkg_msg(ERROR, "Only have %dkb available on filesystem %s, "
-			"pkg %s needs %d\n",
+		opkg_msg(ERROR, "Only have %ldkb available on filesystem %s, "
+			"pkg %s needs %ld\n",
 			kbs_available, root_dir, pkg->name, pkg_size_kbs);
 		return -1;
 	}

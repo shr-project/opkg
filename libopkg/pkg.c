@@ -462,7 +462,7 @@ set_flags_from_control(pkg_t *pkg){
 
      fp = fopen(file_name, "r");
      if (fp == NULL) {
-	     opkg_perror(ERROR, "Failed to open %s");
+	     opkg_perror(ERROR, "Failed to open %s", file_name);
 	     free(file_name);
 	     return;
      }

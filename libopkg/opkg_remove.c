@@ -363,7 +363,7 @@ remove_data_files_and_list(pkg_t *pkg)
 	  }
 
 	  if (!conf->noaction) {
-	  	opkg_msg(INFO, "Deleting %s.\n", file_name, conf->noaction);
+	  	opkg_msg(INFO, "Deleting %s.\n", file_name);
 	       unlink(file_name);
 	  } else
 	  	opkg_msg(INFO, "Not deleting %s. (noaction)\n",
