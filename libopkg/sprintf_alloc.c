@@ -1,8 +1,6 @@
 /* sprintf_alloc.c -- like sprintf with memory allocation
 
-   Carl D. Worth
-
-   Copyright (C) 2001 University of Southern California
+   Copyright (C) 2010 Ubiq Technologies <graham.gower@gmail.com>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,46 +18,32 @@
 #include "sprintf_alloc.h"
 #include "libbb/libbb.h"
 
-int sprintf_alloc(char **str, const char *fmt, ...)
+void
+sprintf_alloc(char **str, const char *fmt, ...)
 {
 	va_list ap;
 	int n;
-	unsigned size = 100;
-
-	if (!str) {
-		opkg_msg(ERROR, "Internal error: str=NULL.\n");
-		return -1;
-	}
-	if (!fmt) {
-		opkg_msg(ERROR, "Internal error: fmt=NULL.\n");
-		return -1;
-	}
-
-	/* On x86_64 systems, any strings over 100 were segfaulting.
-	   It seems that the ap needs to be reinitalized before every
-	   use of the v*printf() functions. I pulled the functionality out
-	   of vsprintf_alloc and combined it all here instead.
-	*/
-
-
-	/* ripped more or less straight out of PRINTF(3) */
+	unsigned int size = 1;
 
 	*str = xcalloc(1, size);
 
-	while (1) {
+	for (;;) {
 		va_start(ap, fmt);
 		n = vsnprintf (*str, size, fmt, ap);
 		va_end(ap);
-		/* If that worked, return the size. */
-		if (n > -1 && n < size)
-			return n;
-		/* Else try again with more space. */
-		if (n > -1)    /* glibc 2.1 */
-			size = n+1; /* precisely what is needed */
-		else           /* glibc 2.0 */
-			size *= 2;  /* twice the old size */
+
+		if (n < 0) {
+			fprintf(stderr, "%s: encountered an output or encoding"
+					" error during vsnprintf.\n",
+					__FUNCTION__);
+			exit(EXIT_FAILURE);
+		}
+
+		if (n < size)
+			break;
+
+		/* Truncated, try again with more space. */
+		size = n+1;
 		*str = xrealloc(*str, size);
 	}
-
-	return -1; /* Just to be correct - it probably won't get here */
 }
