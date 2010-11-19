@@ -23,9 +23,9 @@ sprintf_alloc(char **str, const char *fmt, ...)
 {
 	va_list ap;
 	int n;
-	unsigned int size = 1;
+	unsigned int size = 0;
 
-	*str = xcalloc(1, size);
+	*str = NULL;
 
 	for (;;) {
 		va_start(ap, fmt);
