@@ -1299,7 +1299,8 @@ pkg_run_script(pkg_t *pkg, const char *script, const char *args)
      free(cmd);
 
      if (err) {
-	  opkg_msg(ERROR, "%s script returned status %d.\n", script, err);
+	  opkg_msg(ERROR, "package \"%s\" %s script returned status %d.\n", 
+               pkg->name, script, err);
 	  return err;
      }
 
