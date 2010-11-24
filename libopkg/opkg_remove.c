@@ -170,6 +170,7 @@ static int
 remove_autoinstalled(pkg_t *pkg)
 {
 	int i, j;
+	int err = 0;
 	int n_deps;
 	pkg_t *p;
 	struct compound_depend *cdep;
@@ -205,7 +206,9 @@ remove_autoinstalled(pkg_t *pkg)
 				 opkg_msg(NOTICE, "%s was autoinstalled and is "
 					       "now orphaned, removing.\n",
 					       p->name);
-			         opkg_remove_pkg(p, 0);
+				if (opkg_remove_pkg(p, 0) != 0) {
+					err = -1;
+				}
 			} else
 				opkg_msg(INFO, "%s was autoinstalled and is "
 						"still required by %d "
@@ -217,7 +220,7 @@ remove_autoinstalled(pkg_t *pkg)
 		}
 	}
 
-	return 0;
+	return err;
 }
 
 int
@@ -291,7 +294,16 @@ opkg_remove_pkg(pkg_t *pkg, int from_upgrade)
      pkg->state_want = SW_DEINSTALL;
      opkg_state_changed++;
 
-     pkg_run_script(pkg, "prerm", "remove");
+     if (pkg_run_script(pkg, "prerm", "remove") != 0) {
+         if (!conf->force_remove) {
+             opkg_msg(ERROR, "not removing package \"%s\", "
+                             "prerm script failed\n", pkg->name);
+             opkg_msg(NOTICE, "You can force removal of packages with failed "
+                              "prerm scripts with the option: \n"
+                              "\t--force-remove\n");
+             return -1;
+         }
+     }
 
      /* DPKG_INCOMPATIBILITY: dpkg is slightly different here. It
 	maintains an empty filelist rather than deleting it. That seems
@@ -300,7 +312,7 @@ opkg_remove_pkg(pkg_t *pkg, int from_upgrade)
 	feel free to fix this. */
      remove_data_files_and_list(pkg);
 
-     pkg_run_script(pkg, "postrm", "remove");
+     err = pkg_run_script(pkg, "postrm", "remove");
 
      remove_maintainer_scripts(pkg);
      pkg->state_status = SS_NOT_INSTALLED;
@@ -309,10 +321,12 @@ opkg_remove_pkg(pkg_t *pkg, int from_upgrade)
 	  parent_pkg->state_status = SS_NOT_INSTALLED;
 
      /* remove autoinstalled packages that are orphaned by the removal of this one */
-     if (conf->autoremove)
-       remove_autoinstalled(pkg);
-
-     return 0;
+     if (conf->autoremove) {
+         if (remove_autoinstalled(pkg) != 0) {
+             err = -1;
+         }
+     }
+     return err;
 }
 
 void
