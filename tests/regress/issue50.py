@@ -9,7 +9,6 @@ open("foo", "w").close()
 a1 = opk.Opk(Package="a", Version="1.0", Architecture="all")
 a1.write(data_files=["foo"])
 
-exit()
 opkgcl.install("a_1.0_all.opk")
 
 o = opk.OpkGroup()
