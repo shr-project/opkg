@@ -621,7 +621,7 @@ free_header_tar(file_header_t *tar_entry)
 		return;
 
 	free(tar_entry->name);
-	if (tar_entry->link_name);
+	if (tar_entry->link_name)
 		free(tar_entry->link_name);
 
 	free(tar_entry);
