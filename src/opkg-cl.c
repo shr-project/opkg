@@ -28,6 +28,7 @@
 #include "opkg_cmd.h"
 #include "file_util.h"
 #include "opkg_message.h"
+#include "opkg_download.h"
 #include "../libbb/libbb.h"
 
 enum {
