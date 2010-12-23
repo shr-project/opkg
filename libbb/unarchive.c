@@ -506,23 +506,7 @@ get_header_tar(FILE *tar_stream)
 	/* convert to type'ed variables */
 	tar_entry = xcalloc(1, sizeof(file_header_t));
 
-#ifdef CONFIG_FEATURE_TAR_GNU_EXTENSIONS
-        if (longname) {
-                tar_entry->name = longname;
-                longname = NULL;
-        } else
-#endif
-        {
-                tar_entry->name = xstrndup(tar.formated.name, 100);
 
-                if (tar.formated.prefix[0]) {
-                        char *temp = tar_entry->name;
-                        char *prefixTemp = xstrndup(tar.formated.prefix, 155);
-                        tar_entry->name = concat_path_file(prefixTemp, temp);
-                        free(temp);
-                        free(prefixTemp);
-                }
-        }
 
 	// tar_entry->name = xstrdup(tar.formated.name);
 
@@ -535,16 +519,7 @@ get_header_tar(FILE *tar_stream)
 	tar_entry->gid   = strtol(tar.formated.gid, NULL, 8);
 	tar_entry->size  = strtol(tar.formated.size, NULL, 8);
 	tar_entry->mtime = strtol(tar.formated.mtime, NULL, 8);
-#ifdef CONFIG_FEATURE_TAR_GNU_EXTENSIONS
-	if (linkname) {
-		tar_entry->link_name = linkname;
-		linkname = NULL;
-	} else
-#endif
-	{
-		tar_entry->link_name = *tar.formated.linkname != '\0' ?
-			xstrndup(tar.formated.linkname, 100) : NULL;
-	}
+
 	tar_entry->device = (strtol(tar.formated.devmajor, NULL, 8) << 8) +
 		strtol(tar.formated.devminor, NULL, 8);
 
@@ -609,6 +584,34 @@ get_header_tar(FILE *tar_stream)
                 perror_msg("Unknown typeflag: 0x%x", tar.formated.typeflag);
                 break;
 
+	}
+
+
+#ifdef CONFIG_FEATURE_TAR_GNU_EXTENSIONS
+        if (longname) {
+                tar_entry->name = longname;
+                longname = NULL;
+        } else
+#endif
+        {
+                tar_entry->name = xstrndup(tar.formated.name, 100);
+
+                if (tar.formated.prefix[0]) {
+                        char *temp = tar_entry->name;
+                        char *prefixTemp = xstrndup(tar.formated.prefix, 155);
+                        tar_entry->name = concat_path_file(prefixTemp, temp);
+                        free(temp);
+                        free(prefixTemp);
+                }
+        }
+
+	if (linkname) {
+		tar_entry->link_name = linkname;
+		linkname = NULL;
+	} else
+	{
+		tar_entry->link_name = *tar.formated.linkname != '\0' ?
+			xstrndup(tar.formated.linkname, 100) : NULL;
 	}
 
 	return(tar_entry);
