@@ -1042,7 +1042,7 @@ opkg_what_depends_conflicts_cmd(enum depend_type what_field_type, int recursive,
 					if (!pkg_dependence_satisfiable(possibility))
 						opkg_msg(NOTICE,
 							" unsatisfiable");
-					opkg_msg(NOTICE, "\n");
+					opkg_message(NOTICE, "\n");
 					goto next_package;
 				}
 			}
@@ -1121,7 +1121,7 @@ opkg_what_provides_replaces_cmd(enum what_field_type what_field_type, int argc, 
 			      if (strcmp(target, apkg->name) != 0)
 				   opkg_msg(NOTICE, "\t%s %s\n",
 						   rel_str, apkg->name);
-			      opkg_msg(NOTICE, "\n");
+			      opkg_message(NOTICE, "\n");
 			 }
 		    }
 	       }

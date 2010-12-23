@@ -134,7 +134,7 @@ check_conflicts_for(pkg_t *pkg)
 	  i = 0;
 	  while (i < conflicts->len)
 	       opkg_msg(level, "\t%s", conflicts->pkgs[i++]->name);
-	  opkg_msg(level, "\n");
+	  opkg_message(level, "\n");
 	  pkg_vec_free(conflicts);
 	  return -1;
      }
