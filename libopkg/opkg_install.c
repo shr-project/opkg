@@ -324,7 +324,7 @@ pkg_remove_orphan_dependent(pkg_t *pkg, pkg_t *old_pkg)
 			found = 0;
 
 			for (k=0; k<count1; k++) {
-				cd1 = &pkg->depends[i];
+				cd1 = &pkg->depends[k];
 				if (cd1->type != DEPEND)
 					continue;
 				for (l=0; l<cd1->possibility_count; l++) {
