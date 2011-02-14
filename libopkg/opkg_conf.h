@@ -79,6 +79,7 @@ struct opkg_conf
      int check_signature;
      int nodeps; /* do not follow dependencies */
      char *offline_root;
+     char *overlay_root;
      int query_all;
      int verbosity;
      int noaction;

@@ -63,6 +63,7 @@ opkg_option_t options[] = {
 	  { "download_only", OPKG_OPT_TYPE_BOOL, &_conf.download_only },
 	  { "nodeps", OPKG_OPT_TYPE_BOOL, &_conf.nodeps },
 	  { "offline_root", OPKG_OPT_TYPE_STRING, &_conf.offline_root },
+	  { "overlay_root", OPKG_OPT_TYPE_STRING, &_conf.overlay_root },
 	  { "proxy_passwd", OPKG_OPT_TYPE_STRING, &_conf.proxy_passwd },
 	  { "proxy_user", OPKG_OPT_TYPE_STRING, &_conf.proxy_user },
 	  { "query-all", OPKG_OPT_TYPE_BOOL, &_conf.query_all },

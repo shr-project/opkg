@@ -21,6 +21,7 @@
 #include <time.h>
 #include <signal.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 #include "pkg.h"
 #include "pkg_hash.h"
@@ -192,13 +193,24 @@ static int
 verify_pkg_installable(pkg_t *pkg)
 {
 	unsigned long kbs_available, pkg_size_kbs;
-	char *root_dir;
+	char *root_dir = NULL;
+	struct stat s;
 
 	if (conf->force_space || pkg->installed_size == 0)
 		return 0;
 
-	root_dir = pkg->dest ? pkg->dest->root_dir :
-						conf->default_dest->root_dir;
+	if (pkg->dest)
+	{
+		if (!strcmp(pkg->dest->name, "root") && conf->overlay_root
+		    && !stat(conf->overlay_root, &s) && (s.st_mode & S_IFDIR))
+			root_dir = conf->overlay_root;
+		else
+			root_dir = pkg->dest->root_dir;
+	}
+
+	if (!root_dir)
+		root_dir = conf->default_dest->root_dir;
+
 	kbs_available = get_available_kbytes(root_dir);
 
 	pkg_size_kbs = (pkg->installed_size + 1023)/1024;
