@@ -340,6 +340,8 @@ opkg_verify_file (char *text_file, char *sig_file)
     gpgme_signature_t s;
     char *trusted_path = NULL;
 
+    gpgme_check_version (NULL);
+
     err = gpgme_new (&ctx);
 
     if (err)
