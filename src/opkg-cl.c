@@ -241,8 +241,11 @@ usage()
 	printf("\tcompare-versions <v1> <op> <v2>\n");
 	printf("\t                    compare versions using <= < > >= = << >>\n");
 	printf("\tprint-architecture	List installable package architectures\n");
+	printf("\tdepends [-A] [pkgname|pat]+\n");
 	printf("\twhatdepends [-A] [pkgname|pat]+\n");
 	printf("\twhatdependsrec [-A] [pkgname|pat]+\n");
+	printf("\twhatrecommends[-A] [pkgname|pat]+\n");
+	printf("\twhatsuggests[-A] [pkgname|pat]+\n");
 	printf("\twhatprovides [-A] [pkgname|pat]+\n");
 	printf("\twhatconflicts [-A] [pkgname|pat]+\n");
 	printf("\twhatreplaces [-A] [pkgname|pat]+\n");
