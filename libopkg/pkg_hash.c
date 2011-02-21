@@ -650,7 +650,7 @@ file_hash_get_file_owner(const char *file_name)
 void
 file_hash_set_file_owner(const char *file_name, pkg_t *owning_pkg)
 {
-	pkg_t *old_owning_pkg = hash_table_get(&conf->file_hash, file_name);
+	pkg_t *old_owning_pkg;
 	int file_name_len = strlen(file_name);
 
 	if (file_name[file_name_len -1] == '/')
@@ -658,6 +658,7 @@ file_hash_set_file_owner(const char *file_name, pkg_t *owning_pkg)
 
 	file_name = strip_offline_root(file_name);
 
+	old_owning_pkg = hash_table_get(&conf->file_hash, file_name);
 	hash_table_insert(&conf->file_hash, file_name, owning_pkg);
 
 	if (old_owning_pkg) {
