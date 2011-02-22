@@ -685,7 +685,6 @@ opkg_update_package_lists(opkg_progress_callback_t progress_callback,
 				}
 			}
 			free(sig_file_name);
-			free(list_file_name);
 			free(url);
 		}
 #else
@@ -693,6 +692,7 @@ opkg_update_package_lists(opkg_progress_callback_t progress_callback,
 				" has not been enabled in this build\n",
 				list_file_name);
 #endif
+		free(list_file_name);
 
 		sources_done++;
 		progress(pdata, 100 * sources_done / sources_list_count);
