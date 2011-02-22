@@ -112,11 +112,14 @@ curl_progress_cb(struct _curl_cb_data *cb_data, double t,	/* dltotal */
 }
 
 
+static struct opkg_conf saved_conf;
 /*** Public API ***/
 
 int
 opkg_new()
 {
+	saved_conf = *conf;
+
 	if (opkg_conf_init())
 		goto err0;
 
@@ -150,20 +153,9 @@ opkg_free(void)
 int
 opkg_re_read_config_files(void)
 {
-	pkg_hash_deinit();
-	pkg_hash_init();
-
-	if (pkg_hash_load_feeds())
-		goto err;
-
-	if (pkg_hash_load_status_files())
-		goto err;
-
-	return 0;
-
-err:
-	pkg_hash_deinit();
-	return -1;
+	opkg_free();
+	*conf = saved_conf;
+	return opkg_new();
 }
 
 void
