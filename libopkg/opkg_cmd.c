@@ -27,6 +27,7 @@
 #include "opkg_conf.h"
 #include "opkg_cmd.h"
 #include "opkg_message.h"
+#include "release.h"
 #include "pkg.h"
 #include "pkg_dest.h"
 #include "pkg_parse.h"
@@ -113,10 +114,46 @@ opkg_update_cmd(int argc, char **argv)
      }
 
 
+     for (iter = void_list_first(&conf->dist_src_list); iter; iter = void_list_next(&conf->dist_src_list, iter)) {
+	  char *url, *list_file_name;
+
+	  src = (pkg_src_t *)iter->data;
+
+	  sprintf_alloc(&url, "%s/dists/%s/Release", src->value, src->name);
+
+	  sprintf_alloc(&list_file_name, "%s/%s", lists_dir, src->name);
+	  err = opkg_download(url, list_file_name, NULL, NULL, 0);
+	  if (!err) {
+	       opkg_msg(NOTICE, "Downloaded release files for dist %s.\n",
+			    src->name);
+	       release_t *release = release_new(); 
+	       err = release_init_from_file(release, list_file_name);
+	       if (!err) {
+		    if (!release_comps_supported(release, src->extra_data))
+			 err = -1;
+	       }
+	       if (!err) {
+		    err = release_download(release, src, lists_dir, tmp);
+	       }
+	       release_deinit(release); 
+	       if (err)
+		    unlink(list_file_name);
+	  }
+
+	  if (err)
+	       failures++;
+
+	  free(list_file_name);
+	  free(url);
+     }
+
      for (iter = void_list_first(&conf->pkg_src_list); iter; iter = void_list_next(&conf->pkg_src_list, iter)) {
 	  char *url, *list_file_name;
 
 	  src = (pkg_src_t *)iter->data;
+
+	  if (src->extra_data && strcmp(src->extra_data, "__dummy__ "))
+	      continue;
 
 	  if (src->extra_data)	/* debian style? */
 	      sprintf_alloc(&url, "%s/%s/%s", src->value, src->extra_data,
