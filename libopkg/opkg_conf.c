@@ -185,13 +185,14 @@ opkg_conf_set_option(const char *name, const char *value)
 
 static int
 opkg_conf_parse_file(const char *filename,
-				pkg_src_list_t *pkg_src_list)
+				pkg_src_list_t *pkg_src_list,
+				pkg_src_list_t *dist_src_list)
 {
      int line_num = 0;
      int err = 0;
      FILE *file;
      regex_t valid_line_re, comment_re;
-#define regmatch_size 12
+#define regmatch_size 14
      regmatch_t regmatch[regmatch_size];
 
      file = fopen(filename, "r");
@@ -213,7 +214,7 @@ opkg_conf_parse_file(const char *filename,
 		     "^[[:space:]]*(\"([^\"]*)\"|([^[:space:]]*))"
 		     "[[:space:]]*(\"([^\"]*)\"|([^[:space:]]*))"
 		     "[[:space:]]*(\"([^\"]*)\"|([^[:space:]]*))"
-		     "([[:space:]]+([^[:space:]]+))?[[:space:]]*$",
+		     "([[:space:]]+([^[:space:]]+))?([[:space:]]+(.*))?[[:space:]]*$",
 		     REG_EXTENDED);
      if (err)
 	  goto err2;
@@ -264,9 +265,18 @@ opkg_conf_parse_file(const char *filename,
 
 	  extra = NULL;
 	  if (regmatch[11].rm_so > 0) {
+	     if (regmatch[13].rm_so > 0 && regmatch[13].rm_so!=regmatch[13].rm_eo )
+	       extra = xstrndup (line + regmatch[11].rm_so,
+				regmatch[13].rm_eo - regmatch[11].rm_so);
+	     else
 	       extra = xstrndup (line + regmatch[11].rm_so,
 				regmatch[11].rm_eo - regmatch[11].rm_so);
 	  }
+
+	  if (regmatch[13].rm_so!=regmatch[13].rm_eo && strncmp(type, "dist", 4)!=0) {
+	       opkg_msg(ERROR, "%s:%d: Ignoring config line with trailing garbage: `%s'\n",
+		       filename, line_num, line);
+	  } else {
 
 	  /* We use the conf->tmp_dest_list below instead of
 	     conf->pkg_dest_list because we might encounter an
@@ -276,6 +286,20 @@ opkg_conf_parse_file(const char *filename,
 	     tmp_src_nv_pair_list for sake of symmetry.) */
 	  if (strcmp(type, "option") == 0) {
 	       opkg_conf_set_option(name, value);
+ 	  } else if (strcmp(type, "dist") == 0) {
+ 	       if (!nv_pair_list_find((nv_pair_list_t*) dist_src_list, name)) {
+ 		    pkg_src_list_append (dist_src_list, name, value, extra, 0);
+ 	       } else {
+ 		    opkg_msg(ERROR, "Duplicate dist declaration (%s %s). "
+ 				    "Skipping.\n", name, value);
+ 	       }
+ 	  } else if (strcmp(type, "dist/gz") == 0) {
+ 	       if (!nv_pair_list_find((nv_pair_list_t*) dist_src_list, name)) {
+ 		    pkg_src_list_append (dist_src_list, name, value, extra, 1);
+ 	       } else {
+ 		    opkg_msg(ERROR, "Duplicate dist declaration (%s %s). "
+ 				    "Skipping.\n", name, value);
+ 	       }
 	  } else if (strcmp(type, "src") == 0) {
 	       if (!nv_pair_list_find((nv_pair_list_t*) pkg_src_list, name)) {
 		    pkg_src_list_append (pkg_src_list, name, value, extra, 0);
@@ -305,6 +329,8 @@ opkg_conf_parse_file(const char *filename,
 	  } else {
 	       opkg_msg(ERROR, "%s:%d: Ignoring invalid line: `%s'\n",
 		       filename, line_num, line);
+	  }
+
 	  }
 
 	  free(type);
@@ -412,6 +438,7 @@ int
 opkg_conf_init(void)
 {
 	pkg_src_list_init(&conf->pkg_src_list);
+	pkg_src_list_init(&conf->dist_src_list);
 	pkg_dest_list_init(&conf->pkg_dest_list);
 	pkg_dest_list_init(&conf->tmp_dest_list);
 	nv_pair_list_init(&conf->arch_list);
@@ -443,7 +470,7 @@ opkg_conf_load(void)
 			goto err0;
 		}
 		if (opkg_conf_parse_file(conf->conf_file,
-				&conf->pkg_src_list))
+				&conf->pkg_src_list, &conf->dist_src_list))
 			goto err1;
 	}
 
@@ -472,7 +499,7 @@ opkg_conf_load(void)
 					!strcmp(conf->conf_file, globbuf.gl_pathv[i]))
 				continue;
 		if ( opkg_conf_parse_file(globbuf.gl_pathv[i],
-			&conf->pkg_src_list)<0) {
+			&conf->pkg_src_list, &conf->dist_src_list)<0) {
 			globfree(&globbuf);
 			goto err1;
 		}
@@ -576,6 +603,7 @@ err2:
 	}
 err1:
 	pkg_src_list_deinit(&conf->pkg_src_list);
+	pkg_src_list_deinit(&conf->dist_src_list);
 	pkg_dest_list_deinit(&conf->pkg_dest_list);
 	nv_pair_list_deinit(&conf->arch_list);
 
@@ -617,6 +645,7 @@ opkg_conf_deinit(void)
 		free(conf->conf_file);
 
 	pkg_src_list_deinit(&conf->pkg_src_list);
+	pkg_src_list_deinit(&conf->dist_src_list);
 	pkg_dest_list_deinit(&conf->pkg_dest_list);
 	nv_pair_list_deinit(&conf->arch_list);
 
