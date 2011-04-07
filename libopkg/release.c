@@ -305,7 +305,7 @@ release_verify_file(release_t *release, const char* file_name, const char *pathn
      struct stat f_info;
      char *f_md5 = NULL;
      const char *md5 = release_get_md5(release, pathname);
-#ifndef HAVE_SHA256
+#ifdef HAVE_SHA256
      char *f_sha256 = NULL;
      const char *sha256 = release_get_sha256(release, pathname);
 #endif
