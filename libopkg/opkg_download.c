@@ -82,7 +82,7 @@ str_starts_with(const char *str, const char *prefix)
 
 int
 opkg_download(const char *src, const char *dest_file_name,
-	curl_progress_func cb, void *data)
+	curl_progress_func cb, void *data, const short hide_error)
 {
     int err = 0;
 
@@ -142,7 +142,7 @@ opkg_download(const char *src, const char *dest_file_name,
 	{
 	    long error_code;
 	    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &error_code);
-	    opkg_msg(ERROR, "Failed to download %s: %s.\n",
+	    opkg_msg(hide_error?DEBUG2:ERROR, "Failed to download %s: %s.\n",
 		    src, curl_easy_strerror(res));
 	    free(tmp_file_location);
 	    return -1;
@@ -196,7 +196,7 @@ opkg_download_cache(const char *src, const char *dest_file_name,
     int err = 0;
 
     if (!conf->cache || str_starts_with(src, "file:")) {
-	err = opkg_download(src, dest_file_name, cb, data);
+	err = opkg_download(src, dest_file_name, cb, data, 0);
 	goto out1;
     }
 
@@ -215,7 +215,7 @@ opkg_download_cache(const char *src, const char *dest_file_name,
     if (file_exists(cache_location))
 	opkg_msg(NOTICE, "Copying %s.\n", cache_location);
     else {
-	err = opkg_download(src, cache_location, cb, data);
+	err = opkg_download(src, cache_location, cb, data, 0);
 	if (err) {
 	    (void) unlink(cache_location);
 	    goto out2;
@@ -287,7 +287,7 @@ opkg_prepare_url_for_install(const char *url, char **namep)
 	  char *file_base = basename(file_basec);
 
 	  sprintf_alloc(&tmp_file, "%s/%s", conf->tmp_dir, file_base);
-	  err = opkg_download(url, tmp_file, NULL, NULL);
+	  err = opkg_download(url, tmp_file, NULL, NULL, 0);
 	  if (err)
 	       return err;
 
