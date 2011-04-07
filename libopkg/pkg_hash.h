@@ -29,6 +29,7 @@ void pkg_hash_deinit(void);
 
 void pkg_hash_fetch_available(pkg_vec_t *available);
 
+int dist_hash_add_from_file(const char *file_name, pkg_src_t *dist);
 int pkg_hash_add_from_file(const char *file_name, pkg_src_t *src,
 		pkg_dest_t *dest, int is_status_file);
 int pkg_hash_load_feeds(void);
