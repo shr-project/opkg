@@ -15,6 +15,7 @@ opkg_cmd_sources = opkg_cmd.c opkg_cmd.h \
 		   opkg_upgrade.c opkg_upgrade.h \
 		   opkg_remove.c opkg_remove.h
 opkg_db_sources = opkg_conf.c opkg_conf.h \
+		  release.c release.h release_parse.c release_parse.h \
 		  opkg_utils.c opkg_utils.h pkg.c pkg.h hash_table.h \
 		  pkg_depends.c pkg_depends.h pkg_extract.c pkg_extract.h \
 		  hash_table.c pkg_hash.c pkg_hash.h pkg_parse.c pkg_parse.h \
@@ -27,6 +28,7 @@ opkg_list_sources = conffile.c conffile.h conffile_list.c conffile_list.h \
 		    active_list.c active_list.h list.h 
 opkg_util_sources = file_util.c file_util.h opkg_message.h opkg_message.c md5.c md5.h \
 		    parse_util.c parse_util.h \
+		    cksum_list.c cksum_list.h \
 		    sprintf_alloc.c sprintf_alloc.h \
 		    xregex.c xregex.h xsystem.c xsystem.h
 if HAVE_PATHFINDER
