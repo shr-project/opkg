@@ -227,7 +227,7 @@ opkg_download_cache(const char *src, const char *dest_file_name,
         if (file_exists(cache_location))
            opkg_msg(NOTICE, "Copying %s.\n", cache_location);
         else  {
- 	    err = opkg_download(src, cache_location, cb, data);
+ 	    err = opkg_download(src, cache_location, cb, data, 0);
 	    if (err) {
 	       (void) unlink(cache_location);
 	       goto out2;
