@@ -215,10 +215,23 @@ opkg_download_cache(const char *src, const char *dest_file_name,
     if (file_exists(cache_location))
 	opkg_msg(NOTICE, "Copying %s.\n", cache_location);
     else {
-	err = opkg_download(src, cache_location, cb, data, 0);
-	if (err) {
-	    (void) unlink(cache_location);
-	    goto out2;
+       /* cache file with funky name not found, try simple name */
+        free(cache_name);
+        char *filename = strrchr(dest_file_name,'/');
+        if (filename)
+           cache_name = xstrdup(filename+1); // strip leading '/'
+        else
+           cache_name = xstrdup(dest_file_name);
+        free(cache_location);
+        sprintf_alloc(&cache_location, "%s/%s", conf->cache, cache_name);
+        if (file_exists(cache_location))
+           opkg_msg(NOTICE, "Copying %s.\n", cache_location);
+        else  {
+ 	    err = opkg_download(src, cache_location, cb, data);
+	    if (err) {
+	       (void) unlink(cache_location);
+	       goto out2;
+	  }
 	}
     }
 
