@@ -120,7 +120,7 @@ pkg_hash_add_from_file(const char *file_name,
 		pkg->src = src;
 		pkg->dest = dest;
 
-		ret = parse_from_stream_nomalloc(pkg, fp, 0,
+		ret = parse_from_stream_nomalloc(pkg_parse_line, pkg, fp, 0,
 				&buf, len);
 		if (pkg->name == NULL) {
 			/* probably just a blank line */

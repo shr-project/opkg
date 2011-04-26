@@ -21,7 +21,6 @@
 #include <stdio.h>
 #include <ctype.h>
 
-#include "pkg.h"
 #include "opkg_utils.h"
 #include "pkg_parse.h"
 #include "libbb/libbb.h"
@@ -105,8 +104,10 @@ get_arch_priority(const char *arch)
 }
 
 int
-pkg_parse_line(pkg_t *pkg, const char *line, uint mask)
+pkg_parse_line(void *ptr, const char *line, uint mask)
 {
+	pkg_t *pkg = (pkg_t *) ptr;
+
 	/* these flags are a bit hackish... */
 	static int reading_conffiles = 0, reading_description = 0;
 	int ret = 0;
@@ -273,7 +274,7 @@ pkg_parse_from_stream(pkg_t *pkg, FILE *fp, uint mask)
 	const size_t len = 4096;
 
 	buf = xmalloc(len);
-	ret = parse_from_stream_nomalloc(pkg, fp, mask, &buf, len);
+	ret = parse_from_stream_nomalloc(pkg_parse_line, pkg, fp, mask, &buf, len);
 	if (pkg->name == NULL) {
 		/* probably just a blank line */
 		ret = 1;

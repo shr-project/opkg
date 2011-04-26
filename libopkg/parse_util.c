@@ -22,7 +22,6 @@
 #include "libbb/libbb.h"
 
 #include "parse_util.h"
-#include "pkg_parse.h"
 
 int
 is_field(const char *type, const char *line)
@@ -89,7 +88,7 @@ parse_list(const char *raw, unsigned int *count, const char sep, int skip_field)
 }
 
 int
-parse_from_stream_nomalloc(pkg_t *pkg, FILE *fp, uint mask,
+parse_from_stream_nomalloc(parse_line_t parse_line, void *ptr, FILE *fp, uint mask,
 						char **buf0, size_t buf0len)
 {
 	int ret, lineno;
@@ -111,7 +110,7 @@ parse_from_stream_nomalloc(pkg_t *pkg, FILE *fp, uint mask,
 			} else if (strlen(*buf0) == buf0len-1) {
 				opkg_msg(ERROR, "Missing new line character"
 						" at end of file!\n");
-				pkg_parse_line(pkg, *buf0, mask);
+				parse_line(ptr, *buf0, mask);
 			}
 			break;
 		}
@@ -126,7 +125,7 @@ parse_from_stream_nomalloc(pkg_t *pkg, FILE *fp, uint mask,
 				 */
 				opkg_msg(ERROR, "Missing new line character"
 						" at end of file!\n");
-				pkg_parse_line(pkg, *buf0, mask);
+				parse_line(ptr, *buf0, mask);
 				break;
 			}
 			if (buf0len >= EXCESSIVE_LINE_LEN) {
@@ -157,7 +156,7 @@ parse_from_stream_nomalloc(pkg_t *pkg, FILE *fp, uint mask,
 
 		lineno++;
 
-		if (pkg_parse_line(pkg, *buf0, mask))
+		if (parse_line(ptr, *buf0, mask))
 			break;
 
 		buf = *buf0;
