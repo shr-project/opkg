@@ -18,8 +18,13 @@
 #ifndef PARSE_UTIL_H
 #define PARSE_UTIL_H
 
+#include "pkg.h"
+
 int is_field(const char *type, const char *line);
 char *parse_simple(const char *type, const char *line);
 char **parse_list(const char *raw, unsigned int *count, const char sep, int skip_field);
+
+int parse_from_stream_nomalloc(pkg_t *pkg, FILE *fp, uint mask,
+						char **buf0, size_t buf0len);
 
 #endif

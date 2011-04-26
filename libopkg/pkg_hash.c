@@ -23,6 +23,7 @@
 #include "opkg_message.h"
 #include "pkg_vec.h"
 #include "pkg_hash.h"
+#include "parse_util.h"
 #include "pkg_parse.h"
 #include "opkg_utils.h"
 #include "sprintf_alloc.h"
@@ -119,8 +120,12 @@ pkg_hash_add_from_file(const char *file_name,
 		pkg->src = src;
 		pkg->dest = dest;
 
-		ret = pkg_parse_from_stream_nomalloc(pkg, fp, 0,
+		ret = parse_from_stream_nomalloc(pkg, fp, 0,
 				&buf, len);
+		if (pkg->name == NULL) {
+			/* probably just a blank line */
+			ret = 1;
+		}
 		if (ret) {
 			pkg_deinit (pkg);
 			free(pkg);
