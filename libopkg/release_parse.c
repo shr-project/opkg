@@ -23,8 +23,10 @@
 #include "parse_util.h"
 
 static int
-release_parse_line(release_t *release, const char *line)
+release_parse_line(void *ptr, const char *line, uint mask)
 {
+	release_t *release = (release_t *) ptr;
+
 	int ret = 0;
 	unsigned int count = 0;
 	char **list = 0;
@@ -111,25 +113,14 @@ dont_reset_flags:
 int
 release_parse_from_stream(release_t *release, FILE *fp)
 {
-	int ret = 0;
-	char *buf = NULL;
-	size_t buflen, nread;
+	int ret;
+	char *buf;
+	const size_t len = 4096;
 
-	nread = getline(&buf, &buflen, fp);
-	while ( nread != -1 ) {
-		if (buf[nread-1] == '\n') buf[nread-1] = '\0';
-		if (release_parse_line(release, buf))
-                        opkg_msg(DEBUG, "Failed to parse release line for %s:\n\t%s\n",
-					release->name, buf);
-		nread = getline(&buf, &buflen, fp);
-	}
-
-	if (!feof(fp)) {
-		opkg_perror(ERROR, "Problems reading Release file for %sd\n", release->name);
-		ret = -1;
-	}
-
+	buf = xmalloc(len);
+	ret = parse_from_stream_nomalloc(release_parse_line, release, fp, 0, &buf, len);
 	free(buf);
+
 	return ret;
 }
 
