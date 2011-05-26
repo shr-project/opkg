@@ -64,6 +64,7 @@ write_status_files_if_changed(void)
 	  opkg_msg(INFO, "Writing status file.\n");
 	  opkg_conf_write_status_files();
 	  pkg_write_changed_filelists();
+	  sync();
      } else {
 	  opkg_msg(DEBUG, "Nothing to be done.\n");
      }
