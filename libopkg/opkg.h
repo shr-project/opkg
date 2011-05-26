@@ -43,7 +43,7 @@ struct _opkg_progress_data_t
 int opkg_new (void);
 void opkg_free (void);
 int opkg_re_read_config_files (void);
-void opkg_get_option (char *option, void **value);
+int opkg_get_option (char *option, void *value);
 void opkg_set_option (char *option, void *value);
 
 int opkg_install_package (const char *package_name, opkg_progress_callback_t callback, void *user_data);

@@ -46,6 +46,8 @@ libopkg_la_SOURCES = \
 
 libopkg_la_LIBADD = $(top_builddir)/libbb/libbb.la $(CURL_LIBS) $(GPGME_LIBS) $(OPENSSL_LIBS) $(PATHFINDER_LIBS)
 
+libopkg_la_LDFLAGS = -version-info 1:0:0
+
 # make sure we only export symbols that are for public use
 #libopkg_la_LDFLAGS = -export-symbols-regex "^opkg_.*"
 

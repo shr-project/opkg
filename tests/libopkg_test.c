@@ -159,6 +159,18 @@ main (int argc, char **argv)
 	  return 1;
   }
 
+  char *cache;
+  opkg_set_option("cache", "|asdf|");
+  if (opkg_get_option("cache", &cache) != -1) {
+	  printf("cache=``%s''\n", cache);
+  }
+
+  int verb;
+  opkg_set_option("verbosity", (void *)3);
+  if (opkg_get_option("verbosity", &verb) != -1) {
+	  printf("verbosity=%d\n", verb);
+  }
+
   switch (argv[1][0])
   {
     case 'f':

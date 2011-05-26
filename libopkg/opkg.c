@@ -158,80 +158,77 @@ opkg_re_read_config_files(void)
 	return opkg_new();
 }
 
-void
-opkg_get_option(char *option, void **value)
+int
+opkg_get_option(char *option, void *value)
 {
-	int i = 0;
-	extern opkg_option_t options[];
-
-	/* look up the option
-	 * TODO: this would be much better as a hash table
-	 */
-	while (options[i].name) {
-		if (strcmp(options[i].name, option) != 0) {
-			i++;
-			continue;
-		}
-	}
-
-	/* get the option */
-	switch (options[i].type) {
-	case OPKG_OPT_TYPE_BOOL:
-		*((int *) value) = *((int *) options[i].value);
-		return;
-
-	case OPKG_OPT_TYPE_INT:
-		*((int *) value) = *((int *) options[i].value);
-		return;
-
-	case OPKG_OPT_TYPE_STRING:
-		*((char **) value) = xstrdup(options[i].value);
-		return;
-	}
-
-}
-
-void
-opkg_set_option(char *option, void *value)
-{
-	int i = 0, found = 0;
+	int i;
 	extern opkg_option_t options[];
 
 	opkg_assert(option != NULL);
 	opkg_assert(value != NULL);
 
-	/* look up the option
-	 * TODO: this would be much better as a hash table
-	 */
-	while (options[i].name) {
-		if (strcmp(options[i].name, option) == 0) {
-			found = 1;
+	*(char**)value = NULL;
+
+	for (i=0; options[i].name; i++) {
+		if (strcmp(options[i].name, option) == 0)
 			break;
-		}
-		i++;
 	}
 
-	if (!found) {
+	if (options[i].name == NULL)
+		/* Not found. */
+		return -1;
+
+	switch (options[i].type) {
+	case OPKG_OPT_TYPE_BOOL:
+		*(int *)value = *(int *)options[i].value;
+		break;
+
+	case OPKG_OPT_TYPE_INT:
+		*(int *)value = *(int *)options[i].value;
+		break;
+
+	case OPKG_OPT_TYPE_STRING:
+		*(char **)value = xstrdup(*(char **)options[i].value);
+		break;
+	}
+
+	return 0;
+}
+
+void
+opkg_set_option(char *option, void *value)
+{
+	int i;
+	extern opkg_option_t options[];
+
+	opkg_assert(option != NULL);
+	opkg_assert(value != NULL);
+
+	for (i=0; options[i].name; i++) {
+		if (strcmp(options[i].name, option) == 0)
+			break;
+	}
+
+	if (options[i].name == NULL) {
 		opkg_msg(ERROR, "Invalid option: %s\n", option);
 		return;
 	}
 
-	/* set the option */
 	switch (options[i].type) {
 	case OPKG_OPT_TYPE_BOOL:
-		if (*((int *) value) == 0)
+		if ((long)value == 0)
 			*((int *) options[i].value) = 0;
 		else
 			*((int *) options[i].value) = 1;
-		return;
+		break;
 
 	case OPKG_OPT_TYPE_INT:
-		*((int *) options[i].value) = *((int *) value);
-		return;
+		*((int *) options[i].value) = (long)value;
+		break;
 
 	case OPKG_OPT_TYPE_STRING:
-		*((char **) options[i].value) = xstrdup(value);
-		return;
+		*((char **) options[i].value) = xstrdup((char *)value);
+		break;
 	}
 
 }
