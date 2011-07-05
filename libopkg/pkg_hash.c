@@ -717,10 +717,6 @@ void
 file_hash_set_file_owner(const char *file_name, pkg_t *owning_pkg)
 {
 	pkg_t *old_owning_pkg;
-	int file_name_len = strlen(file_name);
-
-	if (file_name[file_name_len -1] == '/')
-		return;
 
 	file_name = strip_offline_root(file_name);
 
