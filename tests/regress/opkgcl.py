@@ -17,13 +17,20 @@ def remove(pkg_name, flags=""):
 def update():
 	return opkgcl("update")[0]
 
-def upgrade():
-	return opkgcl("upgrade")[0]
+def upgrade(params=None):
+	if params:
+		opkgcl("upgrade {}".format(params))[0]
+	else:
+		return opkgcl("upgrade")[0]
 
 def files(pkg_name):
 	output = opkgcl("files {}".format(pkg_name))[1]
 	return output.split("\n")[1:]
 
+
+def flag_unpacked(pkg_name):
+	out = opkgcl("flag unpacked {}".format(pkg_name))
+	return out == "Setting flags for package {} to unpacked.".format(pkg_name)
 
 def is_installed(pkg_name, version=None):
 	out = opkgcl("list_installed {}".format(pkg_name))[1]

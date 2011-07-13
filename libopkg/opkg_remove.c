@@ -44,7 +44,7 @@ pkg_has_installed_dependents(pkg_t *pkg, abstract_pkg_t *** pdependents)
 	  if (dependers == NULL)
 	       continue;
 	  while ((dep_ab_pkg = *dependers++) != NULL) {
-	       if (dep_ab_pkg->state_status == SS_INSTALLED){
+	       if (dep_ab_pkg->state_status == SS_INSTALLED || dep_ab_pkg->state_status == SS_UNPACKED){
 		    n_installed_dependents++;
                }
 	  }

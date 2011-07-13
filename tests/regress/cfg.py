@@ -1,3 +1,5 @@
+import os
+
 opkdir = "/tmp/opk"
 offline_root = "/tmp/opkg"
-opkgcl = "/home/grg/opkg/code/svn/src/opkg-cl"
+opkgcl = os.path.realpath("../../src/opkg-cl")
