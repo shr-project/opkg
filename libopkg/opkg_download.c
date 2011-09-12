@@ -360,7 +360,7 @@ opkg_verify_file (char *text_file, char *sig_file)
     if (err)
 	return -1;
 
-    sprintf_alloc(&trusted_path, "%s/%s", conf->offline_root, "/etc/opkg/trusted.gpg");
+    trusted_path = root_filename_alloc("/etc/opkg/trusted.gpg");
     err = gpgme_data_new_from_file (&key, trusted_path, 1);
     free (trusted_path);
     if (err)
