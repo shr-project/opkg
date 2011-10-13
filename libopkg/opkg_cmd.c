@@ -153,7 +153,7 @@ opkg_update_cmd(int argc, char **argv)
 
 	  src = (pkg_src_t *)iter->data;
 
-	  if (src->extra_data && strcmp(src->extra_data, "__dummy__ "))
+	  if (src->extra_data && !strcmp(src->extra_data, "__dummy__ "))
 	      continue;
 
 	  if (src->extra_data)	/* debian style? */
