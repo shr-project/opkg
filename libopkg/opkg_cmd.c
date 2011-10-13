@@ -412,6 +412,10 @@ opkg_configure_packages(char *pkg_name)
      opkg_intercept_t ic;
      int r, err = 0;
 
+     if (conf->offline_root && !conf->force_postinstall) {
+         opkg_msg(INFO, "Offline root mode: not configuring unpacked packages.\n");
+         return 0;
+     }
      opkg_msg(INFO, "Configuring unpacked packages.\n");
 
      all = pkg_vec_alloc();
