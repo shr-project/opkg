@@ -137,10 +137,8 @@ opkg_remove_dependent_pkgs(pkg_t *pkg, abstract_pkg_t **dependents)
     int err=0;
     for (i = 0; i < dependent_pkgs->len; i++) {
         err = opkg_remove_pkg(dependent_pkgs->pkgs[i],0);
-        if (err) {
-            pkg_vec_free(dependent_pkgs);
+        if (err)
             break;
-	}
     }
     pkg_vec_free(dependent_pkgs);
     return err;
