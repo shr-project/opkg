@@ -8,7 +8,7 @@ opk.regress_init()
 long_filename = 110*"a"
 
 os.symlink(long_filename, "linky")
-a = opk.Opk(Package="a", Version="1.0", Architecture="all")
+a = opk.Opk(Package="a")
 a.write(data_files=["linky"])
 os.unlink("linky")
 opkgcl.install("a_1.0_all.opk")

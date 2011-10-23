@@ -6,15 +6,15 @@ import opk, cfg, opkgcl
 opk.regress_init()
 
 open("foo", "w").close()
-a1 = opk.Opk(Package="a", Version="1.0", Architecture="all")
+a1 = opk.Opk(Package="a", Version="1.0")
 a1.write(data_files=["foo"])
 
 opkgcl.install("a_1.0_all.opk")
 
 o = opk.OpkGroup()
-a2 = opk.Opk(Package="a", Version="2.0", Architecture="all", Depends="b")
+a2 = opk.Opk(Package="a", Version="2.0", Depends="b")
 a2.write()
-b1 = opk.Opk(Package="b", Version="1.0", Architecture="all")
+b1 = opk.Opk(Package="b", Version="1.0")
 b1.write(data_files=["foo"])
 o.opk_list.append(a2)
 o.opk_list.append(b1)

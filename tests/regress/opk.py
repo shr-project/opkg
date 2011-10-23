@@ -14,6 +14,13 @@ class Opk:
 			if k not in self.valid_control_fields:
 				raise Exception("Invalid control field: "
 						"{}".format(k))
+		if "Package" not in control.keys():
+			print("Cannot create opk without Package name.\n")
+			return None
+		if "Architecture" not in control.keys():
+			control["Architecture"] = "all"
+		if "Version" not in control.keys():
+			control["Version"] = "1.0"
 		self.control = control
 
 	def write(self, tar_not_ar=False, data_files=None):

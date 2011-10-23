@@ -6,9 +6,9 @@ import opk, cfg, opkgcl
 opk.regress_init()
 
 o = opk.OpkGroup()
-o.add(Package="a", Version="1.0", Architecture="all", Depends="b", )
-o.add(Package="b", Version="1.0", Architecture="all")
-o.add(Package="c", Version="1.0", Architecture="all", Depends="b")
+o.add(Package="a", Version="1.0", Depends="b")
+o.add(Package="b", Version="1.0")
+o.add(Package="c", Version="1.0", Depends="b")
 o.write_opk()
 o.write_list()
 
@@ -19,9 +19,9 @@ opkgcl.install("c")
 opkgcl.flag_unpacked("a")
 
 o = opk.OpkGroup()
-o.add(Package="a", Version="1.0", Architecture="all", Depends="b", )
-o.add(Package="b", Version="1.0", Architecture="all")
-o.add(Package="c", Version="2.0", Architecture="all")
+o.add(Package="a", Version="1.0", Depends="b")
+o.add(Package="b", Version="1.0")
+o.add(Package="c", Version="2.0")
 o.write_opk()
 o.write_list()
 

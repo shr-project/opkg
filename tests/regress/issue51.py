@@ -6,7 +6,7 @@ import opk, cfg, opkgcl
 opk.regress_init()
 
 open("foo", "w").close()
-a1 = opk.Opk(Package="a", Version="1.0", Architecture="all")
+a1 = opk.Opk(Package="a")
 a1.write(data_files=["foo"])
 os.rename("a_1.0_all.opk", "a_with_foo.opk")
 
@@ -17,7 +17,7 @@ opkgcl.install("a_with_foo.opk")
 
 open("bar", "w").close()
 o = opk.OpkGroup()
-a2 = opk.Opk(Package="a", Version="1.0", Architecture="all")
+a2 = opk.Opk(Package="a")
 a2.write(data_files=["foo", "bar"])
 o.opk_list.append(a2)
 o.write_list()
@@ -49,7 +49,7 @@ if os.path.exists(foo_fullpath) or os.path.exists(bar_fullpath):
 
 # ----
 o = opk.OpkGroup()
-a2 = opk.Opk(Package="a", Version="1.0", Architecture="all")
+a2 = opk.Opk(Package="a")
 a2.write()
 o.opk_list.append(a2)
 o.write_list()

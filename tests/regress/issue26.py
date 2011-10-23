@@ -6,12 +6,12 @@ import opk, cfg, opkgcl
 opk.regress_init()
 
 o = opk.OpkGroup()
-o.add(Package="a", Version="2.0", Architecture="all")
+o.add(Package="a", Version="2.0")
 o.write_opk()
 o.write_list()
 
 # older version, not in Packages list
-a1 = opk.Opk(Package="a", Version="1.0", Architecture="all")
+a1 = opk.Opk(Package="a", Version="1.0")
 a1.write()
 
 opkgcl.update()

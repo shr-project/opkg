@@ -13,7 +13,7 @@ long_filename2 = long_dir + "/" + 110*"c"
 os.mkdir(long_dir)
 open(long_filename, "w").close()
 os.symlink(long_b, long_filename2)
-a = opk.Opk(Package="a", Version="1.0", Architecture="all")
+a = opk.Opk(Package="a")
 a.write(data_files=[long_dir, long_filename, long_filename2])
 os.unlink(long_filename)
 os.unlink(long_filename2)

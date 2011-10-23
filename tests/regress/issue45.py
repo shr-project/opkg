@@ -6,8 +6,8 @@ import opk, cfg, opkgcl
 opk.regress_init()
 
 o = opk.OpkGroup()
-o.add(Package="a", Version="1.0", Architecture="all", Depends="b")
-o.add(Package="b", Version="1.0", Architecture="all")
+o.add(Package="a", Depends="b")
+o.add(Package="b")
 o.write_opk()
 o.write_list()
 
