@@ -13,7 +13,7 @@ o.write_list()
 
 opkgcl.update()
 
-(status, output) = opkgcl.opkgcl("install a")
+(status, output) = opkgcl.opkgcl("install --force-postinstall a")
 ln_a = output.find("Configuring a")
 ln_b = output.find("Configuring b")
 
