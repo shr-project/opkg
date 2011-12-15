@@ -259,6 +259,88 @@ pkg_hash_fetch_unsatisfied_dependencies(pkg_t * pkg, pkg_vec_t *unsatisfied,
      return unsatisfied->len;
 }
 
+
+pkg_vec_t *
+pkg_hash_fetch_satisfied_dependencies(pkg_t * pkg)
+{
+     pkg_vec_t *satisfiers;
+     int i, j, k;
+     int count;
+     abstract_pkg_t * ab_pkg;
+
+     satisfiers = pkg_vec_alloc();
+
+     /*
+      * this is a setup to check for redundant/cyclic dependency checks,
+      * which are marked at the abstract_pkg level
+      */
+     if (!(ab_pkg = pkg->parent)) {
+	  opkg_msg(ERROR, "Internal error, with pkg %s.\n", pkg->name);
+	  return satisfiers;
+     }
+
+     count = pkg->pre_depends_count + pkg->depends_count + pkg->recommends_count + pkg->suggests_count;
+     if (!count)
+	  return satisfiers;
+
+     /* foreach dependency */
+     for (i = 0; i < count; i++) {
+	  compound_depend_t * compound_depend = &pkg->depends[i];
+	  depend_t ** possible_satisfiers = compound_depend->possibilities;;
+
+          if (compound_depend->type == RECOMMEND || compound_depend->type == SUGGEST)
+              continue;
+
+	  if (compound_depend->type == GREEDY_DEPEND) {
+	       /* foreach possible satisfier */
+	       for (j = 0; j < compound_depend->possibility_count; j++) {
+		    /* foreach provided_by, which includes the abstract_pkg itself */
+		    abstract_pkg_t *abpkg = possible_satisfiers[j]->pkg;
+		    abstract_pkg_vec_t *ab_provider_vec = abpkg->provided_by;
+		    int nposs = ab_provider_vec->len;
+		    abstract_pkg_t **ab_providers = ab_provider_vec->pkgs;
+		    int l;
+		    for (l = 0; l < nposs; l++) {
+			 pkg_vec_t *test_vec = ab_providers[l]->pkgs;
+			 /* if no depends on this one, try the first package that Provides this one */
+			 if (!test_vec){   /* no pkg_vec hooked up to the abstract_pkg!  (need another feed?) */
+			      continue;
+			 }
+
+			 /* cruise this possiblity's pkg_vec looking for an installed version */
+			 for (k = 0; k < test_vec->len; k++) {
+			      pkg_t *pkg_scout = test_vec->pkgs[k];
+			      /* not installed, and not already known about? */
+			      if (pkg_scout->state_want == SW_INSTALL && pkg_scout != pkg)
+      			          pkg_vec_insert(satisfiers, pkg_scout);
+			 }
+		    }
+	       }
+
+	       continue;
+	  }
+
+	  /* foreach possible satisfier, look for installed package  */
+	  for (j = 0; j < compound_depend->possibility_count; j++) {
+	       /* foreach provided_by, which includes the abstract_pkg itself */
+	       depend_t *dependence_to_satisfy = possible_satisfiers[j];
+	       abstract_pkg_t *satisfying_apkg = possible_satisfiers[j]->pkg;
+	       pkg_t *satisfying_pkg =
+		    pkg_hash_fetch_best_installation_candidate(satisfying_apkg,
+							       pkg_installed_and_constraint_satisfied,
+							       dependence_to_satisfy, 0);
+               /* Being that I can't test constraing in pkg_hash, I will test it here */
+	       if (satisfying_pkg != NULL && satisfying_pkg != pkg) {
+                  if (pkg_constraint_satisfied(satisfying_pkg, dependence_to_satisfy) && (satisfying_pkg->state_want == SW_INSTALL || satisfying_pkg->state_want == SW_UNKNOWN))
+	              pkg_vec_insert(satisfiers, satisfying_pkg);
+               }
+
+	  }
+     }
+     return satisfiers;
+}
+
+
 /*checking for conflicts !in replaces
   If a packages conflicts with another but is also replacing it, I should not consider it a
   really conflicts

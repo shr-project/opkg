@@ -82,6 +82,7 @@ char *pkg_depend_str(pkg_t *pkg, int index);
 void buildDependedUponBy(pkg_t * pkg, abstract_pkg_t * ab_pkg);
 int version_constraints_satisfied(depend_t * depends, pkg_t * pkg);
 int pkg_hash_fetch_unsatisfied_dependencies(pkg_t * pkg, pkg_vec_t *depends, char *** unresolved);
+pkg_vec_t * pkg_hash_fetch_satisfied_dependencies(pkg_t * pkg);
 pkg_vec_t * pkg_hash_fetch_conflicts(pkg_t * pkg);
 int pkg_dependence_satisfiable(depend_t *depend);
 int pkg_dependence_satisfied(depend_t *depend);

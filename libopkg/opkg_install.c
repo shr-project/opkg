@@ -76,6 +76,27 @@ satisfy_dependencies_for(pkg_t *pkg)
      }
 
      if (ndepends <= 0) {
+	  pkg_vec_free(depends);      
+	  depends = pkg_hash_fetch_satisfied_dependencies(pkg);
+
+	  for (i = 0; i < depends->len; i++) {
+	       dep = depends->pkgs[i];
+	       /* The package was uninstalled when we started, but another
+	          dep earlier in this loop may have depended on it and pulled
+	          it in, so check first. */
+	       if ((dep->state_status != SS_INSTALLED) && (dep->state_status != SS_UNPACKED)) {
+		    opkg_msg(DEBUG2,"Calling opkg_install_pkg.\n");
+		    err = opkg_install_pkg(dep, 0);
+		    /* mark this package as having been automatically installed to
+		     * satisfy a dependency */
+		    dep->auto_installed = 1;
+		    if (err) {
+			 pkg_vec_free(depends);
+			 return err;
+		    }
+	       }
+	  }
+
 	  pkg_vec_free(depends);
 	  return 0;
      }
