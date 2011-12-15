@@ -453,7 +453,8 @@ opkg_configure_packages(char *pkg_name)
 		    pkg->state_flag &= ~SF_PREFER;
 		    opkg_state_changed++;
 	       } else {
-		    err = -1;
+                    if (!conf->offline_root)
+		         err = -1;
 	       }
 	  }
      }
