@@ -870,3 +870,18 @@ opkg_repository_accessibility_check(void)
 
 	return ret;
 }
+
+int
+opkg_compare_versions (const char *ver1, const char *ver2)
+{
+  pkg_t *pkg1, *pkg2;
+
+  pkg1 = pkg_new();
+  pkg2 = pkg_new();
+
+  parse_version(pkg1, ver1);
+  parse_version(pkg2, ver2);
+
+  return pkg_compare_versions(pkg1, pkg2);
+}
+

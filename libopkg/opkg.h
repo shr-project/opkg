@@ -58,4 +58,6 @@ pkg_t* opkg_find_package (const char *name, const char *version, const char *arc
 
 int opkg_repository_accessibility_check(void);
 
+int opkg_compare_versions (const char *ver1, const char *ver2);
+
 #endif /* OPKG_H */
