@@ -84,8 +84,14 @@ satisfy_dependencies_for(pkg_t *pkg)
 	       /* The package was uninstalled when we started, but another
 	          dep earlier in this loop may have depended on it and pulled
 	          it in, so check first. */
+               if (is_pkg_in_pkg_vec(dep->wanted_by, pkg)) {
+		    opkg_msg(NOTICE,"Breaking cicular dependency on %s for %s.\n", pkg->name, dep->name);
+	            continue;
+               }
 	       if ((dep->state_status != SS_INSTALLED) && (dep->state_status != SS_UNPACKED)) {
 		    opkg_msg(DEBUG2,"Calling opkg_install_pkg.\n");
+                    if (!is_pkg_in_pkg_vec(dep->wanted_by, pkg))
+     	                 pkg_vec_insert(dep->wanted_by, pkg);
 		    err = opkg_install_pkg(dep, 0);
 		    /* mark this package as having been automatically installed to
 		     * satisfy a dependency */
@@ -115,6 +121,8 @@ satisfy_dependencies_for(pkg_t *pkg)
 	  /* The package was uninstalled when we started, but another
 	     dep earlier in this loop may have depended on it and pulled
 	     it in, so check first. */
+          if (!is_pkg_in_pkg_vec(dep->wanted_by, pkg))
+	       pkg_vec_insert(dep->wanted_by, pkg);
 	  if ((dep->state_status != SS_INSTALLED)
 	      && (dep->state_status != SS_UNPACKED)) {
                opkg_msg(DEBUG2,"Calling opkg_install_pkg.\n");

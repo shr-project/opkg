@@ -30,7 +30,6 @@ static int parseDepends(compound_depend_t *compound_depend, char * depend_str);
 static depend_t * depend_init(void);
 static char ** add_unresolved_dep(pkg_t * pkg, char ** the_lost, int ref_ndx);
 static char ** merge_unresolved(char ** oldstuff, char ** newstuff);
-static int is_pkg_in_pkg_vec(pkg_vec_t * vec, pkg_t * pkg);
 
 static int pkg_installed_and_constraint_satisfied(pkg_t *pkg, void *cdata)
 {
@@ -531,7 +530,7 @@ int pkg_dependence_satisfied(depend_t *depend)
      return 0;
 }
 
-static int is_pkg_in_pkg_vec(pkg_vec_t * vec, pkg_t * pkg)
+int is_pkg_in_pkg_vec(pkg_vec_t * vec, pkg_t * pkg)
 {
     int i;
     pkg_t ** pkgs = vec->pkgs;

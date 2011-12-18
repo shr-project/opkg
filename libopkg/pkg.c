@@ -86,6 +86,7 @@ pkg_init(pkg_t *pkg)
      pkg->section = NULL;
      pkg->description = NULL;
      pkg->state_want = SW_UNKNOWN;
+     pkg->wanted_by = pkg_vec_alloc();
      pkg->state_flag = SF_OK;
      pkg->state_status = SS_NOT_INSTALLED;
      pkg->depends_str = NULL;
@@ -191,6 +192,7 @@ pkg_deinit(pkg_t *pkg)
 	pkg->description = NULL;
 
 	pkg->state_want = SW_UNKNOWN;
+	pkg_vec_free(pkg->wanted_by);
 	pkg->state_flag = SF_OK;
 	pkg->state_status = SS_NOT_INSTALLED;
 

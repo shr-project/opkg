@@ -129,6 +129,7 @@ struct pkg
      char *description;
      char *tags;
      pkg_state_want_t state_want;
+     pkg_vec_t *wanted_by;
      pkg_state_flag_t state_flag;
      pkg_state_status_t state_status;
      char **depends_str;
