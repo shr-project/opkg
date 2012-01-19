@@ -70,6 +70,9 @@ class OpkGroup:
 
 	def add(self, **control):
 		self.opk_list.append(Opk(**control))
+
+	def addOpk(self, opk):
+		self.opk_list.append(opk)
 	
 	def write_opk(self, tar_not_ar=False):
 		for o in self.opk_list:

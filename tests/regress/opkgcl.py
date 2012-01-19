@@ -43,6 +43,19 @@ def is_installed(pkg_name, version=None):
 		return False
 	return True
 
+def is_autoinstalled(pkg_name):
+    status_path = "{}/usr/lib/opkg/status".format(cfg.offline_root)
+    if not os.path.exists(status_path):
+        return False
+    status_file = open(status_path, "r")
+    status = status_file.read()
+    status_file.close()
+    index_start = status.find("Package: {}".format(pkg_name))
+    if index_start < 0:
+        return False
+    index_end = status.find("\n\n", index_start)
+    return status.find("Auto-Installed: yes", index_start, index_end) >= 0
+
 
 if __name__ == '__main__':
 	import sys
