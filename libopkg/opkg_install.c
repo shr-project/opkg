@@ -1449,6 +1449,9 @@ opkg_install_pkg(pkg_t *pkg, int from_upgrade)
                /* removing files from old package, to avoid ghost files */
                remove_data_files_and_list(old_pkg);
                remove_maintainer_scripts(old_pkg);
+
+               /* maintain the "Auto-Installed: yes" flag */
+               pkg->auto_installed = old_pkg->auto_installed;
 	  }
 
 
