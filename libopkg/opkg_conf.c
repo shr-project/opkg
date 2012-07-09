@@ -473,39 +473,40 @@ opkg_conf_load(void)
 				&conf->pkg_src_list, &conf->dist_src_list))
 			goto err1;
 	}
-
-	if (conf->offline_root)
-		sprintf_alloc(&etc_opkg_conf_pattern, "%s/etc/opkg/*.conf", conf->offline_root);
 	else {
-		const char *conf_file_dir = getenv("OPKG_CONF_DIR");
-		if (conf_file_dir == NULL)
-			conf_file_dir = OPKG_CONF_DEFAULT_CONF_FILE_DIR;
-			sprintf_alloc(&etc_opkg_conf_pattern, "%s/*.conf", conf_file_dir);
-	}
+		if (conf->offline_root)
+			sprintf_alloc(&etc_opkg_conf_pattern, "%s/etc/opkg/*.conf", conf->offline_root);
+		else {
+			const char *conf_file_dir = getenv("OPKG_CONF_DIR");
+			if (conf_file_dir == NULL)
+				conf_file_dir = OPKG_CONF_DEFAULT_CONF_FILE_DIR;
+				sprintf_alloc(&etc_opkg_conf_pattern, "%s/*.conf", conf_file_dir);
+		}
 
-	memset(&globbuf, 0, sizeof(globbuf));
-	glob_ret = glob(etc_opkg_conf_pattern, 0, glob_errfunc, &globbuf);
-	if (glob_ret && glob_ret != GLOB_NOMATCH) {
-		free(etc_opkg_conf_pattern);
-		globfree(&globbuf);
-		goto err1;
-	}
-
-	free(etc_opkg_conf_pattern);
-
-	for (i = 0; i < globbuf.gl_pathc; i++) {
-		if (globbuf.gl_pathv[i])
-			if (conf->conf_file &&
-					!strcmp(conf->conf_file, globbuf.gl_pathv[i]))
-				continue;
-		if ( opkg_conf_parse_file(globbuf.gl_pathv[i],
-			&conf->pkg_src_list, &conf->dist_src_list)<0) {
+		memset(&globbuf, 0, sizeof(globbuf));
+		glob_ret = glob(etc_opkg_conf_pattern, 0, glob_errfunc, &globbuf);
+		if (glob_ret && glob_ret != GLOB_NOMATCH) {
+			free(etc_opkg_conf_pattern);
 			globfree(&globbuf);
 			goto err1;
 		}
-	}
 
-	globfree(&globbuf);
+		free(etc_opkg_conf_pattern);
+
+		for (i = 0; i < globbuf.gl_pathc; i++) {
+			if (globbuf.gl_pathv[i])
+				if (conf->conf_file &&
+						!strcmp(conf->conf_file, globbuf.gl_pathv[i]))
+					continue;
+			if ( opkg_conf_parse_file(globbuf.gl_pathv[i],
+				&conf->pkg_src_list, &conf->dist_src_list)<0) {
+				globfree(&globbuf);
+				goto err1;
+			}
+		}
+
+		globfree(&globbuf);
+	}
 
 	if (conf->offline_root)
 		sprintf_alloc (&lock_file, "%s/%s", conf->offline_root, OPKGLOCKFILE);
