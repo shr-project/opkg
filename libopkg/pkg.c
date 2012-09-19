@@ -377,10 +377,8 @@ pkg_merge(pkg_t *oldpkg, pkg_t *newpkg)
 	  oldpkg->provides_count = newpkg->provides_count;
 	  newpkg->provides_count = 0;
 
-	  if (!oldpkg->provides) {
-		oldpkg->provides = newpkg->provides;
-		newpkg->provides = NULL;
-	  }
+	  oldpkg->provides = newpkg->provides;
+	  newpkg->provides = NULL;
      }
 
      if (!oldpkg->conflicts_count) {
