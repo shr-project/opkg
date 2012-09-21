@@ -376,10 +376,22 @@ pkg_hash_fetch_best_installation_candidate(abstract_pkg_t *apkg,
           if (constraint_fcn(matching, cdata)) {
              opkg_msg(DEBUG, "Candidate: %s %s.\n",
 			     matching->name, matching->version) ;
-             good_pkg_by_name = matching;
 	     /* It has been provided by hand, so it is what user want */
-             if (matching->provided_by_hand == 1)
-                break;
+             if (matching->provided_by_hand == 1) {
+                 good_pkg_by_name = matching;
+                 break;
+             }
+             /* Respect to the arch priorities when given alternatives */
+             if (good_pkg_by_name && !conf->select_higher_version) {
+                 if (matching->arch_priority >= good_pkg_by_name->arch_priority) {
+                     good_pkg_by_name = matching;
+                     opkg_msg(DEBUG, "%s %s wins by priority.\n",
+                         matching->name, matching->version) ;
+                 } else
+                     opkg_msg(DEBUG, "%s %s wins by priority.\n",
+                         good_pkg_by_name->name, good_pkg_by_name->version) ;
+             } else
+                 good_pkg_by_name = matching;
           }
      }
 

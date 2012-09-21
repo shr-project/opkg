@@ -77,6 +77,7 @@ struct opkg_conf
      int force_removal_of_essential_packages;
      int force_postinstall;
      int force_remove;
+     int select_higher_version;
      int check_signature;
      int nodeps; /* do not follow dependencies */
      char *offline_root;
