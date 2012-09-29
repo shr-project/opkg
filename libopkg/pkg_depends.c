@@ -781,7 +781,7 @@ constraint_to_str(enum version_constraint c)
 	case NONE:
 		return "";
 	case EARLIER:
-		return "< ";
+		return "<< ";
 	case EARLIER_EQUAL:
 	       return "<= ";
 	case EQUAL:
@@ -789,10 +789,49 @@ constraint_to_str(enum version_constraint c)
 	case LATER_EQUAL:
 	      return ">= ";
 	case LATER:
-	     return "> ";
+	     return ">> ";
 	}
 
 	return "";
+}
+
+enum version_constraint
+str_to_constraint(char *str)
+{
+	if(!strncmp(str, "<<", 2)){
+		str += 2;
+		return EARLIER;
+	}
+	else if(!strncmp(str, "<=", 2)){
+		str += 2;
+		return EARLIER_EQUAL;
+	}
+	else if(!strncmp(str, ">=", 2)){
+		str += 2;
+		return LATER_EQUAL;
+	}
+	else if(!strncmp(str, ">>", 2)){
+		str += 2;
+		return LATER;
+	}
+	else if(!strncmp(str, "=", 1)){
+		str++;
+		return EQUAL;
+	}
+	/* should these be here to support deprecated designations; dpkg does */
+	else if(!strncmp(str, "<", 1)){
+		str++;
+		opkg_msg(NOTICE, "Deprecated version constraint '<' was used with the same meaning as '<='. Use '<<' for EARLIER constraint.\n");
+		return EARLIER_EQUAL;
+	}
+	else if(!strncmp(str, ">", 1)){
+		str++;
+		opkg_msg(NOTICE, "Deprecated version constraint '>' was used with the same meaning as '>='. Use '>>' for LATER constraint.\n");
+		return LATER_EQUAL;
+	}
+	else {
+		return NONE;
+	}
 }
 
 /*
@@ -949,35 +988,7 @@ static int parseDepends(compound_depend_t *compound_depend,
 	  /* extract constraint and version */
 	  if(*src == '('){
 	       src++;
-	       if(!strncmp(src, "<<", 2)){
-		    possibilities[i]->constraint = EARLIER;
-		    src += 2;
-	       }
-	       else if(!strncmp(src, "<=", 2)){
-		    possibilities[i]->constraint = EARLIER_EQUAL;
-		    src += 2;
-	       }
-	       else if(!strncmp(src, ">=", 2)){
-		    possibilities[i]->constraint = LATER_EQUAL;
-		    src += 2;
-	       }
-	       else if(!strncmp(src, ">>", 2)){
-		    possibilities[i]->constraint = LATER;
-		    src += 2;
-	       }
-	       else if(!strncmp(src, "=", 1)){
-		    possibilities[i]->constraint = EQUAL;
-		    src++;
-	       }
-	       /* should these be here to support deprecated designations; dpkg does */
-	       else if(!strncmp(src, "<", 1)){
-		    possibilities[i]->constraint = EARLIER_EQUAL;
-		    src++;
-	       }
-	       else if(!strncmp(src, ">", 1)){
-		    possibilities[i]->constraint = LATER_EQUAL;
-		    src++;
-	       }
+	       possibilities[i]->constraint = str_to_constraint(src);
 
 	       /* now we have any constraint, pass space to version string */
 	       while(isspace(*src)) src++;

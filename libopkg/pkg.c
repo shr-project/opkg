@@ -968,28 +968,24 @@ pkg_version_satisfied(pkg_t *it, pkg_t *ref, const char *op)
      int r;
 
      r = pkg_compare_versions(it, ref);
+     char *op2 = op;
+     enum version_constraint constraint = str_to_constraint(op2);
 
-     if (strcmp(op, "<=") == 0 || strcmp(op, "<") == 0) {
-	  return r <= 0;
+     switch (constraint) 
+     {
+     case EARLIER_EQUAL:
+          return r <= 0;
+     case LATER_EQUAL:
+          return r >= 0;
+     case EARLIER:
+          return r < 0;
+     case LATER:
+          return r > 0;
+     case EQUAL:
+          return r == 0;
+     case NONE:
+          opkg_msg(ERROR, "Unknown operator: %s.\n", op);
      }
-
-     if (strcmp(op, ">=") == 0 || strcmp(op, ">") == 0) {
-	  return r >= 0;
-     }
-
-     if (strcmp(op, "<<") == 0) {
-	  return r < 0;
-     }
-
-     if (strcmp(op, ">>") == 0) {
-	  return r > 0;
-     }
-
-     if (strcmp(op, "=") == 0) {
-	  return r == 0;
-     }
-
-     opkg_msg(ERROR, "Unknown operator: %s.\n", op);
      return 0;
 }
 

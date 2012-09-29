@@ -87,6 +87,7 @@ pkg_vec_t * pkg_hash_fetch_conflicts(pkg_t * pkg);
 int pkg_dependence_satisfiable(depend_t *depend);
 int pkg_dependence_satisfied(depend_t *depend);
 const char* constraint_to_str(enum version_constraint c);
+enum version_constraint str_to_constraint(char *str);
 int is_pkg_in_pkg_vec(pkg_vec_t * vec, pkg_t * pkg);
 
 #endif
