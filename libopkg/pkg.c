@@ -85,6 +85,7 @@ pkg_init(pkg_t *pkg)
      pkg->maintainer = NULL;
      pkg->section = NULL;
      pkg->description = NULL;
+     pkg->tags = NULL;
      pkg->state_want = SW_UNKNOWN;
      pkg->wanted_by = pkg_vec_alloc();
      pkg->state_flag = SF_OK;
